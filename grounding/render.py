@@ -27,6 +27,7 @@ from pathlib import Path
 __all__ = [
     "render_persona_prompt",
     "render_choice_prompt",
+    "render_seed_prompt",
     "VALID_MODES",
 ]
 
@@ -139,6 +140,27 @@ def render_persona_prompt(persona: dict, world_state: dict, mode: str) -> str:
     persona_text = _render_persona_card(persona)
     world_text = _render_world_state(world_state)
     return persona_text + "\n\n" + world_text + "\n"
+
+
+def render_seed_prompt(
+    skeleton: dict, evidence_lines: list, n_observed_days: int, mode: str
+) -> str:
+    """Render the slow brain's ONE persona-card-writing prompt.
+
+    ``skeleton`` is the harness-computed masked demographic block (never
+    LLM-invented); ``evidence_lines`` are pre-built deterministic habit
+    summary strings from the seeding module (masked vocabulary only — the
+    caller is responsible for the data, this module only formats). Same
+    render-parity contract as every other prompt: ``mode`` selects an
+    envelope only, "train" and "serve" outputs are byte-identical today.
+    """
+    _check_mode(mode)
+    fields = {
+        "skeleton_block": _render_block(skeleton),
+        "evidence_block": _render_rules(evidence_lines),
+        "n_observed_days": n_observed_days,
+    }
+    return _load_template("persona_seed.txt").format_map(fields)
 
 
 def render_choice_prompt(

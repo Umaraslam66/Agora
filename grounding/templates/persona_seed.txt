@@ -1,0 +1,37 @@
+You are writing a compact behavior card for one resident of City K, based on
+the travel evidence below. The card is a small program another system will
+follow to simulate this person's ordinary weekdays. Write it once, carefully.
+
+=== RESIDENT ===
+{skeleton_block}
+
+=== TRAVEL EVIDENCE ({n_observed_days} recorded days) ===
+{evidence_block}
+
+=== TASK ===
+Compress this person's ordinary weekday behavior into day patterns and
+override rules, as JSON matching the required schema exactly.
+
+Requirements:
+- PATTERNS describe kinds of days (a commute day, an errand day, a quiet
+  day), each with an integer weight from 1 to 10 expressing how often that
+  kind of day occurs relative to the others. Generalize; do not enumerate
+  the recorded days one by one, and never refer to day numbers or dates.
+- Each trip in a pattern needs exactly: purpose, mode (walk, transit, ride,
+  car, bike), depart_band (night, am_peak, midday, pm_peak, evening).
+  Use departure bands only, never clock times.
+- If the evidence shows some days have no trips at all, include a no-trip
+  pattern (empty trips list) with a faithful weight.
+- RULES override pattern trips under specific conditions (purpose and/or
+  depart_band). Use them sparingly, only for regularities the patterns
+  cannot express.
+- Keep mode and timing proportions faithful to the evidence: the weighted
+  mix of your patterns should reproduce how this person actually travels,
+  including how many trips they typically make in a day.
+- Respect the facts: never use mode "car" if the household has no vehicle
+  or the person cannot drive; do not invent behavior the evidence does not
+  support.
+- "voice": one first-person sentence about how this person approaches
+  getting around. No place names, no numbers, no dates.
+
+Return ONLY the JSON object.

@@ -1,0 +1,67 @@
+{
+  "$comment": "Persona-card LLM-output contract, card_version m2-1.0. This is the guided-decoding schema for the slow brain's ONE card-writing pass and the validation schema for every card before use. Harness-owned fields (persona_id, skeleton, surprise_log, habit_counters, provenance) are attached outside the LLM output and are NOT in this schema. Frozen vocabularies: modes per grounding.taxonomy.MODES; depart bands per the sealed A2.1 scoring bands; purposes per the PSRC adapter's frozen purpose set.",
+  "type": "object",
+  "properties": {
+    "patterns": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,23}$"},
+          "weight": {"type": "integer", "minimum": 1, "maximum": 10},
+          "trips": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "properties": {
+                "purpose": {"enum": ["home", "work", "education", "shop_daily", "shop_other", "leisure", "personal_business", "pickup_dropoff", "other"]},
+                "mode": {"enum": ["walk", "transit", "ride", "car", "bike"]},
+                "depart_band": {"enum": ["night", "am_peak", "midday", "pm_peak", "evening"]}
+              },
+              "required": ["purpose", "mode", "depart_band"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["id", "weight", "trips"],
+        "additionalProperties": false
+      }
+    },
+    "rules": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,23}$"},
+          "when": {
+            "type": "object",
+            "properties": {
+              "purpose": {"enum": ["home", "work", "education", "shop_daily", "shop_other", "leisure", "personal_business", "pickup_dropoff", "other"]},
+              "depart_band": {"enum": ["night", "am_peak", "midday", "pm_peak", "evening"]}
+            },
+            "additionalProperties": false,
+            "minProperties": 1
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "mode": {"enum": ["walk", "transit", "ride", "car", "bike"]},
+              "depart_band": {"enum": ["night", "am_peak", "midday", "pm_peak", "evening"]}
+            },
+            "additionalProperties": false,
+            "minProperties": 1
+          }
+        },
+        "required": ["id", "when", "then"],
+        "additionalProperties": false
+      }
+    },
+    "voice": {"type": "string", "maxLength": 200}
+  },
+  "required": ["patterns", "rules", "voice"],
+  "additionalProperties": false
+}
