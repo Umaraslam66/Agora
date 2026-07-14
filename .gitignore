@@ -25,3 +25,10 @@ runs/**/*.jsonl.gz
 data/**
 !data/synthetic/
 !data/synthetic/*.jsonl
+
+# Private working material — never committed (brainstorms, reviews, drafts,
+# amendment proposals, applications). Public docs/ holds sealed gate records only.
+docs/internal/
+
+# Raw survey downloads (public data, but bulky and license-respectful to not mirror)
+data/psrc/
