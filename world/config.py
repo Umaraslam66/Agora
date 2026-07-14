@@ -31,20 +31,30 @@ from world.tolling import TollSchedule, default_schedule
 # spec's ordering: freeway bypass F (fast when empty, low t0) and core-grid D
 # (slow, lowest capacity of the corridor facilities) collapse under load;
 # tunnel T and surface arterial S are milder; the elevated spine V and the
-# water crossing W are separate. The steep facilities use beta = 3 rather than
-# the classic 4: at these volumes beta = 4 makes the damped fixed point
-# oscillate at damping ~0.5 (the assignment/VDF loop gain exceeds 1), whereas
-# beta = 3 keeps the loop a contraction that converges in <=8 iterations at
-# damping 0.5 (acceptance test 4). alpha still makes F and D collapse hard
-# (at v/c = 1.5, F time inflates ~4.4x, D ~5.4x). Tuned by grid search to keep
-# convergence, monotone diversion, and the era ordering simultaneously.
+# water crossing W are separate. All facilities use the classic BPR beta = 4.
+# An earlier revision of this file ran F and D at beta = 3, purely because the
+# solver's fixed damping factor (0.5) made the assign/retime loop oscillate at
+# beta = 4 on these two steep curves. That was a numerical-convenience
+# compromise, not a modeling choice, and it has been retired: world/network.py
+# now solves the corridor fixed point by MSA (method of successive averages,
+# shrinking step 1/n) instead of fixed damping, which converges at beta = 4 on
+# every facility within the iteration budget (see solve_corridor_equilibrium's
+# docstring). alpha still makes F and D collapse hard under load (at v/c =
+# 1.5, F time inflates ~4.4x, D ~5.4x).
+#
+# beta itself remains a WORLD PARAMETER, not a fixed physical constant: 4 is
+# the standard BPR default from the transportation-planning literature, used
+# here as a DEV placeholder pending calibration against corridor observations
+# at M2. The calibration-window network shocks (population.py / the shock-day
+# machinery) give volume/time pairs per facility that should be used to fit
+# alpha and beta per facility rather than assume the textbook value.
 # ---------------------------------------------------------------------------
 _FACILITIES: Dict[str, Facility] = {
     # code  t0   cap   alpha  beta
     "T": Facility("T", 8.0, 1000.0, 0.15, 4.0),   # tunnel: fast, mild curve
     "S": Facility("S", 15.0, 950.0, 0.25, 4.0),   # surface arterial: slow, mild
-    "F": Facility("F", 9.0, 950.0, 1.00, 3.0),    # freeway bypass: fast-empty, steep
-    "D": Facility("D", 13.0, 800.0, 1.30, 3.0),   # core street grid: slow, capacity-poor
+    "F": Facility("F", 9.0, 950.0, 1.00, 4.0),    # freeway bypass: fast-empty, steep
+    "D": Facility("D", 13.0, 800.0, 1.30, 4.0),   # core street grid: slow, capacity-poor
     "V": Facility("V", 8.0, 1700.0, 0.20, 4.0),   # elevated spine: fast, high capacity
 }
 _WATER_FACILITY = Facility("W", 10.0, 700.0, 1.20, 4.0)  # water crossing: steep
@@ -157,9 +167,8 @@ _VOT_MEDIAN = 0.20
 _VOT_SIGMA = 0.5
 
 # Logit sensitivity (per minute of generalized cost). Lower theta spreads the
-# route choice a little more, which (with the beta = 3 curves above) keeps the
-# equilibrium loop a contraction at damping 0.5 while still giving a clearly
-# monotone diversion response.
+# route choice a little more, which keeps the MSA fixed point well-behaved
+# while still giving a clearly monotone diversion response.
 _LOGIT_THETA = 0.10
 
 

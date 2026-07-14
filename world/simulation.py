@@ -53,8 +53,7 @@ def simulate_day(
     population: AgentPopulation,
     state: NetworkState,
     *,
-    damping: float = 0.5,
-    max_iter: int = 10,
+    max_iter: int = 60,
     tol: float = 1e-4,
 ) -> DayResult:
     """Simulate one day: assign the corridor equilibrium under ``state``, load
@@ -70,7 +69,6 @@ def simulate_day(
         has_pass=population.has_pass[corridor],
         state=state,
         theta=config.logit_theta,
-        damping=damping,
         max_iter=max_iter,
         tol=tol,
     )

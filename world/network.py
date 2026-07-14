@@ -11,13 +11,14 @@ volume-delay function (BPR):
 
 steep on the freeway bypass (fast when empty, collapses under load) and on the
 core street grid (capacity-poor), milder on the tunnel and surface arterial,
-steep on the water crossing. The day's loads are a damped fixed point:
-assign -> load -> retime -> reassign until loads stop moving. It MUST converge
-(acceptance test 4) and be bit-identical for a given population (test 5): the
-assignment is the smooth multinomial-logit split (expected volumes), a
-deterministic function of the population arrays, so there is no stochastic
-draw to make loads drift between runs — the closest network analogue of the
-project's CRN determinism doctrine.
+steep on the water crossing. The day's loads are found by the method of
+successive averages (MSA): assign -> load -> retime -> reassign, with each
+reassignment blended in at a shrinking step 1/n (n = 1, 2, ...) rather than a
+fixed damping factor. It MUST converge (acceptance test 4) and be bit-identical
+for a given population (test 5): the assignment is the smooth
+multinomial-logit split (expected volumes), a deterministic function of the
+population arrays, so there is no stochastic draw to make loads drift between
+runs — the closest network analogue of the project's CRN determinism doctrine.
 
 THE NETWORK TIMELINE is scripted by day index (four eras). Crucially, the
 consumer of the network — the assignment, the population, the demo table —
@@ -107,7 +108,7 @@ def era_index_for_day(day_index: int, boundaries: Sequence[int]) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Daily corridor equilibrium (damped multinomial-logit fixed point)
+# Daily corridor equilibrium (MSA multinomial-logit fixed point)
 # ---------------------------------------------------------------------------
 
 
@@ -121,7 +122,7 @@ class EquilibriumResult:
     mean_door_to_door: float    # load-weighted mean corridor time (minutes)
     n_travelers: int            # car/ride corridor travellers assigned
     iterations: int
-    residual: float             # final max per-facility load change / n
+    residual: float             # final undamped fixed-point gap (see below)
     converged: bool
 
     def load_of(self, code: str) -> float:
@@ -150,11 +151,11 @@ def solve_corridor_equilibrium(
     state: NetworkState,
     *,
     theta: float,
-    damping: float = 0.5,
-    max_iter: int = 10,
+    max_iter: int = 60,
     tol: float = 1e-4,
 ) -> EquilibriumResult:
-    """Damped logit fixed point over the corridor facilities.
+    """MSA (method of successive averages) logit fixed point over the
+    corridor facilities.
 
     Each of the ``n`` car/ride corridor travellers splits across the available
     facilities by generalized cost GC(f) = time(f) + toll(f)/VoT, where only
@@ -163,6 +164,28 @@ def solve_corridor_equilibrium(
     matrix, so total volume is conserved exactly (each agent's probabilities
     sum to 1) and the whole map is a deterministic function of the population
     arrays — same population, bit-identical loads.
+
+    MSA blends in each iteration's re-assignment at a shrinking step 1/n
+    instead of a fixed damping factor:
+
+        load_{n+1} = load_n + (1/n) * (target(load_n) - load_n),  n = 1, 2, ...
+
+    where ``target(load)`` is the one-shot logit re-assignment onto the times
+    implied by ``load``. Because the step shrinks as O(1/n), MSA converges
+    even when the underlying assign/retime map is not itself a contraction at
+    step size 1 (e.g. steeper BPR curves) — the classic remedy for a fixed
+    point that a constant damping factor would either damp too little (and
+    oscillate) or too much (and waste iterations).
+
+    Convergence is judged on the UNDAMPED fixed-point gap
+
+        gap_n = max_f |target(load_n)_f - load_n_f| / n_travelers,
+
+    i.e. how far the current load vector actually is from a full re-assignment
+    onto its own implied times — NOT the step actually taken (which under MSA
+    is that gap divided by n, and would understate the true distance to the
+    fixed point at late iterations). ``EquilibriumResult.residual`` is this
+    gap, evaluated at the load vector where iteration stopped.
     """
     codes = tuple(f.code for f in facilities)
     n_f = len(facilities)
@@ -197,19 +220,19 @@ def solve_corridor_equilibrium(
         loads = np.zeros(n_f)
         return EquilibriumResult(codes, loads, t0.copy(), 0.0, 0, 0, 0.0, True)
 
-    # Seed from a free-flow assignment, then damp toward the fixed point.
+    # Seed from a free-flow assignment: this is MSA's load_1.
     load, _ = loads_from_times(t0)
     residual = float("inf")
     converged = False
     iterations = 0
-    for iterations in range(1, max_iter + 1):
+    for k in range(1, max_iter + 1):
         target, _ = loads_from_times(times_of(load))
-        new_load = (1.0 - damping) * load + damping * target
-        residual = float(np.max(np.abs(new_load - load)) / n)
-        load = new_load
+        residual = float(np.max(np.abs(target - load)) / n)
+        iterations = k
         if residual < tol:
             converged = True
             break
+        load = load + (target - load) / k
 
     times = times_of(load)
     _, probs = loads_from_times(times)
