@@ -6,7 +6,7 @@ Covers, per the M0 spec:
   - determinism (same seed -> byte-identical output file);
   - household atomicity (members share household_id; no person in two
     households; the E1 80/20 split is household-atomic);
-  - marginal sanity (trips/day in [1.5, 4], all four modes present,
+  - marginal sanity (trips/day in [1.5, 4], all five modes present,
     synthetic flag on 100% of records, DEV header line present);
   - persistent heterogeneity (per-person mode shares are over-dispersed
     versus an iid-choice baseline — the property E2's spread ratio needs
@@ -146,7 +146,7 @@ def test_trips_per_day_in_sane_band():
     assert 1.5 <= stats["trips_per_person_day"] <= 4.0
 
 
-def test_all_four_modes_present():
+def test_all_five_modes_present():
     stats = summarize(_records())
     assert set(stats["mode_shares"]) == set(MODES)
     for share in stats["mode_shares"].values():

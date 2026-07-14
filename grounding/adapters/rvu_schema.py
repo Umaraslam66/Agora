@@ -78,11 +78,14 @@ FIELD MAPPING — our field -> RVU/RES concept it stands in for
                        shop_other, leisure, personal_business,
                        pickup_dropoff, other
     main_mode          huvudresans huvudsakliga färdmedel, collapsed to
-                       four buckets: car, pt (public transport), walk, bike
-                       (RVU distinguishes many more mode codes, e.g.
-                       personbil förare/passagerare, buss, tåg, spårvagn,
-                       tunnelbana, cykel, till fots; collapsed here the same
-                       way the enact-era adapters collapsed NHTS/SrV modes)
+                       the frozen five-mode taxonomy (grounding/taxonomy.py,
+                       M0 owner decision): walk, transit, ride, car, bike.
+                       "ride" = vehicle passenger (personbil passagerare or
+                       a hired ride); scheduled water crossings and school
+                       runs collapse into transit. RVU distinguishes many
+                       more mode codes (buss, tåg, spårvagn, tunnelbana,
+                       cykel, till fots) — real adapters collapse via
+                       taxonomy.collapse_mode, never ad hoc
     origin_zone         startpunkt (coarsened to a zone code)
     destination_zone     målpunkt (coarsened to a zone code)
     depart_time          starttid, "HH:MM"
@@ -144,10 +147,10 @@ TODOs for swapping in real RVU/RES microdata (tracked here, not elsewhere):
   2. `income_class` here is a household-level ordinal band; confirm whether
      RES 2005-06 reports income at household or individual level and
      which banding Trafa used for that sweep.
-  3. `main_mode`'s 4-bucket collapse loses the driver/passenger distinction
-     RVU records; if E1/E4 ever need it, add `car_driver`/`car_passenger`
-     as an optional finer-grained field alongside (not instead of)
-     `main_mode`, mirroring `nhts_adapter.py`'s DRVR_FLG/PSGR_FLG tie-break.
+  3. RESOLVED at M0: the mode collapse no longer loses the driver/
+     passenger distinction — the frozen five-mode taxonomy carries it as
+     `ride` (vehicle passenger, incl. hired rides), per the owner's M0
+     decision; see grounding/taxonomy.py `collapse_mode`.
   4. `person_weight` must be replaced with the real design/expansion weight
      (uppräkningstal) the moment real microdata lands — every weighted
      E1/E4 computation is a placebo until then.
@@ -169,11 +172,15 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
+from grounding.taxonomy import MODES as _TAXONOMY_MODES
+
 # ---------------------------------------------------------------------------
 # Schema version
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "rvu-m0-0.1"
+# 0.2: mode vocabulary widened to the frozen five-mode taxonomy ("ride"
+#      added; see grounding/taxonomy.py). 0.1 records remain valid (subset).
+SCHEMA_VERSION = "rvu-m0-0.2"
 
 # ---------------------------------------------------------------------------
 # Zone taxonomy — codes only, no real place names (see module docstring)
@@ -264,7 +271,9 @@ PURPOSES = (
     "other",
 )
 
-MODES = ("car", "transit", "walk", "bike")
+# Frozen at M0 (owner decision, 2026-07-14): five modes, tuple order = the
+# deterministic tie-break order. Single source of truth: grounding/taxonomy.py.
+MODES = _TAXONOMY_MODES
 
 DAY_TYPES = ("weekday", "weekend")
 

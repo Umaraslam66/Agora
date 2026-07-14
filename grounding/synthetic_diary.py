@@ -55,8 +55,8 @@ CORRELATION STRUCTURE (matters more than exact levels, per M0 scope):
 DEV MARGINAL TARGETS (placeholders — NOT calibration; do not tune agents
 against them; real bars are frozen at end of M0 per the pre-registration):
 see the TARGET_* constants below. Rough intent: ~2.4-2.8 trips/person-day,
-mode shares plausible for a large Nordic metro (car ~40-50%, pt ~20-30%,
-walk ~20-25%, bike ~5-10%), AM peak 07-09, PM peak 16-18.
+mode shares plausible for a large Nordic metro (car ~35-45%, pt ~25-35%,
+walk ~15-25%, ride ~8-14%, bike ~4-10%), AM peak 07-09, PM peak 16-18.
 
 Usage:
     python grounding/synthetic_diary.py --seed 42 --n-individuals 500 \
@@ -99,10 +99,11 @@ from grounding.adapters.rvu_schema import (  # noqa: E402
 
 TARGET_TRIPS_PER_DAY = (2.4, 2.8)      # DEV placeholder band, person-day
 TARGET_MODE_SHARES = {                  # DEV placeholders, large Nordic metro
-    "car": 0.40,                        # (high-pt metro: car well under half)
-    "transit": 0.35,
-    "walk": 0.18,
-    "bike": 0.07,
+    "car": 0.37,                        # (high-pt metro: car well under half)
+    "transit": 0.28,
+    "walk": 0.17,
+    "ride": 0.12,                       # vehicle passenger + hired rides
+    "bike": 0.06,
 }
 TARGET_AM_PEAK = ("07:00", "09:00")    # DEV placeholder: work departures cluster here
 TARGET_PM_PEAK = ("16:00", "18:00")    # DEV placeholder: return-home departures
@@ -140,7 +141,8 @@ DEPART_MIX: Dict[str, List[Tuple[int, int, float]]] = {
 }
 
 # Mode speeds (km/h) used only to derive arrive_time from distance.
-MODE_SPEED_KMH = {"car": 30.0, "transit": 22.0, "walk": 4.8, "bike": 14.0}
+MODE_SPEED_KMH = {"car": 30.0, "transit": 22.0, "walk": 4.8, "bike": 14.0,
+                  "ride": 27.0}
 
 GENERATOR_VERSION = "synthetic-diary-m0-0.1"
 
@@ -351,18 +353,22 @@ def _choose_mode(rng: random.Random, ind: Individual, hh: Household,
     ring), not fitted levels."""
     cars_free = hh.household_cars > 0 and ind.driving_licence and not car_taken_by_other
 
-    u = {"walk": 1.6, "bike": -0.1, "transit": -0.9, "car": 0.2}
+    u = {"walk": 1.6, "bike": -0.1, "transit": -0.9, "car": 0.2, "ride": -2.7}
 
     # Distance shaping: walk owns the short band, pt/car need length to pay
     # off, pt is unattractive for very short hops (access time dominates).
+    # Riding along scales with distance like car, slightly discounted.
     u["walk"] -= 1.1 * max(0.0, distance_km - 1.2)
     u["bike"] -= 0.35 * max(0.0, distance_km - 2.5)
     u["transit"] += 0.13 * min(distance_km, 14.0)
     u["transit"] -= 0.9 * max(0.0, 2.0 - distance_km)
     u["car"] += 0.26 * min(distance_km, 18.0)
+    u["ride"] += 0.17 * min(distance_km, 18.0)
 
-    # Persistent tastes (the E2 mechanism).
+    # Persistent tastes (the E2 mechanism). Car-leaning households also
+    # produce the passengers who ride in those cars.
     u["car"] += latents.car_affinity
+    u["ride"] += 0.5 * latents.car_affinity
     u["walk"] += 0.7 * latents.active_affinity
     u["bike"] += latents.active_affinity
 
@@ -374,8 +380,14 @@ def _choose_mode(rng: random.Random, ind: Individual, hh: Household,
     elif ring == "outer":
         u["transit"] -= 0.4
 
-    if not cars_free:
+    if cars_free:
+        u["ride"] -= 1.0  # people who can just drive rarely ride along
+    else:
         u["car"] -= 6.0  # near-hard availability constraint
+        # Riding along stays available to non-drivers in car-owning
+        # households (someone else drives) — the classic passenger case.
+        if hh.household_cars > 0 and not ind.driving_licence:
+            u["ride"] += 1.2
     if ind.age >= 75:
         u["bike"] -= 1.2
 
