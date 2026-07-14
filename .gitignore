@@ -1,0 +1,27 @@
+# environments
+.venv/
+
+# python cruft
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# OS cruft
+.DS_Store
+
+# large run artifacts (run manifests/scores that back README claims stay tracked)
+runs/**/*.ckpt
+runs/**/*.safetensors
+runs/**/*.bin
+runs/**/*.pt
+runs/**/*.parquet
+runs/**/*.log
+runs/**/*.jsonl.gz
+
+# large/raw data — never commit microdata; small synthetic samples ARE tracked
+data/**
+!data/synthetic/
+!data/synthetic/*.jsonl

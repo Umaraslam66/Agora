@@ -1,0 +1,7 @@
+DECISION
+========
+Using the persona card and today's world state above, choose exactly one option.
+Reply with only the option code.
+
+Options:
+{options_block}

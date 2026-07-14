@@ -1,0 +1,54 @@
+# Agora forbidden-token list — v0.1
+# date: 2026-07-14
+# Committed at M0; changes require a dated version bump (never an in-place edit).
+#
+# Purpose: agents must never be able to recognize the real anchoring natural
+# experiment from anything they can read. This list governs every prompt
+# template and every agent-facing Python string literal, per pre-registration
+# §5 and E5.iii. Any hit fails the build.
+#
+# Matching is case-insensitive AND ascii-folded on both sides (o for o-umlaut,
+# a for a-umlaut, a for a-ring), so folded spellings are caught too.
+#
+# This file itself is deliberately excluded from the scan (it must contain the
+# very tokens it forbids). One token per line; blank lines and #-comments ignored.
+
+# --- city and policy identity ---
+stockholm
+trängselskatt
+trangselskatt
+congestion charge
+congestion tax
+congestion charging
+congestion pricing
+
+# --- district / place names ---
+lidingö
+lidingo
+södermalm
+sodermalm
+kungsholmen
+östermalm
+ostermalm
+norrmalm
+vasastan
+gamla stan
+essingeleden
+
+# --- named historical trial ---
+stockholmsförsöket
+stockholmsforsoket
+
+# --- real dates (templates must use shifted dates) ---
+january 2006
+august 2007
+jan 2006
+aug 2007
+2006
+2007
+
+# --- real toll prices (templates must use perturbed units) ---
+20 SEK
+20 kr
+10 kr
+15 kr

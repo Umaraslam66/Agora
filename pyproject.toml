@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agora"
+version = "0.0.1"
+description = "Domain-agnostic simulation of human populations with LLM agents, validated blind against a masked natural experiment."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "The Agora Authors" }]
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+]
+
+[project.optional-dependencies]
+train = ["torch", "transformers", "peft", "datasets"]
+serve = ["httpx"]
+dev = ["pytest", "ruff"]
+
+# This repo uses top-level research packages per the frozen brief skeleton
+# (world/, agents/, grounding/, ...). Fine for editable installs.
+[tool.setuptools.packages.find]
+include = [
+    "world*",
+    "agents*",
+    "grounding*",
+    "calibration*",
+    "evaluation*",
+    "serving*",
+    "training*",
+]
+
+[tool.setuptools.package-data]
+grounding = ["templates/*.txt", "masking/forbidden_tokens.txt"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100

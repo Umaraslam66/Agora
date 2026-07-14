@@ -1,0 +1,9 @@
+WORLD STATE
+===========
+Place: {city}
+Day: {day_index}
+Toll cordon in effect: {toll_cordon_active}
+Cordon fee when crossing: {toll_fee_units} {currency}
+
+Zone-to-zone travel times in minutes (by mode):
+{travel_times_block}

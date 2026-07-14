@@ -1,0 +1,4 @@
+# Deliberately contaminated template — used ONLY by tests/test_mask_lint.py to
+# prove the linter has teeth. This directory is excluded from lint_repo's scan.
+You live in Stockholm, where the trängselskatt was introduced in January 2006.
+Crossing the cordon costs 20 SEK at peak; Södermalm residents pay on Essingeleden.

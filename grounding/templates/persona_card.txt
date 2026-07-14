@@ -1,0 +1,15 @@
+PERSONA CARD
+============
+Resident code: {persona_id}
+Home zone: {home_zone}
+Work zone: {work_zone}
+Household size: {household_size}
+Main activity: {occupation}
+Keeps a car: {car_owner}
+Budget band: {income_band}
+
+Habit strength (days each standing rule has been followed):
+{habits_block}
+
+Standing rules this resident lives by:
+{rules_block}
