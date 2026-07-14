@@ -75,6 +75,53 @@ def bpr_time(
     return t0 * (1.0 + alpha * np.power(np.maximum(ratio, 0.0), beta))
 
 
+def facility_times_from_loads(
+    facilities: Sequence[Facility], loads: np.ndarray
+) -> np.ndarray:
+    """THE loads -> times path (M2_ARCH_SPEC D4 "one code path" doctrine).
+
+    Maps a per-facility load vector (same order as ``facilities``) to congested
+    minutes via the BPR VDF. This is the SINGLE function that turns loads into
+    times: the MSA solver retimes through it every iteration, and the realized
+    layer retimes REALIZED loads through the very same call — there is no second
+    loads->times path anywhere, so expected-value and realized times can never
+    silently diverge in their physics. Accepts integer count vectors (realized
+    tallies) as well as float expected volumes (bpr_time casts to float)."""
+    t0 = np.array([f.t0 for f in facilities], dtype=float)
+    cap = np.array([f.capacity for f in facilities], dtype=float)
+    alpha = np.array([f.alpha for f in facilities], dtype=float)
+    beta = np.array([f.beta for f in facilities], dtype=float)
+    return bpr_time(loads, t0, cap, alpha, beta)
+
+
+def realized_facilities(
+    uniforms: np.ndarray, choice_probs: np.ndarray
+) -> np.ndarray:
+    """Draw each agent's REALIZED facility by inverse-CDF over a FIXED column
+    order, reusing the agent's per-key CRN uniform.
+
+    ``uniforms[i]`` in [0,1) is agent i's shared CRN draw (world.crn); its
+    ``choice_probs[i]`` row is the agent's per-facility logit probabilities in
+    the solver's fixed facility-column order. The realized facility is the first
+    column whose cumulative probability exceeds the uniform — standard
+    inverse-CDF sampling, structurally identical to serving.gateway.pick's
+    cumulative walk.
+
+    FIXED-ORDER / TWIN-COUPLING doctrine: because the CDF is always built in the
+    same facility-column order and the SAME uniform is reused across twin worlds
+    (a policy-on vs policy-off counterfactual sharing keys), a probability shift
+    only re-assigns the agents whose uniform now falls on the other side of a
+    cumulative boundary. An agent whose probability row is unchanged keeps its
+    facility; an agent whose row shifts only moves if the shift crosses its
+    uniform. This is what makes the counterfactual a PAIRED comparison
+    (01_PREREGISTRATION.md §7 A2.2(ii): realized-choice error correlation)."""
+    cdf = np.cumsum(choice_probs, axis=1)
+    # Pin the final column to exactly 1.0 against floating-point drift so every
+    # uniform in [0,1) lands on a facility (the row sums to 1 by construction).
+    cdf[:, -1] = 1.0
+    return (uniforms[:, np.newaxis] < cdf).argmax(axis=1)
+
+
 # ---------------------------------------------------------------------------
 # The network timeline (four scripted eras) and the raw NetworkState
 # ---------------------------------------------------------------------------
@@ -117,13 +164,18 @@ class EquilibriumResult:
     """Outcome of one day's corridor assignment."""
 
     facility_codes: Tuple[str, ...]
-    loads: np.ndarray           # per-facility volume, same order as codes
-    times: np.ndarray           # per-facility congested minutes
+    loads: np.ndarray           # per-facility EXPECTED volume, same order as codes
+    times: np.ndarray           # per-facility congested minutes (expected loads)
     mean_door_to_door: float    # load-weighted mean corridor time (minutes)
     n_travelers: int            # car/ride corridor travellers assigned
     iterations: int
     residual: float             # final undamped fixed-point gap (see below)
     converged: bool
+    # Per-agent equilibrium facility-choice probabilities, shape
+    # (n_travelers, n_facilities), in the fixed facility-column order. This is
+    # the smooth logit split the realized draw layer samples from (D4); the
+    # solver's expected loads are exactly its column sums.
+    choice_probs: np.ndarray
 
     def load_of(self, code: str) -> float:
         return float(self.loads[self.facility_codes.index(code)])
@@ -191,10 +243,8 @@ def solve_corridor_equilibrium(
     n_f = len(facilities)
     n = int(access.shape[0])
 
+    # Free-flow times (t0 per facility) seed the MSA and are the n==0 answer.
     t0 = np.array([f.t0 for f in facilities], dtype=float)
-    cap = np.array([f.capacity for f in facilities], dtype=float)
-    alpha = np.array([f.alpha for f in facilities], dtype=float)
-    beta = np.array([f.beta for f in facilities], dtype=float)
 
     # Per-agent toll term (minutes-equivalent) for the tolled facility column,
     # constant across the fixed-point iterations (it depends only on schedule,
@@ -206,8 +256,10 @@ def solve_corridor_equilibrium(
         toll_credits = state.toll_schedule.toll_array(period_codes, has_pass)
         toll_term = toll_credits / vot
 
+    # Retiming goes through THE single loads->times path (facility_times_from_
+    # loads); the realized layer retimes realized loads through the same call.
     def times_of(load: np.ndarray) -> np.ndarray:
-        return bpr_time(load, t0, cap, alpha, beta)
+        return facility_times_from_loads(facilities, load)
 
     def loads_from_times(times: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         gc = np.broadcast_to(times, (n, n_f)).copy()
@@ -218,7 +270,17 @@ def solve_corridor_equilibrium(
 
     if n == 0:
         loads = np.zeros(n_f)
-        return EquilibriumResult(codes, loads, t0.copy(), 0.0, 0, 0, 0.0, True)
+        return EquilibriumResult(
+            facility_codes=codes,
+            loads=loads,
+            times=t0.copy(),
+            mean_door_to_door=0.0,
+            n_travelers=0,
+            iterations=0,
+            residual=0.0,
+            converged=True,
+            choice_probs=np.zeros((0, n_f)),
+        )
 
     # Seed from a free-flow assignment: this is MSA's load_1.
     load, _ = loads_from_times(t0)
@@ -250,6 +312,7 @@ def solve_corridor_equilibrium(
         iterations=iterations,
         residual=residual,
         converged=converged,
+        choice_probs=probs,
     )
 
 

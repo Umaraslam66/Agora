@@ -23,6 +23,7 @@ Public surface: build a config, build a population, simulate a day.
 """
 from __future__ import annotations
 
+from world import crn
 from world.config import WorldConfig, cityk_cordon, cityk_corridor, get_config
 from world.network import (
     ERA_LABELS,
@@ -30,6 +31,8 @@ from world.network import (
     Facility,
     NetworkState,
     bpr_time,
+    facility_times_from_loads,
+    realized_facilities,
     solve_corridor_equilibrium,
 )
 from world.population import AgentPopulation, build_population
@@ -50,7 +53,10 @@ __all__ = [
     "NetworkState",
     "EquilibriumResult",
     "bpr_time",
+    "facility_times_from_loads",
+    "realized_facilities",
     "solve_corridor_equilibrium",
+    "crn",
     "ERA_LABELS",
     "AgentPopulation",
     "build_population",
