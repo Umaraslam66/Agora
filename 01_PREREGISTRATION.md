@@ -169,3 +169,131 @@ quantity in E1/E2/E4 is weekday-only by construction, waves are never
 pooled without per-wave rescaling, and survey distances are recomputed in
 the world layer (public files mix beeline and GPS-route distances — the
 exact confound class that flipped a verdict in the predecessor project).
+
+---
+
+### Amendment A2 — 2026-07-14, Umar Aslam
+
+**A2.0 Scope.** This amendment sets every [M0] slot in §3, once, before any
+agent has been run, from measurements on the primary arena's real seeding
+microdata (measurement record retained in the project's private working
+directory; summary tables in this amendment's drafting record). It also
+freezes the scoring-protocol details those slots require (bins, bands,
+folds, arm-pairing), the mode-taxonomy and segment pins of §5, and the
+forbidden-token-list version. Where a measured noise floor made an
+aspirational bar dishonest, the floor governs — recorded here so it cannot
+be re-litigated after scoring.
+
+**A2.1 E1 — grounding fidelity.** Protocol adopted (a pre-agent,
+power-motivated §3 protocol amendment, measured before adoption):
+**five deterministic household-atomic folds
+(sha256(household_id) mod 5); every fitted component (choice model,
+corrections, the MNL arm) trained strictly out-of-fold; the pooled
+out-of-fold simulated population is scored against the full-sample
+distributions.** Rationale sealed with the choice: with record-level 1:1
+seeding, truth and simulation legitimately share the seeding sample, so
+the residual TVD isolates pipeline distortion instead of holdout-draw
+luck; the original single-holdout reading is noise-dominated at this
+data's effective size (self-resampling floor 0.0909 → its honest bar
+would be 0.182; the five-fold per-fold-averaged variant measures 0.160
+for the same reason: averaging fold scores shrinks spread, not the
+nonnegative per-fold bias). Under the adopted protocol the measured
+regeneration-noise floor is 0.00205 (ensemble-of-20 scoring, p97.5), so
+the bar is set by the pre-measurement aspiration, now honest:
+**pooled TVD ≤ 0.10** — ≈24× the measured ensemble floor, leaving the
+full margin for genuine pipeline error (the measured null contains no
+fitted-component variation, which is stated here so the margin cannot be
+re-read as slack later). Fallback readings and bars, recorded so the
+choice is auditable: P0 single-holdout 0.182; P1 five-fold-averaged
+0.160. Per-cell cap: 2× pooled = 0.20 over the ten cells; every cell is
+scoreable under the adopted protocol (worst measured cell floor 0.0298;
+merged guard cell 102 households).
+Scoring details frozen for every reading: trips/day bins {0,1,…,7,8+}
+(day-weighted, zero-trip weekdays included); mode shares over the frozen
+five modes (trip-weighted); departure bands night <07:00, am_peak
+07:00–08:59, midday 09:00–15:59, pm_peak 16:00–17:59, evening ≥18:00
+(trip-weighted); ensemble of N ≥ 20 runs, TVD on the ensemble-mean
+distributions; fold assignment (where used) =
+sha256(household_id) mod 5, versioned with the adapter.
+**Protected segments: ten cells** — the twelve cells of the committed
+segment definition with the three car-free/remainder cells merged into one
+guard cell (their individual holdout memberships, 5–12 households, cannot
+be scored; merging preserves protection for car-free households outside
+the catchment rather than silently dropping them). Per-cell cap: no cell
+exceeds 2 × the pooled bar, per §3.
+**Falsification arm (paired):** the calibrated MNL is trained and scored
+under the identical fold structure, seeds, and comparison sample. "Beat or
+match" (§3) is decided on the DIFFERENCE, not the absolute bars: the
+method passes iff the household-atomic paired-bootstrap 95% CI of
+(TVD_method − TVD_MNL), computed with both arms scored against the same
+resampled truth in every replicate, lies entirely below +ε, with
+**ε = 0.00655** (the measured p97.5 of |Δ| between two equal-skill arms
+under the paired null; the unpaired equivalent is 0.0249 — pairing
+tightens the difference CI ≈3.7×, which is where E1's discriminating
+power lives). Absolute TVDs are reported alongside.
+
+**A2.2 E2 — variance preservation.**
+(i) Spread-ratio pass band **[0.8, 1.2]** per dimension; dimensions:
+person-mean weekday trips/day, person car-share, person ride-share.
+Protocol: **one-arm, preservation reading** — the denominator is the
+between-individual variance of the SEEDING records in force (the train
+side under the E1 protocol adopted above), the numerator the simulated
+between-agent variance. E2 tests whether the pipeline preserves the
+variance it was fed; generalization is E1's job. (The two-arm null at
+holdout scale reaches [0.74, 1.38] — sealed here as the reason the one-arm
+protocol is specified, so the band cannot be quietly re-read later.)
+(ii) Mean pairwise correlation of agent-level prediction errors ≤ **0.20**.
+Measured survey-world common-shock floor: 0.0105 (calendar-date ICC on
+multi-day persons). Congestion feedback legitimately adds common shocks
+the survey world lacks; 0.20 sits ~19× above the measured floor and well
+below single-mind territory (≥0.5). Scoring E2(ii) requires realized
+per-agent choices (the discrete-draw layer), not expected-value loads.
+
+**A2.3 E5 — contamination probes.**
+(i) Threshold: flag if the unmasked arm improves on the masked arm by more
+than **25% relative** on ensemble-mean pooled TVD, under the **paired
+protocol**: identical agent populations, common-random-number-paired
+seeds, both arms scored once against the same fixed reference sample (no
+resampling in scoring). Evidence sealed with the number: the UNPAIRED
+two-arm null has p97.5 = 48.9% relative and would false-flag 23.8% of
+honest runs; pairing removes that noise class. If the paired protocol is
+infeasible in some future setting, the unpaired threshold is 98%; using
+25% unpaired is not permitted.
+(ii) Fictional-price probe flag windows: primary arena — aggregate change
+within **±2pp of −28%** (the sealed BT1 truth) at any probe price ≥25%
+away from the perturbed historical schedule; transfer arena — within
+**±2pp of −22%** (the published stabilized trial effect), same price-
+distance condition.
+
+**A2.4 E3 — say-do transfer (scored in the transfer arena only, per
+A1.6(iv)).** Factor **2.0**. R_real derivation, fixed now: surveys of
+self-reported adaptation (fall 2004, fall 2005, spring 2006) imply an
+equivalent aggregate reduction of only 5–10%, against an observed ~30%
+reduction in private car trips across the cordon (Eliasson 2014, CTS WP
+2014:7, §5.2 pp. 26–27; the same ~¾-unnoticed figure at §3.6 p. 15).
+Midpoint: R_real = 30 / 7.5 = **4.0** (enacted exceeds stated), so E3(ii)
+passes iff R_sim ∈ [2.0, 8.0] with the direction of E3(i) unchanged.
+
+**A2.5 E6 — hysteresis band.** Residual reduction in **[4%, 12%]** of the
+pre-trial baseline for arm (a); arm (b), memory-ablated, expected <4%
+(near-full rebound); non-overlapping 80% intervals per §3. The published
+anchor is the 5–10% off-year band (Börjesson et al. 2012 §3.1), widened
+±2pp for the documented confound, quoted here so it cannot become a
+post-hoc excuse in either direction: autumn 2006 traffic was "a few
+percent lower" than autumn 2005 but concentrated at two roadwork-affected
+bridges — "uncertain what conclusions can be drawn" (Eliasson 2009, §3,
+p. 243); Börjesson et al. 2012 likewise note June–July 2007 figures are
+roadwork-affected.
+
+**A2.6 Pins and standing build decisions.** Mode taxonomy m0-1.0
+(grounding/taxonomy.py, committed 2026-07-14) with the five-mode order as
+the deterministic tie-break; segment definition as committed there, with
+the A2.1 guard-cell merge; forbidden-token list v0.3; seeding waves
+pooled two-wave with equal wave mass (weights × 0.5) and wave kept as a
+covariate; weighted scoring is weekday-only by construction (per-wave
+zero-weighted weekends); income-refusal households excluded from
+segmented statistics (4.4% of household weight) and reported; zero-trip
+weekdays included in trips/day. The residence-ring assignment currently
+uses the core-jurisdiction proxy and is PROVISIONAL: it must be re-pinned
+to the committed tract→zone map at M2 by a dated note, without moving any
+bar sealed here.
