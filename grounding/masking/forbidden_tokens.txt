@@ -1,5 +1,6 @@
-# Agora forbidden-token list — v0.1
-# date: 2026-07-14
+# Agora forbidden-token list — v0.2
+# date: 2026-07-14 (v0.1 same date; v0.2 adds the Seattle/Puget Sound arena
+# vocabulary following the primary-arena re-anchoring)
 # Committed at M0; changes require a dated version bump (never an in-place edit).
 #
 # Purpose: agents must never be able to recognize the real anchoring natural
@@ -52,3 +53,59 @@ aug 2007
 20 kr
 10 kr
 15 kr
+
+# =====================================================================
+# v0.2 additions — Seattle / Puget Sound arena (primary arena from A1)
+# =====================================================================
+
+# --- city and region identity ---
+seattle
+puget sound
+king county
+washington state
+
+# --- the facility and its history ---
+alaskan way
+viaduct
+sr 99
+sr-99
+state route 99
+battery street
+deep-bore tunnel
+bertha
+
+# --- named historical episode ---
+seattle squeeze
+viadoom
+
+# --- tolling system and agency ---
+good to go
+wsdot
+sound transit
+king county metro
+orca card
+
+# --- district / place / diversion-route names ---
+belltown
+sodo
+west seattle
+ballard
+queen anne
+pioneer square
+elliott bay
+duwamish
+aurora avenue
+interstate 5
+i-5
+
+# --- real dates (templates must use shifted dates) ---
+january 2019
+february 2019
+november 2019
+2019
+
+# --- real toll prices (templates must use perturbed units) ---
+$1.20
+$2.25
+$1.70
+pay-by-mail
