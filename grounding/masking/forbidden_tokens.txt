@@ -1,6 +1,8 @@
-# Agora forbidden-token list — v0.2
-# date: 2026-07-14 (v0.1 same date; v0.2 adds the Seattle/Puget Sound arena
-# vocabulary following the primary-arena re-anchoring)
+# Agora forbidden-token list — v0.3
+# date: 2026-07-14 (v0.1 same date; v0.2 added Seattle/Puget Sound arena
+# vocabulary; v0.3 adds variants surfaced by the truth-notes contamination
+# assessment: highway-99 spellings, tolling-account vocabulary, boring-machine
+# nickname)
 # Committed at M0; changes require a dated version bump (never an in-place edit).
 #
 # Purpose: agents must never be able to recognize the real anchoring natural
@@ -109,3 +111,10 @@ $1.20
 $2.25
 $1.70
 pay-by-mail
+
+# --- v0.3 additions (contamination-assessment variants) ---
+highway 99
+99 tunnel
+pay by mail
+pay by plate
+big bertha
