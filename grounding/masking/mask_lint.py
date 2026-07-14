@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 # Packages whose Python string literals are agent-facing and must be clean.
-_LITERAL_PACKAGES = ("grounding", "agents", "serving")
+_LITERAL_PACKAGES = ("grounding", "agents", "serving", "world")
 # Only string literals at least this long are scanned (skips identifiers,
 # format keys, tiny fragments).
 _MIN_LITERAL_LEN = 40
