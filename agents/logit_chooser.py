@@ -406,11 +406,13 @@ def _majority_baseline(rows):
 # it exercises exactly the same parser/scoring/fit invariants, just without
 # the external synthetic-data dependency.
 
-def _render_prompt(persona, activity_text, from_type, to_type, distance_km,
-                    depart, prior_mode, avail_modes, experience_lines):
-    """Build a synthetic GOLDEN-format prompt for self-test purposes only.
-    Mirrors the grammar parse_prompt expects; the real renderer lives
-    upstream in the serving pipeline, not in this module."""
+def _selftest_prompt(persona, activity_text, from_type, to_type, distance_km,
+                     depart, prior_mode, avail_modes, experience_lines):
+    """Synthesize a GOLDEN-format parser INPUT for the self-test only.
+    This is not a render path: production prompts are produced solely by
+    grounding.render (render-parity doctrine). Once the renderer emits the
+    GOLDEN grammar, the parity suite must assert parse_prompt round-trips
+    grounding.render output and this helper should be replaced by it."""
     persona_str = ", ".join("%s=%s" % kv for kv in persona.items())
     trip = "Next trip: from %s to %s" % (from_type, to_type)
     if distance_km is not None:
@@ -443,7 +445,7 @@ def _synth_pairs(n, seed):
         }
         distance = round(rng.uniform(0.1, 3.0), 2)
         depart = "%02d:%02d" % (rng.randint(6, 20), rng.choice([0, 15, 30, 45]))
-        prompt = _render_prompt(persona, "ran errands", "home", "work",
+        prompt = _selftest_prompt(persona, "ran errands", "home", "work",
                                  distance, depart, None, avail, [])
         label = "walk" if distance < 1.5 else "car"
         pairs.append({
@@ -488,7 +490,7 @@ def self_test():
             "Last month you used public transport 4 times and ride services 1 times",
             "Last week you made 3 walking and 2 cycling trips",
         ]
-        prompt = _render_prompt(persona, "ran errands", "home", "work",
+        prompt = _selftest_prompt(persona, "ran errands", "home", "work",
                                  distance, depart, prior, avail, experience)
         parsed = parse_prompt(prompt)
         round_trip_ok &= parsed["available_modes"] == avail
@@ -502,7 +504,7 @@ def self_test():
     check(round_trip_ok, "GOLDEN prompt round-trip on %d prompts" % n_checked)
 
     # 1b. One-clause habit lines + unknown (free-text belief) lines tolerated.
-    prompt = _render_prompt(
+    prompt = _selftest_prompt(
         {"age": 30, "income": 2000, "employed": "true", "carAvail": "sometimes"},
         "worked from a cafe", "home", "work", 3.4, "09:00", None,
         ["walk", "transit", "ride", "car", "bike"],
@@ -524,11 +526,11 @@ def self_test():
     #    memory-sensitive through the SAME rendered channel as the LLM).
     base_coef = {"asc:transit": 0.05, "prior": 0.5}
     base_persona = {"age": 41, "income": 2500, "employed": "true", "carAvail": "always"}
-    prompt_prior_walk = _render_prompt(base_persona, "went to the gym", "home",
+    prompt_prior_walk = _selftest_prompt(base_persona, "went to the gym", "home",
                                         "work", 2.1, "08:30", "walk",
                                         ["walk", "transit"], [])
     pred_a, _ = choose(parse_prompt(prompt_prior_walk), ["walk", "transit"], base_coef)
-    prompt_no_prior = _render_prompt(base_persona, "went to the gym", "home",
+    prompt_no_prior = _selftest_prompt(base_persona, "went to the gym", "home",
                                       "work", 2.1, "08:30", None,
                                       ["walk", "transit"], [])
     pred_b, _ = choose(parse_prompt(prompt_no_prior), ["walk", "transit"], base_coef)
