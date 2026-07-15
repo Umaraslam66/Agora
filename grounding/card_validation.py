@@ -268,6 +268,205 @@ def feasibility(obj, skeleton: Mapping) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# fidelity (the fifth gate — does the card reproduce the person's own diary?)
+# ---------------------------------------------------------------------------
+#
+# Round-1 cards passed the four structural gates yet systematically distorted
+# each person's OWN records (mean weekday trips/day -24.7%, mode-share drift,
+# spurious quiet-day weight) — enough to fail E1/E2. This gate compares the
+# card's weighted self-implied behaviour against a deterministic reference
+# computed from the SAME frames the evidence builder showed the model
+# (grounding.seeding.observed_stats_of), and its failure strings are the exact
+# numeric feedback fed back verbatim through render_seed_retry_prompt.
+#
+# Tolerances (chosen against integer-weight granularity, weights 1..10, <=6
+# patterns, so a faithful card can always pass — see tests/test_card_validation):
+#   (a) mean trips/day : max(0.40, 0.15 x observed)
+#   (b) mode-share TVD : 0.20   (skipped when the person made zero weekday trips)
+#   (c) quiet share    : max(0.12, 0.60 x observed); a no-trip pattern is
+#                        forbidden outright when no quiet weekday was observed.
+
+_MODE_TVD_BAR = 0.20
+_MEAN_TOL_FLOOR = 0.40
+_MEAN_TOL_REL = 0.15
+_QUIET_TOL_FLOOR = 0.12
+_QUIET_TOL_REL = 0.60
+
+
+def _n2(x: float) -> str:
+    """Round to 2 decimals for masked-clean feedback. Every emitted magnitude
+    (trips/day <= ~8+, shares/TVD in [0,1]) is a single- or two-digit value, so
+    the rendered token can never be a 4-digit year-like string."""
+    return f"{float(x):.2f}"
+
+
+def _pattern_weight(p: Mapping) -> float:
+    w = p.get("weight")
+    if isinstance(w, bool) or not isinstance(w, (int, float)):
+        return 0.0
+    return float(w)
+
+
+def _pattern_trips(p: Mapping) -> list:
+    t = p.get("trips")
+    return t if isinstance(t, list) else []
+
+
+def _implied_mode_mass(patterns: Sequence[Mapping]) -> tuple:
+    """(mode -> weighted trip mass, total weighted trip mass) over pattern
+    trips, each trip weighted by its pattern weight."""
+    mass: dict = {}
+    total = 0.0
+    for p in patterns:
+        w = _pattern_weight(p)
+        for t in _pattern_trips(p):
+            m = t.get("mode")
+            mass[m] = mass.get(m, 0.0) + w
+            total += w
+    return mass, total
+
+
+def _shares_tvd(implied: Mapping, observed: Mapping) -> float:
+    keys = set(implied) | set(observed)
+    return 0.5 * sum(abs(implied.get(k, 0.0) - observed.get(k, 0.0)) for k in keys)
+
+
+def _mode_drift_hint(implied: Mapping, observed: Mapping) -> str:
+    """Name the single most over- and under-weighted mode (masked; mode names
+    are frozen-taxonomy tokens, always safe to emit)."""
+    keys = sorted(set(implied) | set(observed))
+    diffs = [(k, implied.get(k, 0.0) - observed.get(k, 0.0)) for k in keys]
+    over = max(diffs, key=lambda kv: kv[1])
+    under = min(diffs, key=lambda kv: kv[1])
+    parts = []
+    if over[1] > 0.01:
+        parts.append(f"you over-weight {over[0]}")
+    if under[1] < -0.01:
+        parts.append(f"you under-weight {under[0]}")
+    return "; ".join(parts) if parts else "the mode mix is off"
+
+
+def fidelity(obj, observed: Mapping) -> list[str]:
+    """Fifth gate: does the card reproduce the person's OWN observed weekday
+    diary? ``observed`` is :func:`grounding.seeding.observed_stats_of` output.
+    Empty list = faithful. Failure strings carry the numbers in masked-clean
+    form (2 decimals) so they feed render_seed_retry_prompt verbatim.
+
+    A person with no observed weekday days yields no constraint (nothing to be
+    faithful to); the mode check is additionally skipped for a person who made
+    zero weekday trips.
+    """
+    errors: List[str] = []
+    if not isinstance(obj, Mapping):
+        return errors
+    if not observed or not observed.get("n_observed_weekdays"):
+        return errors
+
+    patterns = obj.get("patterns", []) or []
+    total_w = sum(_pattern_weight(p) for p in patterns)
+    if total_w <= 0:  # schema gate owns missing/invalid weights
+        return errors
+
+    # (a) card-implied mean trips per weekday
+    implied_mean = sum(_pattern_weight(p) * len(_pattern_trips(p)) for p in patterns) / total_w
+    obs_mean = float(observed.get("mean_trips_per_weekday", 0.0))
+    if abs(implied_mean - obs_mean) > max(_MEAN_TOL_FLOOR, _MEAN_TOL_REL * obs_mean):
+        hint = (
+            "shift weight toward fuller days"
+            if implied_mean < obs_mean
+            else "shift weight toward lighter days or trim trips from your patterns"
+        )
+        errors.append(
+            f"card implies {_n2(implied_mean)} trips per weekday; the evidence "
+            f"shows {_n2(obs_mean)} — {hint}"
+        )
+
+    # (b) card-implied mode shares vs observed (skip when no observed trips)
+    if observed.get("n_observed_trips", 0) > 0 and observed.get("mode_shares"):
+        mass, mtot = _implied_mode_mass(patterns)
+        implied_shares = {m: mass[m] / mtot for m in mass} if mtot > 0 else {}
+        obs_shares = dict(observed["mode_shares"])
+        t = _shares_tvd(implied_shares, obs_shares)
+        if t > _MODE_TVD_BAR:
+            errors.append(
+                f"card's weekday mode mix is off (variation distance {_n2(t)} "
+                f"exceeds the allowed {_n2(_MODE_TVD_BAR)}); "
+                f"{_mode_drift_hint(implied_shares, obs_shares)} — match the "
+                f"observed mode counts without adding variety the evidence does "
+                f"not show or shortchanging the dominant mode"
+            )
+
+    # (c) quiet-day discipline
+    implied_quiet = sum(
+        _pattern_weight(p) for p in patterns if not _pattern_trips(p)
+    ) / total_w
+    if not observed.get("has_quiet_weekday", False):
+        if any(not _pattern_trips(p) for p in patterns):
+            errors.append(
+                "card includes a no-trip pattern but every recorded weekday had "
+                "trips — remove the empty pattern"
+            )
+    else:
+        obs_quiet = float(observed.get("quiet_share", 0.0))
+        if abs(implied_quiet - obs_quiet) > max(_QUIET_TOL_FLOOR, _QUIET_TOL_REL * obs_quiet):
+            errors.append(
+                f"card's no-trip share is {_n2(implied_quiet)}; the evidence "
+                f"shows {_n2(obs_quiet)} quiet weekdays — adjust the no-trip "
+                f"pattern weight"
+            )
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# composed validation entry point (the ops pipeline's single gate call)
+# ---------------------------------------------------------------------------
+
+def _is_fallback(obj) -> bool:
+    return (
+        isinstance(obj, Mapping)
+        and isinstance(obj.get("provenance"), Mapping)
+        and obj["provenance"].get("card_source") == "fallback"
+    )
+
+
+def validate_card(
+    obj,
+    skeleton: Mapping,
+    observed: Mapping,
+    observed_day_sequences: Sequence[Sequence],
+) -> list[str]:
+    """Run all five gates in order and return the concatenated reasons (empty =
+    the card passes). This is the single entry point the generation ops compose
+    for the D7 validation loop; the returned strings are the machine-readable
+    failure block the retry prompt echoes verbatim.
+
+    Order: schema -> mask-lint -> replay-smell -> feasibility -> fidelity.
+
+    Fallback cards (``provenance.card_source == "fallback"``) are EXEMPT from
+    the fifth (fidelity) gate. The fidelity gate exists only to drive LLM
+    retries with numeric feedback, and a fallback card is the terminal safety
+    net with no retry behind it: it is a deterministic empirical resampling of
+    the person's own day-signatures whose only residual infidelity is (i) the
+    anti-enumeration fold that compresses all-distinct multi-day repertoires and
+    (ii) the >8-trip signature truncation — both inherent to its construction
+    and both flagged (``card_source="fallback"``, ``signature_truncated``). It
+    still passes the four structural gates.
+    """
+    errors = validate_card_json(obj)
+    if not isinstance(obj, Mapping):
+        return errors
+    errors = (
+        errors
+        + lint_card_text(obj)
+        + replay_smell(obj, observed_day_sequences)
+        + feasibility(obj, skeleton)
+    )
+    if not _is_fallback(obj):
+        errors = errors + fidelity(obj, observed)
+    return errors
+
+
+# ---------------------------------------------------------------------------
 # assembly
 # ---------------------------------------------------------------------------
 
@@ -332,6 +531,16 @@ def fallback_card(persona_id: str, skeleton: Mapping, person_days, trips) -> dic
     """
     sigs = day_signatures(person_days, trips)
 
+    # Trip-cap belt: a pattern's trips list is schema-capped at 8, but a person
+    # can record a weekday with more than 8 trips. Truncate any over-long
+    # day-signature to its first 8 trips deterministically (day_signatures
+    # already orders trips by tripnum) so the fallback card stays schema-valid;
+    # flag it in provenance. The residual infidelity from dropping trips 9+ is
+    # the documented cost of the terminal safety net.
+    signature_truncated = any(len(sig) > 8 for sig in sigs)
+    if signature_truncated:
+        sigs = [sig[:8] for sig in sigs]
+
     # Feasibility belt: the diary can contain car trips a person's skeleton
     # says they cannot make (e.g. a zero-vehicle household reporting a borrowed
     # car). The fallback is terminal — there is no retry behind it — so coerce
@@ -386,4 +595,6 @@ def fallback_card(persona_id: str, skeleton: Mapping, person_days, trips) -> dic
 
     llm_obj = {"patterns": patterns, "rules": [], "voice": _FALLBACK_VOICE}
     provenance = {"card_source": "fallback", "attempt": None}
+    if signature_truncated:
+        provenance["signature_truncated"] = True
     return assemble_card(persona_id, skeleton, llm_obj, provenance)

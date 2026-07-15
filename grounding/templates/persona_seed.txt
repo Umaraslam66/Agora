@@ -14,20 +14,30 @@ override rules, as JSON matching the required schema exactly.
 
 Requirements:
 - PATTERNS describe kinds of days (a commute day, an errand day, a quiet
-  day), each with an integer weight from 1 to 10 expressing how often that
-  kind of day occurs relative to the others. Generalize; do not enumerate
-  the recorded days one by one, and never refer to day numbers or dates.
+  day), each with an integer weight from 1 to 10. Weights are relative
+  frequencies: the weight shares across your patterns must match how often
+  each kind of day actually occurs in the evidence — a day-kind seen on
+  3 of 4 recorded weekdays should carry about three quarters of the total
+  weight. Generalize; do not enumerate the recorded days one by one, and
+  never refer to day numbers or dates.
+- FIT CHECK — your card is rejected unless all three hold:
+  (a) the weighted average number of trips per day across your patterns
+      matches the observed trips per recorded weekday;
+  (b) the weighted mode mix across your pattern trips matches the observed
+      mode-use counts — do not add variety the evidence does not show, and
+      do not shortchange the dominant mode;
+  (c) a no-trip pattern (empty trips list) appears ONLY if at least one
+      recorded weekday truly had no trips, with weight matching its
+      observed share. If every recorded weekday had trips, do NOT include
+      a no-trip pattern.
+  The recorded trips are the ground truth to reproduce; the self-reported
+  frequency lines are context only.
 - Each trip in a pattern needs exactly: purpose, mode (walk, transit, ride,
   car, bike), depart_band (night, am_peak, midday, pm_peak, evening).
   Use departure bands only, never clock times.
-- If the evidence shows some days have no trips at all, include a no-trip
-  pattern (empty trips list) with a faithful weight.
 - RULES override pattern trips under specific conditions (purpose and/or
   depart_band). Use them sparingly, only for regularities the patterns
   cannot express.
-- Keep mode and timing proportions faithful to the evidence: the weighted
-  mix of your patterns should reproduce how this person actually travels,
-  including how many trips they typically make in a day.
 - Respect the facts: never use mode "car" if the household has no vehicle
   or the person cannot drive; do not invent behavior the evidence does not
   support.

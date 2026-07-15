@@ -8,11 +8,13 @@ semantics; fallback determinism + full self-validity.
 from __future__ import annotations
 
 import json
+import re
 
 import pandas as pd
 
 from grounding import card_validation as cv
-from grounding.masking.mask_lint import default_token_path, load_forbidden_tokens
+from grounding.masking.mask_lint import default_token_path, load_forbidden_tokens, lint_text
+from grounding.seeding import observed_stats_of
 
 FORBIDDEN = load_forbidden_tokens(default_token_path())
 PLANTED_TOKEN = "gamla stan"
@@ -432,3 +434,269 @@ def test_fallback_coerces_infeasible_car_trips():
     modes = [t["mode"] for p in card["patterns"] for t in p["trips"]]
     assert modes and all(m == "ride" for m in modes)
     assert cv.feasibility(card, skeleton) == []
+
+
+# ---------------------------------------------------------------------------
+# fidelity — the FIFTH gate (card vs the person's own observed weekday diary)
+# ---------------------------------------------------------------------------
+
+def _obs(days, trip_rows):
+    """observed_stats_of on the same synthetic frames as the fallback zoo."""
+    pdays, trips = _frames(days, trip_rows)
+    return observed_stats_of(pdays, trips)
+
+
+def _pattern(weight, *trips):
+    return {"id": "p", "weight": weight,
+            "trips": [{"purpose": p, "mode": m, "depart_band": b} for (p, m, b) in trips]}
+
+
+def _card(*patterns):
+    for i, p in enumerate(patterns):
+        p["id"] = f"p{i}"
+    return {"patterns": list(patterns), "rules": [], "voice": "I keep it plain."}
+
+
+# --- (a) mean trips/day ----------------------------------------------------
+
+def test_fidelity_mean_pass_exact():
+    # one observed day, two trips; single pattern reproduces it exactly
+    obs = _obs([1], [(1, 1, "work", "car", "am_peak"), (1, 2, "home", "car", "pm_peak")])
+    card = _card(_pattern(5, ("work", "car", "am_peak"), ("home", "car", "pm_peak")))
+    assert cv.fidelity(card, obs) == []
+
+
+def test_fidelity_mean_fail_undershoot_and_overshoot():
+    # observed mean = 3 trips/day (one day, three trips)
+    obs = _obs([1], [(1, 1, "work", "car", "am_peak"),
+                     (1, 2, "shop_daily", "car", "midday"),
+                     (1, 3, "home", "car", "pm_peak")])
+    assert obs["mean_trips_per_weekday"] == 3.0
+    # undershoot: 1 trip/day, |1 - 3| = 2 > max(0.4, 0.45)
+    low = _card(_pattern(5, ("work", "car", "am_peak")))
+    errs = cv.fidelity(low, obs)
+    assert any("1.00 trips per weekday" in e and "3.00" in e and "fuller days" in e for e in errs)
+    # overshoot: 5 trips/day
+    high = _card(_pattern(5, ("work", "car", "am_peak"), ("shop_daily", "car", "midday"),
+                          ("home", "car", "pm_peak"), ("leisure", "car", "evening"),
+                          ("personal_business", "car", "midday")))
+    errs2 = cv.fidelity(high, obs)
+    assert any("5.00 trips per weekday" in e and "lighter days" in e for e in errs2)
+
+
+def test_fidelity_mean_within_relative_tolerance_for_high_means():
+    # observed mean 8, a card at 7 passes via the 0.15*mean = 1.2 relative band
+    obs = _obs([1], [(1, i + 1, "work", "car", "am_peak") for i in range(8)])
+    assert obs["mean_trips_per_weekday"] == 8.0
+    card = _card(_pattern(5, *[("work", "car", "am_peak")] * 7))
+    assert cv.fidelity(card, obs) == []  # |7 - 8| = 1 <= max(0.4, 1.2)
+
+
+# --- (b) mode shares -------------------------------------------------------
+
+def test_fidelity_mode_pass_matching_mix():
+    # observed: 2 car, 1 walk  => shares car 2/3, walk 1/3
+    obs = _obs([1, 2, 3], [(1, 1, "work", "car", "am_peak"),
+                           (2, 1, "work", "car", "am_peak"),
+                           (3, 1, "shop_daily", "walk", "midday")])
+    card = _card(_pattern(10, ("work", "car", "am_peak")),      # weight 10 car
+                 _pattern(5, ("shop_daily", "walk", "midday")))  # weight 5 walk
+    # implied car 10/15, walk 5/15 == observed. TVD 0.
+    assert cv.fidelity(card, obs) == []
+
+
+def test_fidelity_mode_fail_wrong_mix():
+    obs = _obs([1, 2, 3], [(1, 1, "work", "car", "am_peak"),
+                           (2, 1, "work", "car", "am_peak"),
+                           (3, 1, "shop_daily", "walk", "midday")])
+    # all-walk card: implied walk 1.0 vs observed {car:2/3, walk:1/3}; TVD = 2/3
+    card = _card(_pattern(5, ("work", "walk", "am_peak")))
+    errs = cv.fidelity(card, obs)
+    assert any("variation distance" in e and "0.67" in e for e in errs)
+    assert any("over-weight walk" in e and "under-weight car" in e for e in errs)
+
+
+def test_fidelity_mode_skipped_for_zero_trip_person():
+    obs = _obs([1, 2], [])  # all quiet -> zero observed trips
+    assert obs["n_observed_trips"] == 0
+    # a card with a stray trip would fail (b) if it were checked; it is not
+    card = _card(_pattern(1))  # only a quiet pattern -> honest anyway
+    assert cv.fidelity(card, obs) == []
+
+
+# --- (c) quiet-day discipline ---------------------------------------------
+
+def test_fidelity_quiet_forbidden_when_no_quiet_observed():
+    # every observed weekday had trips; the mean stays in-band, isolating (c)
+    obs = _obs([1], [(1, 1, "work", "car", "am_peak"), (1, 2, "home", "car", "pm_peak")])
+    # active weight 10 (2 trips) + empty weight 1 -> mean 20/11 = 1.82, |1.82-2|<0.4
+    card = _card(_pattern(10, ("work", "car", "am_peak"), ("home", "car", "pm_peak")),
+                 _pattern(1))
+    errs = cv.fidelity(card, obs)
+    assert any("no-trip pattern" in e and "remove the empty pattern" in e for e in errs)
+    assert not any("trips per weekday" in e for e in errs)  # (a) did not fire
+
+
+def test_fidelity_quiet_share_pass_and_fail():
+    # 1 quiet day + 1 active (2-trip) day -> observed quiet share 0.5
+    obs = _obs([1, 2], [(1, 1, "work", "car", "am_peak"), (1, 2, "home", "car", "pm_peak")])
+    assert obs["quiet_share"] == 0.5
+    good = _card(_pattern(5, ("work", "car", "am_peak"), ("home", "car", "pm_peak")),
+                 _pattern(5))  # quiet share 0.5
+    assert cv.fidelity(good, obs) == []
+    # heavily over-weighted quiet: share 9/10 vs 0.5, |0.4| > max(0.12, 0.3)
+    bad = _card(_pattern(1, ("work", "car", "am_peak"), ("home", "car", "pm_peak")),
+                _pattern(9))
+    errs = cv.fidelity(bad, obs)
+    assert any("no-trip share is 0.90" in e and "0.50 quiet weekdays" in e for e in errs)
+
+
+def test_fidelity_no_constraint_without_observed_days():
+    obs = _obs([], [])
+    assert cv.fidelity(_card(_pattern(1)), obs) == []
+
+
+def test_fidelity_one_observed_day_faithful_card_passes_all_three():
+    # the base guarantee: a single pattern replicating the one observed day
+    # passes (a), (b) and (c) with room to spare
+    obs = _obs([1], [(1, 1, "work", "car", "am_peak"),
+                     (1, 2, "shop_daily", "walk", "midday"),
+                     (1, 3, "home", "car", "pm_peak")])
+    card = _card(_pattern(7, ("work", "car", "am_peak"),
+                          ("shop_daily", "walk", "midday"),
+                          ("home", "car", "pm_peak")))
+    assert cv.fidelity(card, obs) == []
+
+
+# --- numeric feedback string discipline (masked-clean, retry-ready) --------
+
+def test_fidelity_feedback_strings_are_masked_clean():
+    checks = []
+    # (a) mean
+    obs_a = _obs([1], [(1, 1, "work", "car", "am_peak"),
+                       (1, 2, "home", "car", "pm_peak"),
+                       (1, 3, "shop_daily", "car", "midday")])
+    checks += cv.fidelity(_card(_pattern(5, ("work", "car", "am_peak"))), obs_a)
+    # (b) mode
+    obs_b = _obs([1, 2], [(1, 1, "work", "car", "am_peak"), (2, 1, "work", "car", "am_peak")])
+    checks += cv.fidelity(_card(_pattern(5, ("work", "walk", "am_peak"))), obs_b)
+    # (c) quiet over-weight
+    obs_c = _obs([1, 2], [(1, 1, "work", "car", "am_peak"), (1, 2, "home", "car", "pm_peak")])
+    checks += cv.fidelity(
+        _card(_pattern(1, ("work", "car", "am_peak"), ("home", "car", "pm_peak")), _pattern(9)),
+        obs_c,
+    )
+    assert len(checks) >= 3
+    for s in checks:
+        assert not lint_text(s, FORBIDDEN), s          # no forbidden token
+        assert not re.search(r"\d{4}", s), s           # no 4-digit year-like token
+        assert not re.search(r"\d{1,2}:\d{2}", s), s   # no clock time
+        assert not re.search(r"day\s*\d", s, re.I), s  # no day-index reference
+        # numbers are rounded to 2 decimals
+        assert re.search(r"\d\.\d{2}", s), s
+
+
+# ---------------------------------------------------------------------------
+# validate_card — the composed five-gate entry point
+# ---------------------------------------------------------------------------
+
+def test_validate_card_runs_all_five_gates_clean():
+    obs = _obs([1], [(1, 1, "work", "car", "am_peak"), (1, 2, "home", "car", "pm_peak")])
+    seqs = cv.day_signatures(*_frames([1], [(1, 1, "work", "car", "am_peak"),
+                                            (1, 2, "home", "car", "pm_peak")]))
+    card = _card(_pattern(5, ("work", "car", "am_peak"), ("home", "car", "pm_peak")))
+    assert cv.validate_card(card, SKELETON, obs, seqs) == []
+
+
+def test_validate_card_surfaces_fidelity_only_failure():
+    # a card that is schema/lint/replay/feasibility clean but unfaithful:
+    # observed mean 2, card mean 1 -> only the fifth gate fires
+    obs = _obs([1], [(1, 1, "work", "car", "am_peak"), (1, 2, "home", "car", "pm_peak")])
+    card = _card(_pattern(5, ("work", "car", "am_peak")))
+    assert cv.validate_card_json(card) == []
+    assert cv.feasibility(card, SKELETON) == []
+    errs = cv.validate_card(card, SKELETON, obs, [])
+    assert errs and all("trips per weekday" in e for e in errs)
+
+
+def test_validate_card_non_dict_returns_schema_error_only():
+    errs = cv.validate_card([1, 2], SKELETON, {}, [])
+    assert errs and "must be a JSON object" in errs[0]
+
+
+# ---------------------------------------------------------------------------
+# fallback: >8-trip signature truncation + fidelity-gate exemption
+# ---------------------------------------------------------------------------
+
+def test_fallback_truncates_over_long_signature_and_flags_provenance():
+    # a single observed weekday with twelve trips (> the schema cap of 8)
+    trip_rows = [(1, i + 1, "leisure", "walk", "midday") for i in range(12)]
+    pdays, trips = _frames([1], trip_rows)
+    card = cv.fallback_card("P00001", SKELETON, pdays, trips)
+    # schema-valid now: no pattern exceeds 8 trips
+    assert cv.validate_card_json(card) == []
+    assert max(len(p["trips"]) for p in card["patterns"]) == 8
+    # truncation flagged in provenance
+    assert card["provenance"]["signature_truncated"] is True
+
+
+def test_fallback_no_truncation_flag_when_within_cap():
+    pdays, trips = _frames([1], [(1, 1, "work", "car", "am_peak")])
+    card = cv.fallback_card("P00001", SKELETON, pdays, trips)
+    assert "signature_truncated" not in card["provenance"]
+
+
+_FALLBACK_ZOO = {
+    "repeated signature": (
+        [1, 2, 3],
+        [(1, 1, "work", "car", "am_peak"), (2, 1, "work", "car", "am_peak"),
+         (3, 1, "shop_daily", "walk", "midday")],
+    ),
+    "all-distinct multi-day": (
+        [1, 2, 3],
+        [(1, 1, "work", "car", "am_peak"), (2, 1, "shop_daily", "walk", "midday"),
+         (3, 1, "leisure", "transit", "evening")],
+    ),
+    "quiet plus one active": (
+        [1, 2],
+        [(1, 1, "work", "car", "am_peak"), (1, 2, "home", "car", "pm_peak")],
+    ),
+    "all quiet": ([1, 2], []),
+    "no observed days": ([], []),
+    "two quiet two distinct active": (
+        [1, 2, 3, 4],
+        [(3, 1, "work", "car", "am_peak"), (4, 1, "shop_daily", "walk", "midday")],
+    ),
+    "over-long signature": (
+        [1],
+        [(1, i + 1, "leisure", "walk", "midday") for i in range(12)],
+    ),
+}
+
+
+def test_fallback_exempt_from_fidelity_via_validate_card():
+    # every fallback card passes the composed five-gate entry point: it is
+    # exempt from the fifth gate (terminal safety net, no retry behind it).
+    for name, (days, trip_rows) in _FALLBACK_ZOO.items():
+        pdays, trips = _frames(days, trip_rows)
+        card = cv.fallback_card("P00001", SKELETON, pdays, trips)
+        obs = observed_stats_of(pdays, trips)
+        seqs = cv.day_signatures(pdays, trips)
+        assert cv.validate_card(card, SKELETON, obs, seqs) == [], f"{name!r} failed validate_card"
+
+
+def test_fallback_raw_fidelity_infidelity_is_bounded_to_documented_corners():
+    # Documenting WHY the exemption exists: raw fidelity() on fallback cards
+    # fails ONLY where the fallback's own construction is lossy — the
+    # anti-enumeration fold (all-distinct multi-day repertoires) and the
+    # >8-trip truncation. Every other zoo case passes fidelity outright.
+    expected_fail = {"all-distinct multi-day", "two quiet two distinct active",
+                     "over-long signature"}
+    got_fail = set()
+    for name, (days, trip_rows) in _FALLBACK_ZOO.items():
+        pdays, trips = _frames(days, trip_rows)
+        card = cv.fallback_card("P00001", SKELETON, pdays, trips)
+        obs = observed_stats_of(pdays, trips)
+        if cv.fidelity(card, obs):
+            got_fail.add(name)
+    assert got_fail == expected_fail

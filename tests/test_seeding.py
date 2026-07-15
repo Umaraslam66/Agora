@@ -158,6 +158,94 @@ def test_evidence_freq_lines_skipped_when_missing():
 
 
 # ---------------------------------------------------------------------------
+# observed_stats_of — the fidelity gate's reference (must be consistent with
+# what evidence_lines_of tells the model, on the SAME frames)
+# ---------------------------------------------------------------------------
+
+def test_observed_stats_deterministic_and_order_insensitive():
+    pdays, trips = person_1101_frames()
+    a = seeding.observed_stats_of(pdays, trips)
+    b = seeding.observed_stats_of(pdays, trips)
+    assert a == b
+    c = seeding.observed_stats_of(
+        pdays.iloc[::-1].reset_index(drop=True),
+        trips.iloc[::-1].reset_index(drop=True),
+    )
+    assert a == c
+
+
+def test_observed_stats_values_multi_day():
+    # person 1101: day1 has two car trips, day2 has zero trips.
+    pdays, trips = person_1101_frames()
+    obs = seeding.observed_stats_of(pdays, trips)
+    assert obs["n_observed_weekdays"] == 2
+    assert obs["n_observed_trips"] == 2
+    assert obs["mean_trips_per_weekday"] == 1.0  # (2 + 0) / 2
+    assert obs["mode_counts"] == {"car": 2}
+    assert obs["mode_shares"] == {"car": 1.0}
+    assert obs["has_quiet_weekday"] is True
+    assert obs["quiet_share"] == 0.5  # one of two weekdays quiet
+
+
+def test_observed_stats_consistent_with_evidence_lines():
+    # The gate's mode reference must use the SAME counts the evidence line
+    # ("Overall weekday mode use: ...") shows the model.
+    pdays, trips = person_1101_frames()
+    obs = seeding.observed_stats_of(pdays, trips)
+    lines = seeding.evidence_lines_of(pdays, trips, {})
+    mode_line = next(l for l in lines if l.startswith("Overall weekday mode use:"))
+    # parse "Overall weekday mode use: car x2." -> {"car": 2}
+    body = mode_line.split(":", 1)[1].strip().rstrip(".")
+    parsed = {
+        seg.strip().split(" x")[0]: int(seg.strip().split(" x")[1])
+        for seg in body.split(",")
+    }
+    assert parsed == obs["mode_counts"]
+    # the trips-per-weekday histogram the model sees is the same day set /
+    # quiet split the gate scores against
+    assert any("1 day with no trips" in l for l in lines)  # the one quiet day
+    assert obs["has_quiet_weekday"] is True
+
+
+def test_observed_stats_day_weighted_when_w_day_present():
+    # Non-uniform day weights: the quiet day carries triple weight, so the
+    # day-weighted mean and quiet share diverge from the raw (uniform) figures.
+    pdays = pd.DataFrame(
+        [
+            {"person_id": "x", "daynum": 1, "n_collapsed": 4, "w_day": 1.0},
+            {"person_id": "x", "daynum": 2, "n_collapsed": 0, "w_day": 3.0},
+        ]
+    )
+    trips = pd.DataFrame(
+        [
+            {"daynum": 1, "tripnum": 1, "purpose": "work", "mode": "car", "band": "am_peak"},
+            {"daynum": 1, "tripnum": 2, "purpose": "work", "mode": "car", "band": "am_peak"},
+            {"daynum": 1, "tripnum": 3, "purpose": "leisure", "mode": "walk", "band": "midday"},
+            {"daynum": 1, "tripnum": 4, "purpose": "home", "mode": "car", "band": "pm_peak"},
+        ]
+    )
+    obs = seeding.observed_stats_of(pdays, trips)
+    # day-weighted mean = (1*4 + 3*0) / (1 + 3) = 1.0
+    assert obs["mean_trips_per_weekday"] == 1.0
+    # quiet share = 3 / 4
+    assert obs["quiet_share"] == 0.75
+    # mode shares are day-weighted over the active day's trips (all weight 1):
+    assert obs["mode_shares"] == {"car": 0.75, "walk": 0.25}
+    # raw counts still echo the evidence line
+    assert obs["mode_counts"] == {"car": 3, "walk": 1}
+
+
+def test_observed_stats_no_observed_days_is_empty():
+    obs = seeding.observed_stats_of(
+        pd.DataFrame(columns=["daynum", "n_collapsed"]),
+        pd.DataFrame(columns=["daynum", "tripnum", "purpose", "mode", "band"]),
+    )
+    assert obs["n_observed_weekdays"] == 0
+    assert obs["has_quiet_weekday"] is False
+    assert obs["mean_trips_per_weekday"] == 0.0
+
+
+# ---------------------------------------------------------------------------
 # persona_id reindex
 # ---------------------------------------------------------------------------
 
@@ -329,6 +417,44 @@ def test_build_retry_prompts_appends_failure_block(tmp_path):
     assert rec["prompt"] == render_seed_retry_prompt(
         skeleton, evidence, 1, failures[0]["failure_reasons"], "serve"
     )
+
+
+def test_fidelity_feedback_feeds_retry_prompt_verbatim(tmp_path):
+    # the numeric fidelity feedback strings must survive the retry-prompt
+    # mask-lint gate and land verbatim in the rendered retry prompt
+    from grounding import card_validation as cv
+
+    pdays = pd.DataFrame([{"person_id": "x", "daynum": 1, "n_collapsed": 3}])
+    trips = pd.DataFrame(
+        [
+            {"daynum": 1, "tripnum": 1, "purpose": "work", "mode": "car", "band": "am_peak"},
+            {"daynum": 1, "tripnum": 2, "purpose": "home", "mode": "car", "band": "pm_peak"},
+            {"daynum": 1, "tripnum": 3, "purpose": "shop_daily", "mode": "car", "band": "midday"},
+        ]
+    )
+    obs = seeding.observed_stats_of(pdays, trips)
+    # a card that undershoots the mean and distorts the mode mix
+    card = {
+        "patterns": [{"id": "p0", "weight": 5,
+                      "trips": [{"purpose": "work", "mode": "walk", "depart_band": "am_peak"}]}],
+        "rules": [],
+        "voice": "x",
+    }
+    reasons = cv.fidelity(card, obs)
+    assert reasons  # it does fail
+    failures = [{
+        "persona_id": "P00009",
+        "skeleton": {"home_zone": "Z01"},
+        "evidence_lines": [],
+        "n_observed_days": 1,
+        "failure_reasons": reasons,
+        "attempt": 1,
+    }]
+    out = tmp_path / "retry.jsonl"
+    seeding.build_retry_prompts(failures, out)  # must NOT raise MASK-LINT
+    rendered = json.loads(out.read_text().splitlines()[0])["prompt"]
+    for r in reasons:
+        assert r in rendered  # verbatim in the rendered retry prompt
 
 
 def test_build_retry_prompts_lint_gate(tmp_path):

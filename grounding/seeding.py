@@ -529,6 +529,117 @@ def _as_frame(obj) -> pd.DataFrame:
     return pd.DataFrame(list(obj))
 
 
+def observed_stats_of(person_days, trips) -> dict:
+    """Deterministic per-person reference stats for the card fidelity gate,
+    computed from the SAME two frames :func:`evidence_lines_of` consumes: the
+    person's WEEKDAY person-day rows and that person's weekday trip rows.
+
+    Weighting convention mirrors the E1 truth (M2 D5, evaluation.e1): trips/day
+    and the quiet share are DAY-weighted by ``w_day`` (absent -> uniform weight
+    1.0, so under the synthetic fixtures the day-weighted figures collapse to
+    the raw figures the evidence lines report), and the mode reference is the
+    day-weighted trip mix. That is exactly the quantity a faithful card
+    reproduces: a card's weight-normalized pattern mix IS a day-weighted mix
+    (pattern weight ~ day-kind frequency, pattern trips = that day's trips), so
+    a card that compresses the evidence honestly matches these references
+    within the fidelity tolerances. Per-day trip counts are taken from the trip
+    rows — the same rows :func:`grounding.card_validation.day_signatures` and
+    the evidence sequences enumerate — so the reference and the card count trips
+    the same way; the raw ``mode_counts`` echo the "Overall weekday mode use"
+    evidence line verbatim.
+
+    Returns a dict with keys: ``n_observed_weekdays`` (positive-weight weekday
+    person-day rows), ``n_observed_trips`` (raw weekday trip count),
+    ``mean_trips_per_weekday`` (day-weighted mean), ``mode_counts``
+    ({mode: raw count}), ``mode_shares`` ({mode: day-weighted share}),
+    ``has_quiet_weekday`` (any observed weekday had zero trips) and
+    ``quiet_share`` (day-weighted share of zero-trip weekdays).
+    """
+    pd_df = _as_frame(person_days)
+    tr_df = _as_frame(trips)
+
+    # per-day trip counts, keyed by daynum, from the trip rows (the same rows
+    # the card patterns enumerate).
+    trips_per_daynum: "Counter[int]" = Counter()
+    if len(tr_df) and "daynum" in tr_df:
+        for d in tr_df["daynum"]:
+            trips_per_daynum[int(d)] += 1
+
+    # observed weekday days -> day weight (positive weight only; absent w_day
+    # column => uniform weight 1.0). person_days carries one row per day, so a
+    # later row for the same daynum simply overwrites (idempotent).
+    day_weight: Dict[int, float] = {}
+    if "daynum" in pd_df and len(pd_df):
+        has_w = "w_day" in pd_df.columns
+        daynum_col = list(pd_df["daynum"])
+        w_col = list(pd_df["w_day"]) if has_w else None
+        for i, dn_raw in enumerate(daynum_col):
+            dn = int(dn_raw)
+            if has_w:
+                wv = w_col[i]
+                try:
+                    if pd.isna(wv):
+                        continue
+                except (TypeError, ValueError):
+                    pass
+                w = float(wv)
+            else:
+                w = 1.0
+            if w <= 0:
+                continue
+            day_weight[dn] = w
+
+    n_observed = len(day_weight)
+    total_w = sum(day_weight.values())
+
+    empty_stats = {
+        "n_observed_weekdays": n_observed,
+        "n_observed_trips": int(len(tr_df)),
+        "mean_trips_per_weekday": 0.0,
+        "mode_counts": {},
+        "mode_shares": {},
+        "has_quiet_weekday": False,
+        "quiet_share": 0.0,
+    }
+    if n_observed == 0 or total_w <= 0:
+        return empty_stats
+
+    mean_trips = sum(
+        w * trips_per_daynum.get(dn, 0) for dn, w in day_weight.items()
+    ) / total_w
+
+    quiet_days = [dn for dn in day_weight if trips_per_daynum.get(dn, 0) == 0]
+    has_quiet = bool(quiet_days)
+    quiet_share = sum(day_weight[dn] for dn in quiet_days) / total_w
+
+    # mode reference: raw counts (evidence line) + day-weighted shares (gate).
+    mode_counts: "Counter[str]" = Counter()
+    mode_wmass: Dict[str, float] = {}
+    if len(tr_df) and "mode" in tr_df:
+        has_dn = "daynum" in tr_df
+        mode_col = list(tr_df["mode"])
+        dn_col = list(tr_df["daynum"]) if has_dn else None
+        for i, m in enumerate(mode_col):
+            mode_counts[m] += 1
+            w = day_weight.get(int(dn_col[i]), 0.0) if has_dn else 1.0
+            if w > 0:
+                mode_wmass[m] = mode_wmass.get(m, 0.0) + w
+    total_mass = sum(mode_wmass.values())
+    mode_shares = (
+        {m: mode_wmass[m] / total_mass for m in mode_wmass} if total_mass > 0 else {}
+    )
+
+    return {
+        "n_observed_weekdays": n_observed,
+        "n_observed_trips": int(len(tr_df)),
+        "mean_trips_per_weekday": float(mean_trips),
+        "mode_counts": dict(mode_counts),
+        "mode_shares": mode_shares,
+        "has_quiet_weekday": has_quiet,
+        "quiet_share": float(quiet_share),
+    }
+
+
 # ---------------------------------------------------------------------------
 # real-data enrichment (harness-side; reads the gitignored raw survey CSVs)
 # ---------------------------------------------------------------------------
