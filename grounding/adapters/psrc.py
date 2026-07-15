@@ -244,23 +244,29 @@ class PSRCDataset:
     # -- the three frozen E1 distribution families ---------------------------
 
     def trips_per_day_distribution(
-        self, household_ids: Optional[Iterable[str]] = None
+        self,
+        household_ids: Optional[Iterable[str]] = None,
+        person_ids: Optional[Iterable[str]] = None,
     ) -> np.ndarray:
         """Trips/day bin shares {0..7, 8+}, day_weight-weighted."""
-        return trips_per_day_distribution(self.person_days, household_ids)
+        return trips_per_day_distribution(self.person_days, household_ids, person_ids)
 
     def mode_share_distribution(
-        self, household_ids: Optional[Iterable[str]] = None
+        self,
+        household_ids: Optional[Iterable[str]] = None,
+        person_ids: Optional[Iterable[str]] = None,
     ) -> np.ndarray:
         """Five-mode shares (frozen order), trip_weight-weighted."""
-        return mode_share_distribution(self.weekday_trips, household_ids)
+        return mode_share_distribution(self.weekday_trips, household_ids, person_ids)
 
     def departure_band_distribution(
-        self, household_ids: Optional[Iterable[str]] = None
+        self,
+        household_ids: Optional[Iterable[str]] = None,
+        person_ids: Optional[Iterable[str]] = None,
     ) -> np.ndarray:
         """Departure-band shares (night/am_peak/midday/pm_peak/evening),
         trip_weight-weighted."""
-        return departure_band_distribution(self.weekday_trips, household_ids)
+        return departure_band_distribution(self.weekday_trips, household_ids, person_ids)
 
 
 def normalize(v: np.ndarray) -> np.ndarray:
@@ -274,45 +280,70 @@ def normalize(v: np.ndarray) -> np.ndarray:
     return v / s
 
 
-def _select(df: pd.DataFrame, household_ids: Optional[Iterable[str]]) -> pd.DataFrame:
-    if household_ids is None:
-        return df
-    ids = household_ids if isinstance(household_ids, (set, frozenset)) else set(household_ids)
-    return df[df["household_id"].isin(ids)]
+def _select(
+    df: pd.DataFrame,
+    household_ids: Optional[Iterable[str]],
+    person_ids: Optional[Iterable[str]] = None,
+) -> pd.DataFrame:
+    if household_ids is not None:
+        ids = household_ids if isinstance(household_ids, (set, frozenset)) else set(household_ids)
+        df = df[df["household_id"].isin(ids)]
+    if person_ids is not None:
+        pids = person_ids if isinstance(person_ids, (set, frozenset)) else set(person_ids)
+        df = df[df["person_id"].astype(str).isin(pids)]
+    return df
 
 
 def trips_per_day_distribution(
-    person_days: pd.DataFrame, household_ids: Optional[Iterable[str]] = None
+    person_days: pd.DataFrame,
+    household_ids: Optional[Iterable[str]] = None,
+    person_ids: Optional[Iterable[str]] = None,
 ) -> np.ndarray:
     """Trips/day bin distribution (bins {0..7, 8+}), weighted by
     ``w_day``, over ``person_days`` restricted to ``household_ids`` (any
     subset: a fold, a segment cell, or ``None`` for the full sample).
     Counts the post-mode-collapse trip count per person-day
     (``n_collapsed``), matching the frozen family definition exactly.
+
+    ``person_ids`` (optional, ADDITIVE — M3 diagnostics) further restricts to
+    a person-id subset, matched as strings; the two filters intersect.
+    Provenance splits need this because card provenance is assigned per
+    PERSON while households mix provenances, so a household-level truth
+    restriction would dilute a per-person split with household-mates. The
+    default ``None`` leaves the frozen household-only code path untouched
+    (regression-tested byte-identical in tests/test_diagnostics_m3.py); the
+    sealed E1 truth path never passes it.
     """
-    df = _select(person_days, household_ids)
+    df = _select(person_days, household_ids, person_ids)
     bins = df["n_collapsed"].map(trips_bin)
     weighted = df.groupby(bins)["w_day"].sum().reindex(TRIPS_PER_DAY_BINS, fill_value=0.0)
     return normalize(weighted.to_numpy(dtype=float))
 
 
 def mode_share_distribution(
-    trips: pd.DataFrame, household_ids: Optional[Iterable[str]] = None
+    trips: pd.DataFrame,
+    household_ids: Optional[Iterable[str]] = None,
+    person_ids: Optional[Iterable[str]] = None,
 ) -> np.ndarray:
     """Five-mode share distribution (frozen order from
     ``grounding.taxonomy.MODES``), weighted by ``w_trip``, over ``trips``
-    restricted to ``household_ids``."""
-    df = _select(trips, household_ids)
+    restricted to ``household_ids`` and/or ``person_ids`` (see
+    :func:`trips_per_day_distribution` on the additive person filter)."""
+    df = _select(trips, household_ids, person_ids)
     weighted = df.groupby("mode")["w_trip"].sum().reindex(MODES, fill_value=0.0)
     return normalize(weighted.to_numpy(dtype=float))
 
 
 def departure_band_distribution(
-    trips: pd.DataFrame, household_ids: Optional[Iterable[str]] = None
+    trips: pd.DataFrame,
+    household_ids: Optional[Iterable[str]] = None,
+    person_ids: Optional[Iterable[str]] = None,
 ) -> np.ndarray:
     """Departure-band share distribution (frozen five bands), weighted by
-    ``w_trip``, over ``trips`` restricted to ``household_ids``."""
-    df = _select(trips, household_ids)
+    ``w_trip``, over ``trips`` restricted to ``household_ids`` and/or
+    ``person_ids`` (see :func:`trips_per_day_distribution` on the additive
+    person filter)."""
+    df = _select(trips, household_ids, person_ids)
     weighted = df.groupby("band")["w_trip"].sum().reindex(TIME_BANDS, fill_value=0.0)
     return normalize(weighted.to_numpy(dtype=float))
 

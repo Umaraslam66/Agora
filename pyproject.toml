@@ -40,6 +40,9 @@ grounding = ["templates/*.txt", "masking/forbidden_tokens.txt"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+    "slow: full-population reproduction/integration checks (deselect with -m 'not slow')",
+]
 
 [tool.ruff]
 line-length = 100
