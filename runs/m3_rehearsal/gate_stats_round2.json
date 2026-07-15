@@ -1,0 +1,89 @@
+{
+  "acceptance_rate": 0.125,
+  "audit": [
+    {
+      "accepted": true,
+      "persona_id": "P01103",
+      "round": 2,
+      "strong_rules_restored": []
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 3.14 trips per weekday; the evidence shows 4.67 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P02126",
+      "round": 2,
+      "strong_rules_restored": []
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 5.00 trips per weekday; the evidence shows 6.00 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P03055",
+      "round": 2,
+      "strong_rules_restored": []
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 7.50 trips per weekday; the evidence shows 16.25 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P03442",
+      "round": 2,
+      "strong_rules_restored": []
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 8.00 trips per weekday; the evidence shows 10.00 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P04491",
+      "round": 2,
+      "strong_rules_restored": []
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 3.00 trips per weekday; the evidence shows 4.00 \u2014 shift weight toward fuller days",
+        "card's weekday mode mix is off (variation distance 0.25 exceeds the allowed 0.20); you over-weight car; you under-weight bike \u2014 match the observed mode counts without adding variety the evidence does not show or shortchanging the dominant mode"
+      ],
+      "persona_id": "P06570",
+      "round": 2,
+      "strong_rules_restored": []
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 8.00 trips per weekday; the evidence shows 10.00 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P08805",
+      "round": 2,
+      "strong_rules_restored": []
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "generation not ok (finish_reason=length)"
+      ],
+      "persona_id": "P11642",
+      "round": 2,
+      "strong_rules_restored": []
+    }
+  ],
+  "failure_reason_counts": {
+    "card implies 3.00": 1,
+    "card implies 3.14": 1,
+    "card implies 5.00": 1,
+    "card implies 7.50": 1,
+    "card implies 8.00": 2,
+    "card's weekday mode": 1,
+    "generation not ok": 1
+  },
+  "n_accepted": 1,
+  "n_rejected": 7,
+  "n_requests": 8,
+  "n_with_strong_rule_restorations": 0,
+  "round": 2
+}

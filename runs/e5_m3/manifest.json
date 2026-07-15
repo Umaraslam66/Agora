@@ -1,0 +1,43 @@
+{
+  "adapter_version": "psrc-m2-1.0",
+  "eval": "e5i",
+  "families": [
+    "trips_per_day",
+    "mode_shares",
+    "time_bands"
+  ],
+  "masked_cards_path": "data/cards/cards_m2_masked_r2b.jsonl",
+  "masked_cards_sha256": "f162c23ada0588d2165724319fcf4744ab78199c6b7391b65a801746f3caaf50",
+  "n_personas": 11940,
+  "n_runs": 20,
+  "namespaces": [
+    "run20260717",
+    "run20260718",
+    "run20260719",
+    "run20260720",
+    "run20260721",
+    "run20260722",
+    "run20260723",
+    "run20260724",
+    "run20260725",
+    "run20260726",
+    "run20260727",
+    "run20260728",
+    "run20260729",
+    "run20260730",
+    "run20260731",
+    "run20260732",
+    "run20260733",
+    "run20260734",
+    "run20260735",
+    "run20260736"
+  ],
+  "pairing": "identical populations; SAME CRN namespaces both arms; one fixed full-sample reference, no resampling",
+  "realization": "two-brain baseline loop (warmup 10, scoring 7)",
+  "seed": 20260717,
+  "taxonomy": "m0-1.0",
+  "threshold": 0.25,
+  "timestamp": "2026-07-15T18:20:30.354337+00:00",
+  "unmasked_cards_path": "data/cards/cards_m2_unmasked_r2b.jsonl",
+  "unmasked_cards_sha256": "a624181622281acf254129ec68c452d687b55334e1d5becb13623d6ab25f0210"
+}

@@ -1,0 +1,35 @@
+{
+  "cards_path": "data/cards/cards_m2_masked_r2b.jsonl",
+  "jam": {
+    "capacity_factor": 0.12,
+    "from_day": 12
+  },
+  "loop": {
+    "n_days": 17,
+    "namespace": "m3_rehearsal",
+    "warmup": 10
+  },
+  "n_corridor_driver_candidates": 514,
+  "n_deduped_requests": 95,
+  "n_raw_requests": 194,
+  "subset": 100000,
+  "surprise_counts_by_day": {
+    "0": 184,
+    "1": 195,
+    "2": 100,
+    "3": 58,
+    "4": 70,
+    "5": 50,
+    "6": 66,
+    "7": 38,
+    "8": 46,
+    "9": 37,
+    "10": 34,
+    "11": 40,
+    "12": 277,
+    "13": 183,
+    "14": 151,
+    "15": 173,
+    "16": 101
+  }
+}

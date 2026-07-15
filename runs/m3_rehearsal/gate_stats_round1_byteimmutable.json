@@ -1,0 +1,809 @@
+{
+  "acceptance_rate": 0.3157894736842105,
+  "audit": [
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule night_departure was altered; an established habit may not be changed",
+        "strong rule pm_peak_departure was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P00111",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P00262",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P00344",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P00362",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P00491",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule foot was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P00585",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P00779",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_trip_am_peak was altered; an established habit may not be changed",
+        "strong rule home_trip_midday was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P01042",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 3.00 trips per weekday; the evidence shows 4.50 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P01103",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P01387",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule midday_departure was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P01516",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P01763",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 3.33 trips per weekday; the evidence shows 4.67 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P02126",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home_trip was altered; an established habit may not be changed",
+        "strong rule am_peak_work_trip was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P02173",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P02204",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_departure was altered; an established habit may not be changed",
+        "strong rule home_evening was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P02308",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home was altered; an established habit may not be changed",
+        "strong rule midday_personal_business was altered; an established habit may not be changed",
+        "strong rule pm_peak_leisure was altered; an established habit may not be changed",
+        "strong rule am_peak_work was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P02405",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P02547",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P02846",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule pm_shop was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P02918",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_trip was altered; an established habit may not be changed",
+        "strong rule home_trip_pm_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P02969",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule home_pmpeak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P02973",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 5.00 trips per weekday; the evidence shows 6.00 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P03055",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_trip was altered; an established habit may not be changed",
+        "strong rule home_evening was altered; an established habit may not be changed",
+        "strong rule leisure_midday was altered; an established habit may not be changed",
+        "strong rule shop_other_midday was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P03267",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule home_trip_midday was altered; an established habit may not be changed",
+        "strong rule shop_daily_evening was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P03359",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 7.50 trips per weekday; the evidence shows 16.25 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P03442",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule am_peak_work was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P03493",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_am_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P03638",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home was altered; an established habit may not be changed",
+        "strong rule night_work was altered; an established habit may not be changed",
+        "strong rule pm_peak_shopping was altered; an established habit may not be changed",
+        "strong rule pm_peak_personal was altered; an established habit may not be changed",
+        "strong rule midday_leisure was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P03691",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P03939",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule home_trip_pm_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P04047",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule shared_transit was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P04321",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 8.00 trips per weekday; the evidence shows 10.00 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P04491",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule leisure_in_midday was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P04897",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P04909",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule leisure_after_work was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P04974",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule night_departure_leisure was altered; an established habit may not be changed",
+        "strong rule midday_departure_home was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05036",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_trip_am_peak was altered; an established habit may not be changed",
+        "strong rule home_trip_pm_peak was altered; an established habit may not be changed",
+        "strong rule leisure_trip_night was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05077",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P05179",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_shop was altered; an established habit may not be changed",
+        "strong rule midday_home was altered; an established habit may not be changed",
+        "strong rule midday_leisure_walk was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05218",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule hired_ride_rule was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05231",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home_trip was altered; an established habit may not be changed",
+        "strong rule pm_peak_home_trip was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05288",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule foot_for_short was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05345",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule midday_work was altered; an established habit may not be changed",
+        "strong rule evening_home was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05504",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule foot_trip_rule was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P05764",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P06361",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P06491",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule leisure_evening was altered; an established habit may not be changed",
+        "strong rule work_am_peak was altered; an established habit may not be changed",
+        "strong rule pickup_dropoff_am_peak was altered; an established habit may not be changed",
+        "strong rule home_pm_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P06523",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 3.00 trips per weekday; the evidence shows 4.00 \u2014 shift weight toward fuller days",
+        "card's weekday mode mix is off (variation distance 0.25 exceeds the allowed 0.20); you over-weight car; you under-weight bike \u2014 match the observed mode counts without adding variety the evidence does not show or shortchanging the dominant mode"
+      ],
+      "persona_id": "P06570",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P06723",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule leisure_pm_peak was altered; an established habit may not be changed",
+        "strong rule work_am_peak was altered; an established habit may not be changed",
+        "strong rule home_evening was altered; an established habit may not be changed",
+        "strong rule pickup_dropoff_evening was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P06762",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P06791",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_am_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P06810",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule leisure_midday_walk was altered; an established habit may not be changed",
+        "strong rule home_pm_peak_car was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P06814",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule bike_for_short was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P07049",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P07175",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_departure was altered; an established habit may not be changed",
+        "strong rule leisure_evening was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P07272",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P07641",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P07835",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_midday was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P08057",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule leisure_trip_pm_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P08136",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule shared_transit was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P08295",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule home_trip_pm_peak_walk was altered; an established habit may not be changed",
+        "strong rule leisure_trip_evening was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P08395",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule leisure_night was altered; an established habit may not be changed",
+        "strong rule leisure_evening was altered; an established habit may not be changed",
+        "strong rule work_am_peak was altered; an established habit may not be changed",
+        "strong rule home_pm_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P08437",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule pm_peak_leisure was altered; an established habit may not be changed",
+        "strong rule midday_home was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P08650",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "card implies 8.00 trips per weekday; the evidence shows 10.00 \u2014 shift weight toward fuller days"
+      ],
+      "persona_id": "P08805",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule pm_peak_departure was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P08909",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home was altered; an established habit may not be changed",
+        "strong rule am_peak_work was altered; an established habit may not be changed",
+        "strong rule am_peak_pickup_dropoff was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P09182",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P09341",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_work was altered; an established habit may not be changed",
+        "strong rule evening_home was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P09365",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P09387",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule home_evening was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P09449",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_trip was altered; an established habit may not be changed",
+        "strong rule home_trip was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P09626",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P09637",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P09665",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P09740",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule shared_transit was altered; an established habit may not be changed",
+        "strong rule hired_ride was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P09857",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule home_trip_evening was altered; an established habit may not be changed",
+        "strong rule work_trip_am_peak was altered; an established habit may not be changed",
+        "strong rule shop_daily_trip_pm_peak was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P09861",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P09885",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule foot_for_short was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P10106",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home_trip was altered; an established habit may not be changed",
+        "strong rule midday_work_trip was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P10496",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P10529",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule foot_trip was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P10540",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P10672",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P10683",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule night_departure was altered; an established habit may not be changed",
+        "strong rule pm_peak_leisure was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P10895",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule night_departure was altered; an established habit may not be changed",
+        "strong rule evening_departure was altered; an established habit may not be changed",
+        "strong rule midday_departure was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P10929",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P10931",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule evening_home was altered; an established habit may not be changed",
+        "strong rule midday_work was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P11291",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule night_departure_work was altered; an established habit may not be changed",
+        "strong rule midday_departure_leisure was altered; an established habit may not be changed",
+        "strong rule evening_departure_home was altered; an established habit may not be changed",
+        "strong rule pm_peak_departure_leisre was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P11548",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "generation not ok (finish_reason=length)"
+      ],
+      "persona_id": "P11642",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule shared_transit was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P11676",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P11708",
+      "round": 1
+    },
+    {
+      "accepted": false,
+      "gate_failures": [
+        "strong rule work_trip_mode was altered; an established habit may not be changed",
+        "strong rule home_trip_mode was altered; an established habit may not be changed"
+      ],
+      "persona_id": "P11735",
+      "round": 1
+    },
+    {
+      "accepted": true,
+      "persona_id": "P11915",
+      "round": 1
+    }
+  ],
+  "failure_reason_counts": {
+    "card implies 3.00": 2,
+    "card implies 3.33": 1,
+    "card implies 5.00": 1,
+    "card implies 7.50": 1,
+    "card implies 8.00": 2,
+    "card's weekday mode": 1,
+    "generation not ok": 1,
+    "strong rule am_peak_pickup_dropoff": 1,
+    "strong rule am_peak_work": 3,
+    "strong rule am_peak_work_trip": 1,
+    "strong rule bike_for_short": 1,
+    "strong rule evening_departure": 1,
+    "strong rule evening_departure_home": 1,
+    "strong rule evening_home": 8,
+    "strong rule evening_home_trip": 3,
+    "strong rule evening_shop": 1,
+    "strong rule evening_work": 1,
+    "strong rule foot": 1,
+    "strong rule foot_for_short": 2,
+    "strong rule foot_trip": 1,
+    "strong rule foot_trip_rule": 1,
+    "strong rule hired_ride": 1,
+    "strong rule hired_ride_rule": 1,
+    "strong rule home_evening": 4,
+    "strong rule home_pm_peak": 2,
+    "strong rule home_pm_peak_car": 1,
+    "strong rule home_pmpeak": 1,
+    "strong rule home_trip": 1,
+    "strong rule home_trip_evening": 1,
+    "strong rule home_trip_midday": 2,
+    "strong rule home_trip_mode": 1,
+    "strong rule home_trip_pm_peak": 3,
+    "strong rule home_trip_pm_peak_walk": 1,
+    "strong rule leisure_after_work": 1,
+    "strong rule leisure_evening": 3,
+    "strong rule leisure_in_midday": 1,
+    "strong rule leisure_midday": 1,
+    "strong rule leisure_midday_walk": 1,
+    "strong rule leisure_night": 1,
+    "strong rule leisure_pm_peak": 1,
+    "strong rule leisure_trip_evening": 1,
+    "strong rule leisure_trip_night": 1,
+    "strong rule leisure_trip_pm_peak": 1,
+    "strong rule midday_departure": 2,
+    "strong rule midday_departure_home": 1,
+    "strong rule midday_departure_leisure": 1,
+    "strong rule midday_home": 2,
+    "strong rule midday_leisure": 1,
+    "strong rule midday_leisure_walk": 1,
+    "strong rule midday_personal_business": 1,
+    "strong rule midday_work": 2,
+    "strong rule midday_work_trip": 1,
+    "strong rule night_departure": 3,
+    "strong rule night_departure_leisure": 1,
+    "strong rule night_departure_work": 1,
+    "strong rule night_work": 1,
+    "strong rule pickup_dropoff_am_peak": 1,
+    "strong rule pickup_dropoff_evening": 1,
+    "strong rule pm_peak_departure": 2,
+    "strong rule pm_peak_departure_leisre": 1,
+    "strong rule pm_peak_home_trip": 1,
+    "strong rule pm_peak_leisure": 3,
+    "strong rule pm_peak_personal": 1,
+    "strong rule pm_peak_shopping": 1,
+    "strong rule pm_shop": 1,
+    "strong rule shared_transit": 4,
+    "strong rule shop_daily_evening": 1,
+    "strong rule shop_daily_trip_pm_peak": 1,
+    "strong rule shop_other_midday": 1,
+    "strong rule work_am_peak": 5,
+    "strong rule work_departure": 2,
+    "strong rule work_midday": 1,
+    "strong rule work_trip": 3,
+    "strong rule work_trip_am_peak": 3,
+    "strong rule work_trip_mode": 1
+  },
+  "n_accepted": 30,
+  "n_rejected": 65,
+  "n_requests": 95,
+  "round": 1
+}

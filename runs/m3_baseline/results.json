@@ -1,0 +1,296 @@
+{
+  "label": "m3_baseline",
+  "bars": {
+    "pooled": 0.1,
+    "cell": 0.2,
+    "epsilon": 0.00655
+  },
+  "n_runs": 20,
+  "loop": {
+    "warmup_days": 10,
+    "scoring_days": 7,
+    "n_days": 17,
+    "namespaces": [
+      "m3_run0",
+      "m3_run1",
+      "m3_run2",
+      "m3_run3",
+      "m3_run4",
+      "m3_run5",
+      "m3_run6",
+      "m3_run7",
+      "m3_run8",
+      "m3_run9",
+      "m3_run10",
+      "m3_run11",
+      "m3_run12",
+      "m3_run13",
+      "m3_run14",
+      "m3_run15",
+      "m3_run16",
+      "m3_run17",
+      "m3_run18",
+      "m3_run19"
+    ],
+    "policy": "agents.slow_brain.StandardSurprisePolicy",
+    "slow_brain": "batch",
+    "surprise_counts_by_day": {
+      "0": 3871,
+      "1": 3634,
+      "2": 1956,
+      "3": 1556,
+      "4": 1329,
+      "5": 1107,
+      "6": 1067,
+      "7": 913,
+      "8": 964,
+      "9": 835,
+      "10": 860,
+      "11": 793,
+      "12": 815,
+      "13": 801,
+      "14": 771,
+      "15": 762,
+      "16": 766
+    },
+    "n_rewrite_requests_collected": 0,
+    "n_rewrites_accepted": 0,
+    "n_rewrites_attempted": 0
+  },
+  "method_arm": {
+    "pooled_tvd": 0.06144001215611932,
+    "per_family_tvd": {
+      "trips_per_day": 0.023217133462845128,
+      "mode_shares": 0.06144001215611932,
+      "time_bands": 0.03221303038865378
+    },
+    "cell_tvds": {
+      "low|car0|catchment": 0.0711865158758964,
+      "low|car1p|catchment": 0.07961880395489782,
+      "low|car1p|remainder": 0.058419036464674126,
+      "mid|car0|catchment": 0.09712252792920405,
+      "mid|car1p|catchment": 0.057368776035772465,
+      "mid|car1p|remainder": 0.07867380275581534,
+      "high|car0|catchment": 0.08070940907848959,
+      "high|car1p|catchment": 0.06428694653537775,
+      "high|car1p|remainder": 0.05943002571138453,
+      "car0|remainder": 0.1304593196076382
+    },
+    "worst_cell": "car0|remainder",
+    "worst_cell_tvd": 0.1304593196076382,
+    "pooled_bar_met": true,
+    "cells_bar_met": true
+  },
+  "mnl_arm": {
+    "pooled_tvd": 0.11248475557557595,
+    "per_family_tvd": {
+      "trips_per_day": 0.012672663635647246,
+      "mode_shares": 0.11248475557557595,
+      "time_bands": 0.01562075003623475
+    },
+    "cell_tvds": {
+      "low|car0|catchment": 0.12805114323777744,
+      "low|car1p|catchment": 0.15863253957916484,
+      "low|car1p|remainder": 0.16670661394468134,
+      "mid|car0|catchment": 0.07048678466845357,
+      "mid|car1p|catchment": 0.08256716991381714,
+      "mid|car1p|remainder": 0.13396039767755022,
+      "high|car0|catchment": 0.05324949619135069,
+      "high|car1p|catchment": 0.0799398701949787,
+      "high|car1p|remainder": 0.11606517747565911,
+      "car0|remainder": 0.21008565083684508
+    }
+  },
+  "falsification": {
+    "B": 500,
+    "seed": 20260761,
+    "seed_derivation": "base_seed(20260717) + SEED_OFFSET_PAIRED(44)",
+    "epsilon": 0.00655,
+    "delta_mean": -0.05043115279372374,
+    "delta_sd": 0.00248781786489752,
+    "ci_lo": -0.051044743419456653,
+    "ci_hi": -0.04196130057700545,
+    "pass": true,
+    "method_bootstrap_tvd_mean": 0.06214898459137714,
+    "mnl_bootstrap_tvd_mean": 0.11258013738510086
+  },
+  "e1_pass": {
+    "pooled_bar": true,
+    "cell_bars": true,
+    "beats_or_matches_mnl": true,
+    "overall": true
+  },
+  "e2": {
+    "eval": "e2",
+    "n_cards": 11940,
+    "n_seeding_persons_in_force": 11940,
+    "n_cards_without_diary_match": 0,
+    "n_runs": 20,
+    "seed": 0,
+    "namespaces": [
+      "run0",
+      "run1",
+      "run2",
+      "run3",
+      "run4",
+      "run5",
+      "run6",
+      "run7",
+      "run8",
+      "run9",
+      "run10",
+      "run11",
+      "run12",
+      "run13",
+      "run14",
+      "run15",
+      "run16",
+      "run17",
+      "run18",
+      "run19"
+    ],
+    "spread_ratios": {
+      "band": [
+        0.8,
+        1.2
+      ],
+      "dimensions": {
+        "mean_trips_per_day": {
+          "real_var": 6.603426467496801,
+          "per_run_ratios": [
+            0.9921943142654179,
+            0.9931294644824823,
+            0.9797638959153631,
+            0.9776883415082075,
+            0.9755562981720267,
+            0.992135233954113,
+            0.9824733978803424,
+            0.9910822155080914,
+            0.9951835882450674,
+            0.9870110626477354,
+            0.9942488603143527,
+            0.9978745187530429,
+            0.9959278327198167,
+            0.9656939505908095,
+            0.9924768709376032,
+            0.978180224959133,
+            0.9905429435923319,
+            0.9808342739341996,
+            0.9826765243946879,
+            0.9954294359304846
+          ],
+          "ratio": 0.9870051624352655,
+          "n_real_persons": 11940,
+          "pass": true
+        },
+        "car_share": {
+          "real_var": 0.21143738752154703,
+          "per_run_ratios": [
+            1.003916905349928,
+            1.0006350636254517,
+            1.00130068630243,
+            1.0015117890828398,
+            0.9951385722738226,
+            1.0042396558079394,
+            1.002958713256857,
+            1.0071376199625197,
+            0.9999960870039332,
+            1.0044841627530103,
+            1.002358225618764,
+            1.0001591175102176,
+            1.0003328479845304,
+            1.0027737914420036,
+            1.0012343756595796,
+            0.997684544778128,
+            1.0029411722183001,
+            1.0048829624176547,
+            1.0003816324198023,
+            0.9982414128853198
+          ],
+          "ratio": 1.0016154669176516,
+          "n_real_persons": 10603,
+          "pass": true
+        },
+        "ride_share": {
+          "real_var": 0.15844853357889035,
+          "per_run_ratios": [
+            0.9986163213987022,
+            0.9941806221100258,
+            0.9965622112760848,
+            1.005250819375718,
+            1.009448573830297,
+            1.00392796258739,
+            1.0023926829622924,
+            1.009637779675446,
+            1.0029780207673387,
+            0.9929466217657369,
+            1.001236043296428,
+            0.9915710489006285,
+            0.9797819355111981,
+            0.9971730991024185,
+            1.003682513505503,
+            0.9906276235054072,
+            0.9935881969385897,
+            1.0018387647522506,
+            0.993566200185175,
+            0.9935885733596591
+          ],
+          "ratio": 0.9981297807403144,
+          "n_real_persons": 10603,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "error_correlation": {
+      "bar": 0.2,
+      "dimensions": {
+        "mean_trips_per_day": {
+          "rho": 4.200307418795781e-05,
+          "n_personas": 5552,
+          "n_runs": 20,
+          "n_incomplete_dropped": 0,
+          "n_zero_variance_dropped": 6388
+        },
+        "car_share": {
+          "rho": -1.2373201344783431e-05,
+          "n_personas": 2718,
+          "n_runs": 20,
+          "n_incomplete_dropped": 283,
+          "n_zero_variance_dropped": 7602
+        },
+        "ride_share": {
+          "rho": -0.00022832379160206493,
+          "n_personas": 1786,
+          "n_runs": 20,
+          "n_incomplete_dropped": 283,
+          "n_zero_variance_dropped": 8534
+        }
+      },
+      "max_rho": 4.200307418795781e-05,
+      "pass": true
+    },
+    "e2_pass": true,
+    "protocol": {
+      "reading": "one-arm preservation (sealed A2.2(i)); denominator = between-individual variance of the seeding records in force, numerator = simulated between-agent variance from realized trips; day-weighted person means both sides, person_weight-weighted variances",
+      "error_grouping": "run-index grouping (simulated analogue of the M0 calendar-date ICC; see evaluation/e2.py docstring for the documented mapping)",
+      "realized": "realized discrete choices via the CRN draw layer; expected-value loads are never scored here"
+    }
+  },
+  "coverage": {
+    "n_personas": 11940,
+    "n_cards": 11940,
+    "n_personas_with_card": 11940,
+    "limited": false
+  },
+  "drops": {
+    "pna_income": 421,
+    "unmapped_ring": 2
+  },
+  "timing_seconds": {
+    "e1_method_arm": 54.4,
+    "mnl_arm": 33.7,
+    "e2": 7.6,
+    "total": 95.8
+  }
+}

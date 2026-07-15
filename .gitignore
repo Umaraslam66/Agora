@@ -40,3 +40,7 @@ jobs/site_env.sh
 # record-derived card sets are never committed (privacy discipline)
 runs/**/cards*.jsonl
 data/cards/
+# rewrite round-trip artifacts embed full card content (same discipline)
+runs/**/accepted_cards*.jsonl
+runs/**/requests_round*.json
+runs/**/prompts_round*.jsonl
