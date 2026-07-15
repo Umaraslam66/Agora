@@ -412,15 +412,25 @@ def simulate_arm(
     day_slots: Mapping[str, Sequence[Tuple[int, float]]],
     n_runs: int = 20,
     namespace_prefix: str = "method_",
+    producer: Optional[Callable[[str], Mapping[str, Sequence]]] = None,
 ) -> ArmDistributions:
     """The METHOD arm: execute persona cards into realized days and score them
     through :func:`ensemble_arm` (the ONE scoring path). Nothing is fitted
     across personas — cards are per-person compressions of own records (A2.1).
-    """
-    from agents.card_executor import execute_days  # local: keep import graph light
 
-    def producer(namespace: str):
-        return execute_days(cards, day_slots, namespace, update_habits=False)
+    ``producer`` is an OPTIONAL injection seam (M3 D6). When ``None`` (the
+    default) the arm follows exactly the M2 code path: an internal producer that
+    runs ``card_executor.execute_days`` per ensemble namespace — byte-identical
+    to the pre-M3 behaviour. When supplied, ``producer(namespace)`` provides
+    ``persona_id -> [RealizedDay]`` in its place (e.g. the M3 loop's scoring
+    window), letting a world-coupled dynamic arm flow through the UNCHANGED
+    sealed scoring path.
+    """
+    if producer is None:
+        from agents.card_executor import execute_days  # local: keep import graph light
+
+        def producer(namespace: str):  # noqa: F811 (deliberate default builder)
+            return execute_days(cards, day_slots, namespace, update_habits=False)
 
     return ensemble_arm(producer, persona_cell, n_runs, namespace_prefix)
 

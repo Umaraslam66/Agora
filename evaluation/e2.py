@@ -76,7 +76,7 @@ dicts out. The CLI wiring lives in evaluation/run_e2.py.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Mapping, Sequence
+from typing import Callable, Dict, List, Mapping, Optional, Sequence
 
 import numpy as np
 import pandas as pd
@@ -339,6 +339,7 @@ def score_e2(
     dataset,
     n_runs: int = DEFAULT_RUNS,
     seed: int = 0,
+    producer: Optional[Callable[[str], Mapping[str, Sequence[RealizedDay]]]] = None,
 ) -> dict:
     """Score E2(i)+(ii) for a card population against its seeding dataset.
 
@@ -348,7 +349,14 @@ def score_e2(
     Executes the cards for ``n_runs`` ensemble runs under the D3 ``run{k}``
     CRN namespaces (``seed`` shifts the starting index) and returns the full
     E2 verdict dict. Never mutates the cards (habit updating is off:
-    scoring is a measurement, not lived time)."""
+    scoring is a measurement, not lived time).
+
+    ``producer`` is an OPTIONAL injection seam (M3 D6). When ``None`` (the
+    default) each ensemble run is produced by ``card_executor.execute_days`` —
+    byte-identical to the pre-M3 behaviour. When supplied,
+    ``producer(namespace)`` provides ``persona_id -> [RealizedDay]`` in its
+    place (e.g. the M3 loop's scoring window) so a world-coupled dynamic arm is
+    scored through the UNCHANGED E2 path."""
     id_map = _persona_id_map(dataset.persons["person_id"].astype(str))
     diary = person_stats_from_diary(dataset.person_days, dataset.weekday_trips)
     diary.index = diary.index.map(id_map)
@@ -363,7 +371,10 @@ def score_e2(
 
     sim_by_run = []
     for ns in namespaces:
-        realized = execute_days(cards, slots, ns, update_habits=False)
+        if producer is None:
+            realized = execute_days(cards, slots, ns, update_habits=False)
+        else:
+            realized = producer(ns)
         sim_by_run.append(person_stats_from_realized(realized))
 
     spread = spread_ratios(diary_in_force, sim_by_run)
