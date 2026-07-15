@@ -1,0 +1,84 @@
+{
+  "adapter_version": "psrc-m2-1.0",
+  "arm": "unmasked",
+  "attempts": [
+    {
+      "attempt": 1,
+      "failure_histogram_by_persona": {
+        "feasibility_car": 174,
+        "fidelity_mean_trips": 6291,
+        "fidelity_mode_mix": 987,
+        "fidelity_quiet": 1442,
+        "replay_enumeration": 317
+      },
+      "job_id": "49475676",
+      "n_accepted": 4869,
+      "n_failed": 7071,
+      "n_failed_parse": 0,
+      "n_gen_ok": 11940,
+      "n_prompts": 11940,
+      "node": "lrdn2922",
+      "output_tokens_total": 4674072,
+      "prompts_sha256": "406ac6ed533352fe64795c5439cf5766e2e6e76ea8c73ba36269fbb65ee7390d",
+      "wall_seconds": 864
+    },
+    {
+      "attempt": 2,
+      "failure_histogram_by_persona": {
+        "feasibility_car": 122,
+        "fidelity_mean_trips": 3193,
+        "fidelity_mode_mix": 748,
+        "fidelity_quiet": 295,
+        "replay_enumeration": 288
+      },
+      "job_id": "49477891",
+      "n_accepted": 3181,
+      "n_failed": 3890,
+      "n_failed_parse": 0,
+      "n_gen_ok": 7071,
+      "n_prompts": 7071,
+      "node": "lrdn3367",
+      "output_tokens_total": 2801316,
+      "prompts_sha256": "88046ee3ff9c995b735c859501135ee298762694e4e9359fd34574de2972a849",
+      "wall_seconds": 652
+    }
+  ],
+  "card_version": "m2-1.0",
+  "cards_path": "data/cards/cards_m2_unmasked_r2b.jsonl",
+  "cards_sha256": "a624181622281acf254129ec68c452d687b55334e1d5becb13623d6ab25f0210",
+  "fallback_overlap_with_masked_r2b": {
+    "n_identical_fallback_cards_across_arms": 2488,
+    "n_masked_fallbacks": 3444,
+    "n_overlap": 2488,
+    "n_unmasked_fallbacks": 3890,
+    "overlap_share_of_masked": 0.7224,
+    "overlap_share_of_unmasked": 0.6396
+  },
+  "final_composition": {
+    "fallback": 3890,
+    "llm_attempt1": 4869,
+    "llm_attempt2": 3181
+  },
+  "gen_params": {
+    "guided_json": "grounding/card_schema.json",
+    "max_tokens": 2048,
+    "seed": 0,
+    "temperature": 0
+  },
+  "mask_lint": "EXEMPT by design (E5 unmasked arm, quarantined per evaluation/contamination.py; A2.3/A1.4)",
+  "milestone": "M2 E5(i) UNMASKED-arm persona-card generation (r2b pipeline)",
+  "model": "Qwen/Qwen3-8B",
+  "n_fallback": 3890,
+  "n_fallback_signature_truncated": 34,
+  "n_personas": 11940,
+  "retry_policy": "attempts 1-2, terminal fallback; retry prompts via data-level substitution (evaluation.truth vocabulary), never seeding's gated builders",
+  "round": "2b",
+  "template_repo_commit": "e1e3bd7",
+  "validation_gates_in_order": [
+    "validate_card_json",
+    "replay_smell",
+    "feasibility",
+    "fidelity"
+  ],
+  "vocabulary_version": "e5-unmasked-1.0"
+}
