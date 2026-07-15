@@ -1,0 +1,51 @@
+You are revising the behavior card for one resident of City K. Recent ordinary
+weekdays did not match what this person had come to expect, and the card that
+another system follows to simulate them must be brought back in line. Revise it
+once, carefully, changing only what the surprises below actually require.
+
+=== RESIDENT ===
+{skeleton_block}
+
+=== TRAVEL EVIDENCE ===
+{evidence_block}
+
+=== CURRENT CARD ===
+This is the card in force right now (day patterns, override rules, and voice).
+Keep every part that still fits this person; edit only what is needed.
+{current_card_json}
+
+=== WHAT SURPRISED THIS PERSON ===
+Each line is a context (mode, trip class, time-of-day band), the minutes this
+person expected there, the minutes they actually experienced, and how large the
+gap was. Update the card so these contexts are handled the way this person
+would sensibly settle into after living them.
+{surprise_block}
+
+=== HABITS YOU MAY NOT CHANGE ===
+Some rules describe habits too well-established to drop. You may not alter or
+remove rules: {immutable_rules_block}
+Every listed rule id must appear in your output unchanged — same condition and
+same effect, character for character.
+
+=== FIT CHECK ===
+Your revised card is rejected unless all three still hold:
+  (a) the weighted average number of trips per day across your patterns
+      matches the observed trips per recorded weekday;
+  (b) the weighted mode mix across your pattern trips matches the observed
+      mode-use counts — do not add variety the evidence does not show, and do
+      not shortchange the dominant mode;
+  (c) a no-trip pattern (empty trips list) appears ONLY if at least one recorded
+      weekday truly had no trips, with weight matching its observed share.
+Reference figures to reproduce:
+{fit_check_block}
+
+=== TASK ===
+Return the FULL revised card as JSON matching the required schema exactly:
+patterns (each with id, an integer weight from 1 to 10, and trips), rules, and
+a one-sentence voice. Each trip needs exactly purpose, mode (walk, transit,
+ride, car, bike), and depart_band (night, am_peak, midday, pm_peak, evening).
+Use departure bands only, never clock times. Never use mode "car" if the
+household has no vehicle or the person cannot drive. Do not enumerate recorded
+days and never refer to day numbers or dates.
+
+Return ONLY the JSON object.
