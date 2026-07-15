@@ -333,14 +333,18 @@ def run_baseline_loop(
 
     # Scoring-weight map: persona slot j -> global day warmup+j (D5).
     scoring_span = n_days - warmup_days
-    scoring_weight: Dict[str, Dict[int, float]] = {}
+    # global day -> (observed slot daynum, slot weight). The emitted scoring
+    # RealizedDay carries the OBSERVED daynum, not the loop's global index —
+    # execute_days's exact shape, which downstream day-index joins (e.g. the
+    # within-person variance diagnostic) rely on; E1/E2 read only weights.
+    scoring_weight: Dict[str, Dict[int, Tuple[int, float]]] = {}
     for pid in persona_ids:
         slots = day_slots.get(pid, [])
-        wmap: Dict[int, float] = {}
-        for j, (_dn, w) in enumerate(slots):
+        wmap: Dict[int, Tuple[int, float]] = {}
+        for j, (dn, w) in enumerate(slots):
             if j >= scoring_span:
                 break
-            wmap[warmup_days + j] = float(w)
+            wmap[warmup_days + j] = (int(dn), float(w))
         scoring_weight[pid] = wmap
 
     if st is None:
@@ -427,13 +431,15 @@ def run_baseline_loop(
 
         surprise_counts[d] = surprises_today
 
-        # scoring-window capture (D5): slot j -> global day warmup+j, slot weight
+        # scoring-window capture (D5): slot j -> global day warmup+j, slot
+        # weight; the emitted day_index is the slot's OBSERVED daynum.
         if warmup_days <= d < n_days:
             for pid in persona_ids:
-                w = scoring_weight[pid].get(d)
-                if w is not None:
+                slot = scoring_weight[pid].get(d)
+                if slot is not None:
+                    dn, w = slot
                     trips = day_out[pid][0].trips if day_out.get(pid) else []
-                    scoring_days[pid].append(RealizedDay(d, w, list(trips)))
+                    scoring_days[pid].append(RealizedDay(dn, w, list(trips)))
         if keep_full_window:
             for pid in persona_ids:
                 trips = day_out[pid][0].trips if day_out.get(pid) else []

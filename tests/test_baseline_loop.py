@@ -228,7 +228,10 @@ def test_slot_to_scoring_day_mapping_and_weights():
     r = run_baseline_loop([card], CFG, slots, namespace="run0", n_days=n_days,
                           warmup_days=warmup, policy=NoTriggerPolicy(), client=None)
     days = r.scoring_days["P00001"]
-    assert [d.day_index for d in days] == [5, 6, 7]           # slot j -> warmup+j
+    # emitted day_index is the OBSERVED slot daynum (execute_days's exact
+    # shape — downstream day-index joins depend on it); slot j is LIVED on
+    # global day warmup+j, which drives the CRN draws (asserted below).
+    assert [d.day_index for d in days] == [41, 58, 12]
     assert [d.day_weight for d in days] == [1.5, 0.5, 2.0]    # slot weights carried
     # trips equal the realized trips on those GLOBAL days (not the diary daynums)
     for j, gd in enumerate((5, 6, 7)):
