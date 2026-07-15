@@ -22,6 +22,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BAD_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "bad_import_fixture.py"
+BAD_UNMASKED_FIXTURE = (
+    Path(__file__).resolve().parent / "fixtures" / "bad_unmasked_vocab_fixture.py"
+)
 
 _GUARDED_PACKAGES = ("world", "agents", "grounding", "calibration", "serving", "training")
 
@@ -139,6 +142,80 @@ def test_truth_import_blocked_outside_eval_context():
         f"stderr was:\n{proc.stderr}"
     )
     assert "RuntimeError" in proc.stderr
+
+
+# ---------------------------------------------------------------------------
+# (d) the E5 UNMASKED VOCABULARY shares the quarantine (sealed A2.3 / spec D9)
+# ---------------------------------------------------------------------------
+# evaluation/truth/unmasked_vocabulary.py deliberately names the real arena
+# (real place/facility names, dates, prices) for the E5(i) unmasked arm. It is
+# a submodule of evaluation.truth, so the static scan above and the runtime
+# tripwire both already cover it — these tests pin that coverage explicitly so
+# a future refactor cannot silently move the vocabulary out from under the
+# wall: grounding/, agents/, serving/, world/ (and calibration/, training/)
+# must never be able to import it.
+
+
+def test_scanner_catches_unmasked_vocabulary_import():
+    hits = scan_file_for_truth_refs(BAD_UNMASKED_FIXTURE)
+    assert hits, (
+        "UNMASKED-VOCABULARY QUARANTINE IS BLIND: tests/fixtures/"
+        "bad_unmasked_vocab_fixture.py imports "
+        "evaluation.truth.unmasked_vocabulary and the scanner reported "
+        "nothing. If agent-side code can read the unmasked vocabulary, the "
+        "masked arm of E5(i) is contaminated by construction (A2.3 / D9)."
+    )
+    assert any("unmasked_vocabulary" in h for h in hits)
+
+
+def test_no_agent_side_code_references_unmasked_vocabulary():
+    hits: list[str] = []
+    for pkg in _GUARDED_PACKAGES:
+        pkg_dir = REPO_ROOT / pkg
+        if not pkg_dir.is_dir():
+            continue
+        for path in sorted(pkg_dir.rglob("*.py")):
+            hits.extend(scan_file_for_truth_refs(path))
+    offenders = [h for h in hits if "unmasked" in h]
+    # any evaluation.truth reference is already fatal above; this pins the
+    # unmasked-vocabulary case by name so its failure message is unmissable
+    assert not offenders, WALL_DOCTRINE + "\n  ".join(offenders)
+
+
+def _import_unmasked_in_subprocess(extra_env: dict) -> subprocess.CompletedProcess:
+    import os
+
+    env = {**os.environ}
+    env.pop("AGORA_EVAL_CONTEXT", None)
+    env.update(extra_env)
+    return subprocess.run(
+        [sys.executable, "-c", "import evaluation.truth.unmasked_vocabulary"],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_unmasked_vocabulary_blocked_outside_eval_context():
+    proc = _import_unmasked_in_subprocess({})
+    assert proc.returncode != 0 and "quarantined" in proc.stderr, (
+        "UNMASKED-VOCABULARY TRIPWIRE DISARMED: "
+        "`import evaluation.truth.unmasked_vocabulary` succeeded without "
+        "AGORA_EVAL_CONTEXT=1. The package tripwire must fire for every "
+        "submodule of evaluation.truth (pre-registration §2; A2.3/D9).\n"
+        f"stderr was:\n{proc.stderr}"
+    )
+
+
+def test_unmasked_vocabulary_importable_inside_eval_context():
+    proc = _import_unmasked_in_subprocess({"AGORA_EVAL_CONTEXT": "1"})
+    assert proc.returncode == 0, (
+        "UNMASKED-VOCABULARY TRIPWIRE OVER-ARMED: the E5 harness itself "
+        "(AGORA_EVAL_CONTEXT=1) cannot import the unmasked vocabulary — the "
+        "wall must keep agents out, not lock the contamination probe out.\n"
+        f"stderr was:\n{proc.stderr}"
+    )
 
 
 def test_truth_import_allowed_inside_eval_context(monkeypatch):
