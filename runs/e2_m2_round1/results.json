@@ -1,0 +1,157 @@
+{
+  "e2_pass": false,
+  "error_correlation": {
+    "bar": 0.2,
+    "dimensions": {
+      "car_share": {
+        "n_incomplete_dropped": 6981,
+        "n_personas": 1861,
+        "n_runs": 20,
+        "n_zero_variance_dropped": 1761,
+        "rho": -0.0002796675516419247
+      },
+      "mean_trips_per_day": {
+        "n_incomplete_dropped": 0,
+        "n_personas": 11246,
+        "n_runs": 20,
+        "n_zero_variance_dropped": 694,
+        "rho": -2.8396088894108827e-05
+      },
+      "ride_share": {
+        "n_incomplete_dropped": 6981,
+        "n_personas": 1252,
+        "n_runs": 20,
+        "n_zero_variance_dropped": 2370,
+        "rho": -7.793570000092789e-05
+      }
+    },
+    "max_rho": -2.8396088894108827e-05,
+    "pass": true
+  },
+  "eval": "e2",
+  "n_cards": 11940,
+  "n_cards_without_diary_match": 0,
+  "n_runs": 20,
+  "n_seeding_persons_in_force": 11940,
+  "namespaces": [
+    "run20260717",
+    "run20260718",
+    "run20260719",
+    "run20260720",
+    "run20260721",
+    "run20260722",
+    "run20260723",
+    "run20260724",
+    "run20260725",
+    "run20260726",
+    "run20260727",
+    "run20260728",
+    "run20260729",
+    "run20260730",
+    "run20260731",
+    "run20260732",
+    "run20260733",
+    "run20260734",
+    "run20260735",
+    "run20260736"
+  ],
+  "protocol": {
+    "error_grouping": "run-index grouping (simulated analogue of the M0 calendar-date ICC; see evaluation/e2.py docstring for the documented mapping)",
+    "reading": "one-arm preservation (sealed A2.2(i)); denominator = between-individual variance of the seeding records in force, numerator = simulated between-agent variance from realized trips; day-weighted person means both sides, person_weight-weighted variances",
+    "realized": "realized discrete choices via the CRN draw layer; expected-value loads are never scored here"
+  },
+  "seed": 20260717,
+  "spread_ratios": {
+    "band": [
+      0.8,
+      1.2
+    ],
+    "dimensions": {
+      "car_share": {
+        "n_real_persons": 10603,
+        "pass": true,
+        "per_run_ratios": [
+          0.9346614674912141,
+          0.9347850825325682,
+          0.9388101962977584,
+          0.9338987977354761,
+          0.9359317288883393,
+          0.9273520898094022,
+          0.9481434277141155,
+          0.9375382594934064,
+          0.9433878980155891,
+          0.9394290150317639,
+          0.9365179592582302,
+          0.952922151490012,
+          0.942312031827467,
+          0.9369619573238117,
+          0.9377337248989898,
+          0.945850763439454,
+          0.9362925169049439,
+          0.9309131487883999,
+          0.944646848318557,
+          0.938742627271136
+        ],
+        "ratio": 0.9388415846265316,
+        "real_var": 0.21143738752154703
+      },
+      "mean_trips_per_day": {
+        "n_real_persons": 11940,
+        "pass": false,
+        "per_run_ratios": [
+          0.6001622077646391,
+          0.5832330169000268,
+          0.5928419068752546,
+          0.612696005090212,
+          0.5984070957074151,
+          0.5953066125291087,
+          0.6000413756942743,
+          0.5872896912234896,
+          0.6111895691689745,
+          0.5981611134398517,
+          0.5885679175762826,
+          0.5755149968625257,
+          0.6065922802687715,
+          0.5969951253084975,
+          0.5877722900108623,
+          0.6009866426655636,
+          0.585370413483658,
+          0.5966941868135582,
+          0.6010092264773169,
+          0.5917750625540904
+        ],
+        "ratio": 0.5955303368207187,
+        "real_var": 6.603426467496801
+      },
+      "ride_share": {
+        "n_real_persons": 10603,
+        "pass": true,
+        "per_run_ratios": [
+          0.9357502100957227,
+          0.9019701286391102,
+          0.9145808436219012,
+          0.909254199654795,
+          0.8805059186700055,
+          0.9341951108329655,
+          0.9046683410498196,
+          0.9205286167212575,
+          0.903110719885915,
+          0.9271520852108103,
+          0.9341083996017522,
+          0.9327750968728741,
+          0.9080552350467332,
+          0.9121550963178254,
+          0.8952310678763075,
+          0.9132962727484436,
+          0.9126853054695924,
+          0.9324144534852191,
+          0.9040163602482697,
+          0.9112800302129722
+        ],
+        "ratio": 0.9143866746131147,
+        "real_var": 0.15844853357889035
+      }
+    },
+    "pass": false
+  }
+}

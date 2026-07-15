@@ -1,0 +1,16 @@
+{
+ "round": "r2b",
+ "change": "fallback builder revision only; LLM cards identical to round 2",
+ "fallback_rebuilt": 3444,
+ "llm_cards": 8496,
+ "cards_sha256": "f162c23ada0588d2165724319fcf4744ab78199c6b7391b65a801746f3caaf50",
+ "builder_changes": [
+  "16-trip relaxed cap for fallback patterns (was 8-trip truncation)",
+  "anti-enumeration fold targets closest-trip-count signature (was modal)"
+ ],
+ "validate_failures": [
+  "P02006",
+  "P02007 (persona-id digit-substring lint coincidences, tolerated as in round 2)"
+ ],
+ "motivation": "E2 trips/day spread 0.767 in round 2; fallback subpopulation var-ratio 0.585 traced to truncation+modal fold"
+}

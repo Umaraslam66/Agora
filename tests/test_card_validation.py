@@ -628,15 +628,28 @@ def test_validate_card_non_dict_returns_schema_error_only():
 # fallback: >8-trip signature truncation + fidelity-gate exemption
 # ---------------------------------------------------------------------------
 
-def test_fallback_truncates_over_long_signature_and_flags_provenance():
-    # a single observed weekday with twelve trips (> the schema cap of 8)
+def test_fallback_keeps_heavy_days_whole_up_to_relaxed_cap():
+    # a twelve-trip observed weekday stays WHOLE in a fallback pattern (the
+    # 8-cap truncation measurably depressed heavy-trip persons' means, E2);
+    # fallback cards validate under the relaxed 16-trip cap.
     trip_rows = [(1, i + 1, "leisure", "walk", "midday") for i in range(12)]
     pdays, trips = _frames([1], trip_rows)
     card = cv.fallback_card("P00001", SKELETON, pdays, trips)
-    # schema-valid now: no pattern exceeds 8 trips
-    assert cv.validate_card_json(card) == []
-    assert max(len(p["trips"]) for p in card["patterns"]) == 8
-    # truncation flagged in provenance
+    assert max(len(p["trips"]) for p in card["patterns"]) == 12
+    assert cv.validate_card_json(card, max_pattern_trips=16) == []
+    assert cv.validate_card_json(card) != []  # over the LLM contract cap of 8
+    assert "signature_truncated" not in card["provenance"]
+    # composed entry point applies the relaxed cap for fallback provenance
+    obs = observed_stats_of(pdays, trips)
+    seqs = cv.day_signatures(pdays, trips)
+    assert cv.validate_card(card, SKELETON, obs, seqs) == []
+
+
+def test_fallback_truncates_beyond_sixteen_and_flags_provenance():
+    trip_rows = [(1, i + 1, "leisure", "walk", "midday") for i in range(18)]
+    pdays, trips = _frames([1], trip_rows)
+    card = cv.fallback_card("P00001", SKELETON, pdays, trips)
+    assert max(len(p["trips"]) for p in card["patterns"]) == 16
     assert card["provenance"]["signature_truncated"] is True
 
 
@@ -688,10 +701,11 @@ def test_fallback_exempt_from_fidelity_via_validate_card():
 def test_fallback_raw_fidelity_infidelity_is_bounded_to_documented_corners():
     # Documenting WHY the exemption exists: raw fidelity() on fallback cards
     # fails ONLY where the fallback's own construction is lossy — the
-    # anti-enumeration fold (all-distinct multi-day repertoires) and the
-    # >8-trip truncation. Every other zoo case passes fidelity outright.
-    expected_fail = {"all-distinct multi-day", "two quiet two distinct active",
-                     "over-long signature"}
+    # anti-enumeration fold (all-distinct multi-day repertoires; now folded
+    # into the closest-trip-count target, but mode-mix distortion can still
+    # survive the fold). Heavy days are kept whole up to 16 trips, so the
+    # over-long case now passes fidelity outright.
+    expected_fail = {"all-distinct multi-day", "two quiet two distinct active"}
     got_fail = set()
     for name, (days, trip_rows) in _FALLBACK_ZOO.items():
         pdays, trips = _frames(days, trip_rows)

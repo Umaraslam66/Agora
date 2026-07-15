@@ -26,6 +26,7 @@ in any literal or comment here (mask-lint gate).
 """
 from __future__ import annotations
 
+import copy
 import json
 import re
 from collections import Counter
@@ -126,17 +127,28 @@ def _validate(instance, schema: Mapping, path: str, errors: List[str]) -> None:
                 errors.append(f"{path}: additional property '{key}' is not allowed")
 
 
-def validate_card_json(obj) -> list[str]:
+def validate_card_json(obj, max_pattern_trips: int | None = None) -> list[str]:
     """Structural validation against the frozen card schema. Empty list = valid.
 
     A full assembled card is accepted (harness-owned top-level fields are
     stripped first); a genuinely unknown top-level key is still rejected.
+
+    ``max_pattern_trips`` relaxes the per-pattern trip cap (schema default 8,
+    the LLM-output contract) — used ONLY for fallback cards, whose patterns
+    are empirical day-signatures that may legitimately exceed the LLM cap
+    (see :func:`fallback_card`). Everything else stays schema-exact.
     """
     if not isinstance(obj, dict):
         return ["<root>: card must be a JSON object"]
     work = {k: v for k, v in obj.items() if k not in _HARNESS_KEYS}
+    schema = _SCHEMA
+    if max_pattern_trips is not None:
+        schema = copy.deepcopy(_SCHEMA)
+        schema["properties"]["patterns"]["items"]["properties"]["trips"][
+            "maxItems"
+        ] = int(max_pattern_trips)
     errors: List[str] = []
-    _validate(work, _SCHEMA, "<card>", errors)
+    _validate(work, schema, "<card>", errors)
     return errors
 
 
@@ -443,16 +455,18 @@ def validate_card(
     Order: schema -> mask-lint -> replay-smell -> feasibility -> fidelity.
 
     Fallback cards (``provenance.card_source == "fallback"``) are EXEMPT from
-    the fifth (fidelity) gate. The fidelity gate exists only to drive LLM
-    retries with numeric feedback, and a fallback card is the terminal safety
-    net with no retry behind it: it is a deterministic empirical resampling of
-    the person's own day-signatures whose only residual infidelity is (i) the
-    anti-enumeration fold that compresses all-distinct multi-day repertoires and
-    (ii) the >8-trip signature truncation — both inherent to its construction
-    and both flagged (``card_source="fallback"``, ``signature_truncated``). It
-    still passes the four structural gates.
+    the fifth (fidelity) gate and validated with the relaxed 16-trip pattern
+    cap. The fidelity gate exists only to drive LLM retries with numeric
+    feedback, and a fallback card is the terminal safety net with no retry
+    behind it: it is a deterministic empirical resampling of the person's own
+    day-signatures whose only residual infidelity is (i) the trip-count-
+    preserving anti-enumeration fold for all-distinct multi-day repertoires
+    and (ii) truncation of >16-trip day-signatures — both inherent to its
+    construction and both flagged (``card_source="fallback"``,
+    ``signature_truncated``). It still passes the four structural gates.
     """
-    errors = validate_card_json(obj)
+    is_fb = _is_fallback(obj)
+    errors = validate_card_json(obj, max_pattern_trips=16 if is_fb else None)
     if not isinstance(obj, Mapping):
         return errors
     errors = (
@@ -531,15 +545,15 @@ def fallback_card(persona_id: str, skeleton: Mapping, person_days, trips) -> dic
     """
     sigs = day_signatures(person_days, trips)
 
-    # Trip-cap belt: a pattern's trips list is schema-capped at 8, but a person
-    # can record a weekday with more than 8 trips. Truncate any over-long
-    # day-signature to its first 8 trips deterministically (day_signatures
-    # already orders trips by tripnum) so the fallback card stays schema-valid;
-    # flag it in provenance. The residual infidelity from dropping trips 9+ is
-    # the documented cost of the terminal safety net.
-    signature_truncated = any(len(sig) > 8 for sig in sigs)
+    # Trip-cap belt: the LLM schema caps a pattern at 8 trips, but fallback
+    # patterns are empirical day-signatures and are validated with a relaxed
+    # 16-trip cap (validate_card) — the 8-cap truncation measurably depressed
+    # heavy-trip persons' means and the between-person spread (E2). Truncate
+    # only beyond 16 trips (extreme outliers), deterministically (day
+    # signatures are tripnum-ordered), flagged in provenance.
+    signature_truncated = any(len(sig) > 16 for sig in sigs)
     if signature_truncated:
-        sigs = [sig[:8] for sig in sigs]
+        sigs = [sig[:16] for sig in sigs]
 
     # Feasibility belt: the diary can contain car trips a person's skeleton
     # says they cannot make (e.g. a zero-vehicle household reporting a borrowed
@@ -563,18 +577,23 @@ def fallback_card(persona_id: str, skeleton: Mapping, person_days, trips) -> dic
         # a distinct signature would otherwise reproduce the observed active
         # days one-for-one, which the replay lint flags as enumeration instead
         # of compression. Fold the least-frequent non-empty signature into the
-        # most-frequent non-empty one (deterministic tie-break by signature
-        # sort order) so the card genuinely compresses — fewer active patterns
-        # than active days. The no-trip pattern is never the one dropped, and
-        # a single-active-signature card is left alone (the replay lint
-        # likewise ignores no-trip days, so it is not enumeration).
+        # remaining non-empty signature with the CLOSEST TRIP COUNT (tie-break
+        # by the (-count, signature) sort order) so the card compresses while
+        # preserving the person's mean trips/day as nearly as possible — the
+        # earlier fold-into-modal pulled heavy repertoires toward one day and
+        # measurably shrank the between-person spread (E2). The no-trip
+        # pattern is never the one dropped, and a single-active-signature card
+        # is left alone (the replay lint likewise ignores no-trip days).
         active_days = [s for s in sigs if s]
         if len(active_days) > 1 and len(set(active_days)) == len(active_days):
             non_empty = [i for i, (sig, _) in enumerate(ordered) if sig != tuple()]
             if len(non_empty) >= 2:
                 drop_i = non_empty[-1]
-                keep_i = non_empty[0]
                 sig_drop, c_drop = ordered[drop_i]
+                keep_i = min(
+                    (i for i in non_empty if i != drop_i),
+                    key=lambda i: (abs(len(ordered[i][0]) - len(sig_drop)), i),
+                )
                 sig_keep, c_keep = ordered[keep_i]
                 ordered[keep_i] = (sig_keep, c_keep + c_drop)
                 ordered.pop(drop_i)

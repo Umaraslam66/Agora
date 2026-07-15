@@ -1,0 +1,94 @@
+{
+  "label": "",
+  "bars": {
+    "pooled": 0.1,
+    "cell": 0.2,
+    "epsilon": 0.00655
+  },
+  "n_runs": 20,
+  "method_arm": {
+    "pooled_tvd": 0.06619297204681046,
+    "per_family_tvd": {
+      "trips_per_day": 0.025680918024407147,
+      "mode_shares": 0.06619297204681046,
+      "time_bands": 0.044030981993430085
+    },
+    "cell_tvds": {
+      "low|car0|catchment": 0.06376385149330902,
+      "low|car1p|catchment": 0.09117128044273538,
+      "low|car1p|remainder": 0.06209216291876972,
+      "mid|car0|catchment": 0.09715349429446085,
+      "mid|car1p|catchment": 0.06364779067904316,
+      "mid|car1p|remainder": 0.07878839016124949,
+      "high|car0|catchment": 0.07445548947943109,
+      "high|car1p|catchment": 0.07029730040045136,
+      "high|car1p|remainder": 0.06484352811638469,
+      "car0|remainder": 0.14164437016039796
+    },
+    "worst_cell": "car0|remainder",
+    "worst_cell_tvd": 0.14164437016039796,
+    "pooled_bar_met": true,
+    "cells_bar_met": true
+  },
+  "mnl_arm": {
+    "pooled_tvd": 0.11248475557557595,
+    "per_family_tvd": {
+      "trips_per_day": 0.012672663635647246,
+      "mode_shares": 0.11248475557557595,
+      "time_bands": 0.01562075003623475
+    },
+    "cell_tvds": {
+      "low|car0|catchment": 0.12805114323777744,
+      "low|car1p|catchment": 0.15863253957916484,
+      "low|car1p|remainder": 0.16670661394468134,
+      "mid|car0|catchment": 0.07048678466845357,
+      "mid|car1p|catchment": 0.08256716991381714,
+      "mid|car1p|remainder": 0.13396039767755022,
+      "high|car0|catchment": 0.05324949619135069,
+      "high|car1p|catchment": 0.0799398701949787,
+      "high|car1p|remainder": 0.11606517747565911,
+      "car0|remainder": 0.21008565083684508
+    },
+    "worst_cell": "car0|remainder",
+    "worst_cell_tvd": 0.21008565083684508
+  },
+  "falsification": {
+    "B": 500,
+    "seed": 20260761,
+    "seed_derivation": "base_seed(20260717) + SEED_OFFSET_PAIRED(44)",
+    "epsilon": 0.00655,
+    "delta_mean": -0.04538880229558605,
+    "delta_sd": 0.0029929707301039024,
+    "ci_lo": -0.04629178352876552,
+    "ci_hi": -0.034930566558376785,
+    "pass": true,
+    "method_bootstrap_tvd_mean": 0.06719133508951482,
+    "mnl_bootstrap_tvd_mean": 0.11258013738510086
+  },
+  "pass": {
+    "pooled_bar": true,
+    "cell_bars": true,
+    "beats_or_matches_mnl": true,
+    "overall": true
+  },
+  "cards": {
+    "n_cards": 11940,
+    "n_fallback": 3444,
+    "n_llm": 8496,
+    "fallback_share": 0.2884422110552764
+  },
+  "coverage": {
+    "n_personas": 11940,
+    "n_cards": 11940,
+    "n_personas_with_card": 11940
+  },
+  "drops": {
+    "pna_income": 421,
+    "unmapped_ring": 2
+  },
+  "timing_seconds": {
+    "method_arm": 4.6,
+    "mnl_arm": 33.3,
+    "total": 38.2
+  }
+}

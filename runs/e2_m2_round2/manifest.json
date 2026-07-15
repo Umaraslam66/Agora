@@ -1,0 +1,43 @@
+{
+  "adapter_version": "psrc-m2-1.0",
+  "cards_path": "data/cards/cards_m2_masked_r2.jsonl",
+  "cards_sha256": "ce7dc4e22881269f9603e4b3f4f57d4119b5817c9f6ded4433715b48d57c04e7",
+  "correlation_bar": 0.2,
+  "dimensions": [
+    "mean_trips_per_day",
+    "car_share",
+    "ride_share"
+  ],
+  "eval": "e2",
+  "n_cards": 11940,
+  "n_runs": 20,
+  "namespaces": [
+    "run20260717",
+    "run20260718",
+    "run20260719",
+    "run20260720",
+    "run20260721",
+    "run20260722",
+    "run20260723",
+    "run20260724",
+    "run20260725",
+    "run20260726",
+    "run20260727",
+    "run20260728",
+    "run20260729",
+    "run20260730",
+    "run20260731",
+    "run20260732",
+    "run20260733",
+    "run20260734",
+    "run20260735",
+    "run20260736"
+  ],
+  "seed": 20260717,
+  "spread_band": [
+    0.8,
+    1.2
+  ],
+  "taxonomy": "m0-1.0",
+  "timestamp": "2026-07-15T15:18:44.229044+00:00"
+}

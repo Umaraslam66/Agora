@@ -1,0 +1,34 @@
+{
+  "adapter_version": "psrc-m2-1.0",
+  "map_version": {
+    "map_version": "m2-1.0",
+    "built": "2026-07-14",
+    "source": "US Census Bureau 2020 Gazetteer, census tracts, state FIPS 53 (INTPTLAT/INTPTLONG interior-point centroids); household weighting from the survey households table, two pooled waves, hh_weight>0, x0.5 wave mass",
+    "county_fips": [
+      "53033",
+      "53035",
+      "53053",
+      "53061"
+    ]
+  },
+  "taxonomy": "m0-1.0",
+  "cards_path": "data/cards/cards_m2_masked.jsonl",
+  "cards_sha256": "8b55623e86bd66b476f4738f8948e4b717053cdb5d574c104df8fc6be4f91776",
+  "n_runs": 20,
+  "bootstrap_B": 500,
+  "base_seed": 20260717,
+  "seed_derivation": "base_seed(20260717) + SEED_OFFSET_PAIRED(44)",
+  "mnl_fit_iters": 250,
+  "mnl_diagnostics": {
+    "n_personas": 11940,
+    "fit_iters": 250,
+    "n_coef_per_fold": {
+      "0": 32,
+      "1": 32,
+      "2": 32,
+      "3": 32,
+      "4": 32
+    }
+  },
+  "timestamp": "Wed Jul 15 16:08:58 CEST 2026"
+}
