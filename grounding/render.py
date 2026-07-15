@@ -235,8 +235,13 @@ def _card_view(obj: dict) -> dict:
 
 
 def _render_card_json(obj: dict) -> str:
-    """Deterministic JSON of the model-owned card view (sorted keys)."""
-    return json.dumps(_card_view(obj), sort_keys=True, indent=2)
+    """Deterministic JSON of the model-owned card view (sorted keys).
+
+    ensure_ascii=False is load-bearing: with the default ASCII escaping, a
+    curly apostrophe in a card's voice text renders as a unicode escape
+    sequence whose four digits happen to spell a forbidden bare wave-year
+    token — the prompt would trip mask-lint on its own quoting artifact."""
+    return json.dumps(_card_view(obj), sort_keys=True, indent=2, ensure_ascii=False)
 
 
 def _fmt_minutes(value: object) -> str:
