@@ -36,3 +36,7 @@ data/psrc/
 # Per-site cluster env (real account/venv/HF-cache paths) — never committed;
 # jobs/site_env.example.sh (placeholder paths) is the tracked template.
 jobs/site_env.sh
+
+# record-derived card sets are never committed (privacy discipline)
+runs/**/cards*.jsonl
+data/cards/
