@@ -221,12 +221,20 @@ def ensemble_mean_distributions(
     cards: Sequence[dict],
     day_slots: Mapping[str, Sequence],
     namespaces: Sequence[str],
+    producer=None,
 ) -> Dict[str, np.ndarray]:
     """Ensemble-mean family distributions: execute the cards once per CRN
-    namespace and average the per-run distributions per family."""
+    namespace and average the per-run distributions per family.
+
+    ``producer`` (optional, M3 D6) is ``namespace -> persona_id ->
+    list[RealizedDay]`` supplying loop-realized days in place of the static
+    ``execute_days`` call; when None the path is exactly the M2 one."""
     per_run = []
     for ns in namespaces:
-        realized = execute_days(cards, day_slots, ns, update_habits=False)
+        if producer is None:
+            realized = execute_days(cards, day_slots, ns, update_habits=False)
+        else:
+            realized = producer(ns)
         per_run.append(realized_distributions(realized))
     return {
         fam: np.mean([d[fam] for d in per_run], axis=0) for fam in FAMILIES
@@ -288,13 +296,20 @@ def score_e5(
     dataset,
     n_runs: int = DEFAULT_RUNS,
     seed: int = 0,
+    masked_producer=None,
+    unmasked_producer=None,
 ) -> dict:
     """End-to-end E5(i): execute both card populations under the SAME CRN
     namespaces (paired seeds), score both once against the same fixed
     reference, return the probe verdict.
 
     Enforces the sealed protocol's "identical agent populations": the two
-    card files must cover exactly the same persona ids."""
+    card files must cover exactly the same persona ids.
+
+    ``masked_producer``/``unmasked_producer`` (optional, M3 D6) inject
+    loop-realized days per arm — both arms must be produced by the SAME
+    machinery over the SAME namespaces so the pairing stays symmetric;
+    defaults reproduce the M2 static path byte-identically."""
     masked_ids = {c["persona_id"] for c in masked_cards}
     unmasked_ids = {c["persona_id"] for c in unmasked_cards}
     if masked_ids != unmasked_ids:
@@ -309,8 +324,12 @@ def score_e5(
     slots = day_slots_of(dataset.person_days, id_map)
     namespaces = namespaces_for(n_runs, seed)  # SAME namespaces, both arms
 
-    masked_mean = ensemble_mean_distributions(masked_cards, slots, namespaces)
-    unmasked_mean = ensemble_mean_distributions(unmasked_cards, slots, namespaces)
+    masked_mean = ensemble_mean_distributions(
+        masked_cards, slots, namespaces, producer=masked_producer
+    )
+    unmasked_mean = ensemble_mean_distributions(
+        unmasked_cards, slots, namespaces, producer=unmasked_producer
+    )
     reference = reference_distributions(dataset)
     probe = paired_probe(masked_mean, unmasked_mean, reference)
 

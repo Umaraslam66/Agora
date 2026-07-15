@@ -69,6 +69,12 @@ def main(argv=None) -> int:
                         help="starting run index for the run{k} CRN namespaces")
     parser.add_argument("--data-dir", default=None, help="raw survey CSV directory")
     parser.add_argument("--cache-dir", default=None, help="adapter cache directory")
+    parser.add_argument("--loop", action="store_true",
+                        help="M3 end-to-end mode: realize both arms through the "
+                             "baseline two-brain loop instead of static execution")
+    parser.add_argument("--warmup", type=int, default=10, help="loop warm-up days (--loop)")
+    parser.add_argument("--scoring-days", type=int, default=7,
+                        help="loop scoring-window days (--loop)")
     args = parser.parse_args(argv)
 
     masked_path = Path(args.masked_cards)
@@ -83,10 +89,63 @@ def main(argv=None) -> int:
         load_kwargs["cache_dir"] = args.cache_dir
     dataset = psrc.load_or_build(**load_kwargs)
 
+    producers = {"masked": None, "unmasked": None}
+    if args.loop:
+        # M3 D6: both arms realized through the SAME loop machinery over the
+        # SAME run{k} namespaces (pairing stays symmetric). client=None
+        # collects any organic rewrite requests instead of rendering prompts;
+        # a nonempty collection HALTS the probe for architect review — the
+        # unmasked arm's rewrite prompts would need quarantined vocabulary
+        # and must never be rendered silently.
+        from agents.baseline_loop import run_baseline_loop
+        from agents.slow_brain import StandardSurprisePolicy
+        from evaluation.e2 import day_slots_of
+        from grounding import seeding
+        from world.config import cityk_corridor
+
+        config = cityk_corridor()
+        id_map = seeding._persona_id_map(dataset.persons["person_id"].astype(str))
+        slots = day_slots_of(dataset.person_days, id_map)
+        n_days = args.warmup + args.scoring_days
+
+        def loop_producer(arm_cards, arm_label):
+            cache = {}
+
+            def produce(namespace):
+                if namespace not in cache:
+                    res = run_baseline_loop(
+                        arm_cards, config, slots, namespace=namespace,
+                        n_days=n_days, warmup_days=args.warmup,
+                        policy=StandardSurprisePolicy(warmup_days=args.warmup),
+                        client=None, keep_full_window=False,
+                    )
+                    if res.pending_rewrites:
+                        raise SystemExit(
+                            f"E5(i) HALT: {arm_label} arm collected "
+                            f"{len(res.pending_rewrites)} organic rewrite "
+                            f"request(s) in namespace {namespace}; rewrite "
+                            "prompts for the unmasked arm need quarantined "
+                            "vocabulary — architect review required before "
+                            "this probe can be scored (M3 design D6)."
+                        )
+                    cache[namespace] = res.scoring_days
+                return cache[namespace]
+
+            return produce
+
+        producers["masked"] = loop_producer(masked_cards, "masked")
+        producers["unmasked"] = loop_producer(unmasked_cards, "unmasked")
+
     results = contamination.score_e5(
-        masked_cards, unmasked_cards, dataset, n_runs=args.runs, seed=args.seed
+        masked_cards, unmasked_cards, dataset, n_runs=args.runs, seed=args.seed,
+        masked_producer=producers["masked"], unmasked_producer=producers["unmasked"],
+    )
+    results["realization"] = (
+        f"two-brain baseline loop (warmup {args.warmup}, scoring {args.scoring_days})"
+        if args.loop else "static execute_days (M2 protocol)"
     )
     manifest = build_manifest(args, masked_path, unmasked_path, results)
+    manifest["realization"] = results["realization"]
     out_dir = Path(args.out)
     write_outputs(out_dir, results, manifest)
 
