@@ -297,3 +297,140 @@ weekdays included in trips/day. The residence-ring assignment currently
 uses the core-jurisdiction proxy and is PROVISIONAL: it must be re-pinned
 to the committed tract→zone map at M2 by a dated note, without moving any
 bar sealed here.
+
+### Amendment A3 — 2026-07-15, project owner
+
+**A3.0 Scope and disclosures.** This amendment re-powers E3 in the
+primary arena by decomposing the say-do correction into two channels
+with distinct evidentiary anchors, adds one in-window aggregate
+calibration anchor (the SR 520 tolling event), and revises A1.6(iv)
+accordingly. Metric definitions and decision rules in §3 are not
+altered; A2.4's transfer-arena E3 protocol and numbers stand unchanged.
+Disclosures: (i) this amendment is adopted AFTER the M2 grounding runs
+(persona cards exist; E1/E2 have been scored on calibration data) but
+BEFORE any E3 quantity, any say-do correction, or any blind test has
+been scored — no quantity measured after 2019-11-08 has influenced it;
+(ii) every anchor below lies inside the C0 calibration wall;
+(iii) survey waves after 2019 (2021/2023/2025) are post-wall for the
+primary arena and are EXCLUDED from all fitting; they may be cited as
+context only.
+
+**A3.1 E3-primary, recall channel (FITTED).** The survey-mode/life-mode
+gap is fitted person-level on stated-vs-revealed pairs present in the
+seeding microdata (2017+2019 waves and their archived Public Release 2
+attitudinal module, person-joinable 1:1), items pinned now:
+(a) stated typical commute mode vs revealed commute-trip mode
+(measured agreement 0.83–0.87, joint N ≈ 2,700–2,900 per wave);
+(b) stated commute days/week vs revealed weekday commute rate
+(stated exceeds revealed by ≈0.4–0.65 days/week);
+(c) stated past-30-day mode-frequency bands (transit, walk, bike,
+hired-ride, shared-car) vs revealed weekday usage (strongest family:
+transit, Spearman 0.63–0.67; stated any-use prevalence 0.52 vs
+observed 0.24 on the diary window);
+(d) stated telework days/week vs revealed diary-day telework minutes;
+(e) stated residence-factor importance vs revealed use (archived
+module; monotone gradient, Spearman 0.32, N = 11,940).
+Fitting discipline: the recall-channel correction is fitted ONCE on
+these pairs under the A2.1 fold structure (fitted components strictly
+out-of-fold), frozen, and applied unchanged thereafter (§3 E3's
+fit-once-freeze rule, unchanged). Diary-window/recall-window mismatch
+is part of what the correction absorbs and is stated here so it cannot
+be re-read later as a confound discovered post hoc; the fit leans on
+the multi-day (rMove) subsample where window noise roughly halves.
+Pass bars, primary arena, recall channel: E3-primary(i) direction —
+the simulated survey-mode claim must exceed life-mode behavior in the
+same direction as every pinned pair family measures (stated typical/
+frequency claims exceed revealed rates); E3-primary(ii) magnitude —
+the simulated stated-vs-revealed discrepancy per pinned family within
+a factor of **2.0** of the measured discrepancy (mirroring A2.4's
+factor; measured R_real values are computed by the frozen procedure
+above from the seeding waves at fit time and recorded in the fit
+manifest, not re-derivable after scoring).
+
+**A3.2 E3-primary, price channel (PRIOR-ANCHORED, declared).** No
+instrument in the primary arena pairs stated price response with
+revealed price response at person level; the price-channel correction
+is therefore anchored on the published literature and is a PRIOR, not
+a fit — recorded as such: central anchor, revealed toll response =
+**2–3×** stated response (Brownstone & Small 2005, Transportation
+Research A 39(4): paired RP/SP on two real tolled corridors; median SP
+value-of-time about half median RP across two independent studies,
+mixed-logit robustness check 3×); sensitivity band **[1.35, 3.0]**
+(lower bound: Murphy et al. 2005, Environmental & Resource Economics
+30(3), median same-mechanism hypothetical bias 1.35 — opposite-signed
+construct, quoted as the conservative floor; tie-cite Loomis 2011,
+J. Econ. Surveys 25(2)). The single-corridor counter-example showing
+the gap can be small (Devarasetty, Burris & Shaw 2012, Katy Freeway)
+is cited as the reason this channel carries a sensitivity band rather
+than a point value. The price-channel correction's ONLY pass/fail test
+is the frozen E3(iii) transfer clause, unchanged: the frozen correction
+must improve blind E4 versus the uncorrected ablation, else the
+transfer claim FAILS and is reported as such. No E3-primary(ii)
+magnitude bar is set for the price channel — setting one against a
+prior would be circular, and this is stated now so it cannot be
+attempted later.
+
+**A3.3 SR 520 calibration anchor (aggregate; NOT say-do, NOT E6).**
+The SR 520 floating-bridge tolling event (tolling began 2011-12-29,
+all-electronic, both directions; opening weekday pass rate $3.50 peak
+with time-of-day ladder and pay-by-mail surcharge; six July-1 rate
+steps 2013–2018; overnight tolling added FY2018) is adopted as an
+in-window aggregate anchor, roles pinned now:
+(a) habit/anchoring dynamics — the corridor shows a ~36–40% AADT drop
+at tolling with drop-and-plateau persistence (no recovery to baseline
+through the wall) on the published monthly transaction series
+(WSDOT/Stantec 2019 T&R study, Table 3.2, FY2012–FY2019) and the
+FY2013 monthly actuals; used to calibrate habit-persistence parameters
+under a permanent level shift;
+(b) calibration rehearsal — before BT1 is scored, the frozen pipeline
+predicts the SR 520 drop as a labeled CALIBRATION exercise against the
+forecast-vs-actual pair pinned now (official pre-tolling forecast: 48%
+AADT drop; realized: 35–40%; WSDOT Toll Division, IBTTA 2012), scored
+with E4 machinery but never as a blind result;
+(c) revealed heterogeneity — the FHWA/Volpe SR-520 household panel
+(~2,000 households, Nov 2010 wave 1, Apr–May 2012 wave 2; 43% recorded
+trip reduction and 52% VMT reduction on the tolled facility, ~¼ of
+former users diverting to the free parallel crossing; diversion
+strongest among males, lower-income, and low-schedule-flexibility
+respondents) is adopted as a validation target for the persona-level
+response DISTRIBUTION (E2-adjacent), not as a say-do pair — the panel
+is a revealed before/after design with no matched stated-intention
+wave.
+Confounds pinned now so they cannot be post-hoc excuses: the new
+6-lane bridge opened 2016-04 (capacity break — dynamics calibration
+restricted to 2011-12→2016-03); the FY2018 overnight-tolling counting
+break; the concurrent transit-service boost (+90–130 daily bus trips
+with tolling start — the observed response is joint price+service);
+six rate steps; post-recession growth trend; parallel-crossing
+construction during the window. The event is a LEVEL SHIFT with no
+removal arm: it cannot and does not power E6, and the long-run
+investment-grade forecast comparison remains UNVERIFIED from primary
+sources and is excluded from every pinned fact above pending retrieval
+of the 2010 investment-grade study.
+
+**A3.4 A1.6(iv) revised.** A1.6(iv) declared E3 unpowered in the
+primary arena outright. As of this amendment: the RECALL channel is
+powered per A3.1 (fitted, person-level, in-window); the PRICE channel
+remains unfitted locally and is prior-anchored per A3.2, with E3(iii)
+as its only test. The Sept-2018 media poll remains excluded (no
+methodology, no RP match). E3's transfer-arena battery per A1.2/A2.4
+is unchanged in every respect. The fit-freeze-transfer structure,
+explicit: FIT the recall channel (A3.1) and SET the price prior (A3.2)
+on calibration-window data only, at M5, before any blind scoring;
+FREEZE both in a dated fit manifest; TRANSFER the frozen corrections
+unchanged into BT1 (E4) and the Stockholm arena; the corrections may
+never be refit after any blind or transfer quantity is seen.
+
+**A3.5 Frozen-text collision register.** (i) A1.6(iv): superseded as
+stated in A3.4 — append-only supersession before any affected quantity
+is scored. (ii) A2.4: untouched; its factor 2.0 and R_real = 4.0
+govern the transfer arena exactly as sealed. (iii) §3 E3's [M0]
+magnitude-factor slot: A2 set it for the transfer arena only (the
+primary arena being then-unpowered); A3.1's primary-arena recall
+factor 2.0 is a NEW application of that slot to a battery that did not
+exist at A2 sealing — flagged as the sharpest edge of this amendment;
+the owner seals it knowingly. (iv) §2 wall: every anchor and every
+fitting input above predates 2019-11-08; post-2019 survey waves are
+excluded from fitting per A3.0(iii). (v) §5 model/compute pins:
+unaffected. (vi) E6: explicitly NOT powered by SR 520 (A3.3); its
+anchor remains A2.5, transfer arena.
