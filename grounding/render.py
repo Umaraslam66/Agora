@@ -28,6 +28,7 @@ __all__ = [
     "render_persona_prompt",
     "render_choice_prompt",
     "render_seed_prompt",
+    "render_seed_retry_prompt",
     "VALID_MODES",
 ]
 
@@ -161,6 +162,30 @@ def render_seed_prompt(
         "n_observed_days": n_observed_days,
     }
     return _load_template("persona_seed.txt").format_map(fields)
+
+
+def render_seed_retry_prompt(
+    skeleton: dict,
+    evidence_lines: list,
+    n_observed_days: int,
+    failure_reasons: list,
+    mode: str,
+) -> str:
+    """Render the retry prompt for a persona whose first card failed validation.
+
+    Same render-parity contract as :func:`render_seed_prompt`: this reuses that
+    one path unchanged (there is still exactly one seed-prompt body) and appends
+    a machine-readable failure block from a template, so a retry attempt differs
+    from the first attempt ONLY by the appended list of rejection reasons (D7's
+    validation-loop retry). ``failure_reasons`` are pre-built masked strings from
+    the validators; this module only formats them.
+    """
+    _check_mode(mode)
+    base = render_seed_prompt(skeleton, evidence_lines, n_observed_days, mode).rstrip("\n")
+    retry = _load_template("persona_seed_retry.txt").format_map(
+        {"failure_reasons": _render_rules(list(failure_reasons))}
+    ).rstrip("\n")
+    return base + "\n\n" + retry + "\n"
 
 
 def render_choice_prompt(

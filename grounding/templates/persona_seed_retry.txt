@@ -1,0 +1,7 @@
+=== PREVIOUS ATTEMPT FAILED VALIDATION ===
+The card you returned before was rejected by the automatic checker. Correct
+every issue listed below, keep everything else faithful to the evidence, and
+return ONLY the corrected JSON object.
+
+Reasons the previous attempt was rejected:
+{failure_reasons}
