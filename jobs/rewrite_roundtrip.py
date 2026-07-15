@@ -42,7 +42,7 @@ from agents.slow_brain import (
     MAX_REWRITE_ATTEMPTS,
     StandardSurprisePolicy,
     apply_rewrite,
-    _strong_rule_violations,  # deliberate: the ONE acceptance definition
+    restore_strong_rules,  # the ONE acceptance definition (D4 revision)
 )
 from agents.two_brain import RewriteRequest, SurpriseEvent
 from grounding.card_validation import validate_card
@@ -215,12 +215,14 @@ def cmd_gate(args) -> int:
     failures: Dict[str, List[str]] = {}
     rejected_requests: List[dict] = []
 
+    n_with_restorations = 0
     for rd in requests:
         pid = rd["persona_id"]
         req = request_from_dict(rd, attempt=round_no)
         rec = raw_by_persona.get(pid)
         ctx = vctx.get(pid)
         errs: List[str]
+        restored: List[str] = []
         obj = rec.get("raw_json") if rec else None
         if rec is None:
             errs = ["no generation record returned for this persona"]
@@ -229,22 +231,29 @@ def cmd_gate(args) -> int:
         elif ctx is None:
             errs = ["no validation context for this persona; cannot gate the rewrite"]
         else:
+            # D4 revision: strong-rule drift is mechanically REPAIRED
+            # (restored verbatim, shadow-guarded), never a rejection; the
+            # five validate_card gates run on the repaired object.
+            obj, restored = restore_strong_rules(obj, req.card, req.strong_rule_ids)
             errs = validate_card(
                 obj, ctx["skeleton"], ctx["observed"], ctx["observed_day_sequences"]
-            ) + _strong_rule_violations(obj, req.card, req.strong_rule_ids)
+            )
 
+        if restored:
+            n_with_restorations += 1
         if not errs:
             new_card = apply_rewrite(
                 req.card, obj, req.day_index, round_no,
                 rec.get("model", "unknown"), rec.get("prompt_sha256"),
             )
             accepted_cards.append(new_card)
-            audit.append({"persona_id": pid, "round": round_no, "accepted": True})
+            audit.append({"persona_id": pid, "round": round_no, "accepted": True,
+                          "strong_rules_restored": restored})
         else:
             failures[pid] = list(errs)
             rejected_requests.append(rd)
             audit.append({"persona_id": pid, "round": round_no, "accepted": False,
-                          "gate_failures": errs})
+                          "gate_failures": errs, "strong_rules_restored": restored})
 
     _write_jsonl(out / f"accepted_cards_round{round_no}.jsonl", accepted_cards)
     stats = {
@@ -253,6 +262,7 @@ def cmd_gate(args) -> int:
         "n_accepted": len(accepted_cards),
         "n_rejected": len(rejected_requests),
         "acceptance_rate": (len(accepted_cards) / len(requests)) if requests else None,
+        "n_with_strong_rule_restorations": n_with_restorations,
         "failure_reason_counts": _reason_counts(failures),
         "audit": audit,
     }

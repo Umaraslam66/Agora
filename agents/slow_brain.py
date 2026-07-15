@@ -72,6 +72,7 @@ __all__ = [
     "GatedSlowBrain",
     "StubGenerator",
     "apply_rewrite",
+    "restore_strong_rules",
     "strong_rule_ids_for",
     "build_rewrite_prompt_records",
     "render_rewrite_prompt",
@@ -145,9 +146,11 @@ def strong_rule_ids_for(card: Mapping, threshold: int = STRONG_HABIT_THRESHOLD) 
 def _strong_rule_violations(
     new_obj: Mapping, old_card: Mapping, strong_rule_ids: Sequence[str]
 ) -> List[str]:
-    """Mechanical strong-habit immutability check: reject if any immutable rule
-    id is missing from, or content-changed in, the new object (canonical-JSON
-    comparison of the rule dict). Returns masked-clean failure strings."""
+    """Mechanical strong-habit immutability check: which immutable rule ids
+    are missing from, or content-changed in, the new object (canonical-JSON
+    comparison of the rule dict). Returns masked-clean strings — used for
+    AUDIT (restoration counts), not rejection; see :func:`restore_strong_rules`
+    and the dated D4 revision note in the M3 design record."""
     old_rules = {r.get("id"): _canonical(r) for r in old_card.get("rules", [])}
     new_rules = {r.get("id"): _canonical(r) for r in new_obj.get("rules", [])}
     errors: List[str] = []
@@ -161,6 +164,42 @@ def _strong_rule_violations(
                 f"strong rule {rid} was altered; an established habit may not be changed"
             )
     return errors
+
+
+def restore_strong_rules(
+    new_obj: Mapping, old_card: Mapping, strong_rule_ids: Sequence[str]
+) -> Tuple[dict, List[str]]:
+    """Mechanically restore immutable strong rules into a proposed rewrite.
+
+    Dated D4 revision (2026-07-15, M3 rehearsal evidence): the original
+    contract REJECTED a rewrite that dropped or altered a strong rule. The
+    real-model rehearsal showed the model deterministically simplifies rule
+    conditions while keeping ids (65/95 first-pass rejections, unrecovered by
+    retry feedback) — byte-copying JSON through an LLM is the wrong mechanism
+    for immutability. Doctrine already said it: resistance must be MECHANICAL,
+    not rhetorical. So the machinery restores instead of rejecting: the model
+    proposes, the gate disposes.
+
+    Restoration contract: every strong rule re-enters with its ORIGINAL
+    content, in its ORIGINAL relative order, placed AHEAD of every proposed
+    non-strong rule — first-match-wins means nothing the rewrite adds may
+    preempt an established habit (the shadow guard). The model's proposed
+    content for a strong rule id is discarded. Returns the repaired object
+    and the audit list of what was restored (empty when the model preserved
+    everything verbatim — then the object passes through order-preserved,
+    byte-unchanged).
+    """
+    audit = _strong_rule_violations(new_obj, old_card, strong_rule_ids)
+    if not audit:
+        return dict(new_obj), []
+    strong_set = set(strong_rule_ids)
+    originals = [r for r in old_card.get("rules", []) if r.get("id") in strong_set]
+    proposed = [
+        r for r in new_obj.get("rules", []) if r.get("id") not in strong_set
+    ]
+    repaired = dict(new_obj)
+    repaired["rules"] = [copy.deepcopy(r) for r in originals] + [dict(r) for r in proposed]
+    return repaired, audit
 
 
 # ---------------------------------------------------------------------------
@@ -403,7 +442,7 @@ class GatedSlowBrain:
             for (idx, orig_req), prompt, raw in zip(pending, prompts, raws):
                 sha = prompt_sha256(prompt)
                 last_sha[idx] = sha
-                obj, errs = self._gate(orig_req, raw)
+                obj, errs, _restored = self._gate(orig_req, raw)
                 if not errs:
                     new_card = apply_rewrite(
                         orig_req.card, obj, orig_req.day_index, attempt, self.model, sha
@@ -468,25 +507,28 @@ class GatedSlowBrain:
         )
         return render_rewrite_prompt(mode=self.mode, failure_reasons=failure_reasons, **inputs)
 
-    def _gate(self, request: RewriteRequest, raw) -> Tuple[Optional[dict], List[str]]:
-        """Parse + five-gate + strong-rule immutability. Returns (obj, errors);
-        obj is None only when the raw text was not a JSON object."""
+    def _gate(self, request: RewriteRequest, raw) -> Tuple[Optional[dict], List[str], List[str]]:
+        """Parse -> strong-rule restoration -> five gates. Returns
+        (repaired_obj, errors, restorations); obj is None only when the raw
+        text was not a JSON object. Strong-rule drift is REPAIRED (restored
+        verbatim, shadow-guarded), never a rejection; the five validate_card
+        gates run on the repaired object and remain the only rejectors."""
         try:
             obj = json.loads(raw) if isinstance(raw, str) else raw
         except (json.JSONDecodeError, TypeError, ValueError):
-            return None, ["rewrite output was not valid JSON"]
+            return None, ["rewrite output was not valid JSON"], []
         if not isinstance(obj, dict):
-            return None, ["rewrite output was not a JSON object"]
+            return None, ["rewrite output was not a JSON object"], []
 
         ctx = self.validation_context.get(request.persona_id)
         if ctx is None:
-            return obj, ["no validation context for this persona; cannot gate the rewrite"]
+            return obj, ["no validation context for this persona; cannot gate the rewrite"], []
 
+        obj, restorations = restore_strong_rules(obj, request.card, request.strong_rule_ids)
         errors = validate_card(
             obj, ctx["skeleton"], ctx["observed"], ctx["observed_day_sequences"]
         )
-        errors = errors + _strong_rule_violations(obj, request.card, request.strong_rule_ids)
-        return obj, errors
+        return obj, errors, restorations
 
 
 # ---------------------------------------------------------------------------

@@ -230,8 +230,9 @@ def test_strong_rule_ids_reads_habit_counters():
     assert sb.strong_rule_ids_for(card) == ()
 
 
-def test_immutability_rejects_dropped_strong_rule():
-    # generator that returns a card with the strong rule r1 REMOVED
+def test_dropped_strong_rule_is_mechanically_restored():
+    # D4 revision (M3 rehearsal evidence): a rewrite that drops a strong rule
+    # is REPAIRED — the rule re-enters verbatim — never rejected for it.
     def drop_r1(requests):
         outs = []
         for req in requests:
@@ -244,28 +245,43 @@ def test_immutability_rejects_dropped_strong_rule():
     gsb = sb.GatedSlowBrain(drop_r1, _vctx())
     req = _request(card, surprises=(_event(12, z=2.5),), strong=("r1",))
     out = gsb.rewrite_batch([req])[0]
-    assert out.accepted is False
-    assert any("strong rule r1 was dropped" in f for f in out.gate_failures)
-    # old card unchanged apart from the rejected provenance record
-    assert out.card["rules"] == card["rules"]
+    assert out.accepted is True
+    restored = [r for r in out.card["rules"] if r["id"] == "r1"]
+    assert restored == [card["rules"][0]]  # original content, verbatim
 
 
-def test_immutability_rejects_altered_strong_rule():
-    def alter_r1(requests):
+def test_altered_strong_rule_is_restored_and_shadow_guarded():
+    def alter_r1_and_add(requests):
         outs = []
         for req in requests:
             rules = copy.deepcopy(list(req.card["rules"]))
             rules[0]["then"]["mode"] = "bike"  # content change to strong rule
+            # plus a new rule FIRST that would shadow r1 under first-match-wins
+            rules.insert(0, {"id": "shadow", "when": dict(rules[0]["when"]),
+                             "then": {"mode": "walk"}})
             obj = {"patterns": copy.deepcopy(list(req.card["patterns"])),
                    "rules": rules, "voice": req.card["voice"]}
             outs.append(json.dumps(obj))
         return outs
 
-    gsb = sb.GatedSlowBrain(alter_r1, _vctx())
-    req = _request(_card(), surprises=(_event(12, z=2.5),), strong=("r1",))
+    card = _card()
+    gsb = sb.GatedSlowBrain(alter_r1_and_add, _vctx())
+    req = _request(card, surprises=(_event(12, z=2.5),), strong=("r1",))
     out = gsb.rewrite_batch([req])[0]
-    assert out.accepted is False
-    assert any("strong rule r1 was altered" in f for f in out.gate_failures)
+    assert out.accepted is True
+    rules = out.card["rules"]
+    # restored strong rule sits AHEAD of every proposed rule (shadow guard)
+    assert rules[0] == card["rules"][0]
+    assert [r["id"] for r in rules].index("r1") < [r["id"] for r in rules].index("shadow")
+
+
+def test_restore_strong_rules_passthrough_when_verbatim():
+    card = _card()
+    obj = {"patterns": copy.deepcopy(card["patterns"]),
+           "rules": copy.deepcopy(card["rules"]), "voice": card["voice"]}
+    repaired, audit = sb.restore_strong_rules(obj, card, ("r1",))
+    assert audit == []
+    assert repaired["rules"] == obj["rules"]  # order-preserved, byte-unchanged
 
 
 def test_stub_preserves_strong_rule_and_is_accepted():
