@@ -434,3 +434,324 @@ fitting input above predates 2019-11-08; post-2019 survey waves are
 excluded from fitting per A3.0(iii). (v) §5 model/compute pins:
 unaffected. (vi) E6: explicitly NOT powered by SR 520 (A3.3); its
 anchor remains A2.5, transfer arena.
+
+### Amendment A4 — 2026-07-16, umaraslam66
+
+**A4.0 Scope and disclosures.** This amendment prepares the primary-arena
+shock milestone (M4 / BLIND TEST 1) by (i) adding **E7**, an information-value
+ablation reported in equivalent-sample-size units; (ii) specifying M4's
+**price channel** (an announced, known-price onset), replacing the M3
+same-gate rewrite rule UNDER THE SHOCK with a structural-only rewrite gate,
+and adding a **placebo negative-control arm** that revises how E4's (and
+E6's) reported response is computed; and (iii) **calibrating the
+habit-persistence parameter** on the SR 520 aggregate anchor (A3.3(a)
+authorizes it) and adding an **E6 sensitivity band**. Disclosures: (i) adopted
+AFTER the M3 baseline (E1/E2 rescored end-to-end, PASS; zero organic rewrites
+at baseline) but BEFORE any E4/E6/BT1 quantity, any toll-exposed run, or any
+SR 520 calibration fit has been scored — no quantity measured after
+2019-11-08 has influenced it; (ii) every calibration input below (SR 520) lies
+inside the C0 wall (A1.1); (iii) the §3 metric definitions for E1–E6 are
+unchanged EXCEPT the two items revised explicitly here (E4/E6 reported
+response computed as a toll−placebo difference, A4.2; an E6 sensitivity band,
+A4.3). E7 is a new §3 eval that sets NO new pass bar. WALL NOTE, stated here
+because A4.2(ii) reasons about the instrument: the M4 price channel is fixed
+from an INSTITUTIONAL fact about the toll (rates adopted 2018-10-16, ~13
+months before the 2019-11-09 onset — public rate-setting, not a response
+measurement); the blind BT1 trajectory (the two-week vs three-month response
+equality) is a SCORED quantity and is used ONLY as what E4's trajectory
+scoring checks, never as an input to any mechanism, threshold, or prompt.
+
+**A4.1 E7 — information-value ablation (rising information tiers).** The FULL
+deployed population (11,940 personas) is rebuilt at five NESTED information
+tiers, each tier the previous plus one increment of evidence handed to the
+SAME generation pipeline (render → generate → gate → assemble, with the
+deterministic fallback backstop), CRN-PAIRED across tiers (identical persona
+set, sampling seeds, temperature-0 decoding, fallback determinism; only the
+evidence bundle grows, so tier-to-tier differences are information, not
+sampling noise):
+**T1 demographics** — skeleton only (age, sex, income class, household
+type/size, licence, vehicles, home/work zone codes). No behavior, no stated
+claims, no world context beyond the skeleton.
+**T2 +context** — T1 plus the masked world the persona inhabits (zone
+geometry and access, ring, corridor membership, mode availability):
+placement without personal behavior.
+**T3 +stated claims** — T2 plus the person's stated/attitudinal module (the
+A3.1 recall-channel items: stated typical commute mode, stated commute
+days/week, stated past-30-day mode-frequency bands, stated telework,
+residence-factor importance) — what the person SAYS, not what they DID.
+**T4 +one observed day** — T3 plus a single observed weekday diary day; the
+CRN-fixed day-selection rule is pinned in the E7 fit manifest.
+**T5 +full trace** — T4 plus the full multi-day diary (the M2/M3 evidence
+bundle). This is the FULL-INFORMATION arm.
+
+Fidelity-gate applicability: the generation-time fidelity gate (card
+self-consistency to the person's OWN shown diary) applies only where a diary
+is in evidence — T4 (to the one shown day) and T5 (full). T1–T3 carry no shown
+diary and are fidelity-exempt at generation (as fallback cards already are),
+but every tier is scored against held-out truth identically.
+**Identification pins (owner directive):**
+(a) **Marginal value of stated claims given behavior — the T4-noclaims arm.**
+The nested ladder yields only the value of a behavior day GIVEN stated claims
+(the T3→T4 step: day-given-claims). To also measure the value of stated
+claims GIVEN behavior — once you know what a person DID, do their stated
+claims add anything? — a side arm **T4-noclaims** (T2 + one observed day, the
+stated-claims module WITHHELD) is built and scored on ordinary days AND BT1;
+the contrast **T4 − T4-noclaims** is that marginal value (claims-given-day).
+Both arms carry the observed day and are fidelity-gated, so the contrast is a
+stated-claims contrast, not a gate contrast (the earlier gated/ungated label
+is not used — it would wrongly imply the fidelity gate differs between them).
+T4 (= T3 + one observed day) keeps its name as the nested tier; T4-noclaims
+is the most informative rung and is kept.
+(b) **Separating one day's information from the verification it enables — the
+T4-nofidelity arm.** T1–T3 are fidelity-exempt (no diary in evidence); T4 is
+fidelity-gated. The T3→T4 step therefore bundles the observed day's raw
+INFORMATION with the VERIFICATION the generation fidelity gate performs once a
+diary is present — and that gate is not small: at M2 it moved E1 from 0.139
+(round 1, which lost to the MNL arm) to 0.062 (round 2b), ≈0.07 TVD, larger
+than most rungs here. Left bundled, E7 would report verification as
+information. So a diagnostic arm **T4-nofidelity** (T3 + one observed day, the
+generation fidelity gate OFF) is built and scored on ORDINARY DAYS ONLY (no
+BT1 exposure — zero cost to the single firing); the decomposition is
+**T4 − T4-nofidelity = the fidelity gate's contribution** and
+**T4-nofidelity − T3 = the day's raw information**.
+(c) **Top rung identified on multi-day persons only.** For a single-observed-
+day persona, T4 and T5 are identical by construction (the full trace IS the
+one day). The T4→T5 rung — the value of the full trace over one day — is
+therefore computed on the MULTI-DAY subpopulation only (the multi-slot
+personas, ≈2,975; the qualifying count is reported), single-day personas
+excluded from the top-rung increment so structural zeros do not dilute it.
+(d) Scoring and units, below, apply per tier and per arm.
+
+Scoring: each tier is scored (a) on ORDINARY DAYS under the sealed A2.1 E1
+protocol (five household-atomic folds, pooled out-of-fold, ensemble N ≥ 20,
+TVD) and (b) on BT1 under the E4 blind-shock machinery (A4.2), per tier — all
+tier populations frozen before BT1 and scored TOGETHER in the single firing
+(the operational reason M4 waits on this seal). Units: each tier's ordinary-day
+and blind-shock performance is reported in EQUIVALENT-SAMPLE-SIZE units (Gao,
+Han & Liang 2026, arXiv 2601.12343): tier k's cards achieve the predictive
+accuracy of a flexible baseline trained on ESS(k) real diary records, and the
+increment ESS(T_k) − ESS(T_{k−1}) is the marginal value, in equivalent real
+records, of that tier's added evidence; inference by the paper's asymptotic
+theory for cross-validated prediction error, with the flexible baseline and CV
+protocol pinned in the E7 manifest before scoring. Headline discipline: the
+full-information arm (T5) is the SOLE headline — E1/E4 PASS/FAIL verdicts and
+every §4 method-winning claim are declared on T5 ONLY; T1–T4 are the reported
+information-value curve (diagnostic) and may NEVER be promoted to an
+alternative headline, stated now so a lower tier that happens to score better
+cannot be substituted post hoc. E7 sets no new pass bar; T5's verdicts ARE the
+sealed E1/E4 verdicts, so no post-M0 bar is created.
+
+**A4.2 Post-shock adaptive rewrites — structural gate, M4 price channel, and
+placebo control.**
+**(i) Structural-only rewrite gate (shock mode).** At M3 the same-gate rule
+(a rewrite passes the identical five `validate_card` gates as generation,
+fidelity included, plus mechanical strong-rule restoration) is correct for
+ordinary days and is unchanged there. UNDER THE SHOCK a genuinely adapting
+rewrite (fewer car trips, mode/route switch, fewer cordon crossings)
+deviates from the persona's pre-toll observed diary and fails the FIDELITY
+gate (which scores mean trips/day, mode-share TVD, and quiet-day discipline
+against the pre-toll observed stats), mechanically clamping the adaptation
+the milestone exists to measure. A gate cannot distinguish adaptation from
+drift; only a control can. So a shock-mode rewrite is accepted iff it passes
+the STRUCTURAL channel only — schema, mask-lint, replay-smell, and
+feasibility — PLUS mechanical strong-rule restoration. The FIDELITY gate
+alone is dropped for shock-mode rewrites (it is the only one of the five
+scored against the pre-toll diary; replay-smell and feasibility constrain
+contamination and physical possibility, not adaptation direction, and stay).
+This extends the existing fidelity exemption (fallback cards are already
+fidelity-exempt) to the shock-rewrite class. Ordinary-day rewrites keep the
+full five-gate rule.
+**(ii) M4 price channel — an announced, known-price onset (NOT a discovered
+surprise).** The toll is a KNOWN price: its rates were adopted and published
+in advance of onset (institutional fact; A4.0 wall note). Agents therefore
+perceive the toll as a known price at a known onset day and re-optimize
+against it immediately — there is no discovery lag. Mechanically, M4 adds a
+new trigger TYPE alongside the ordinary time-surprise trigger: an
+**announced-onset trigger** fires the slow brain ONCE for every corridor
+agent on the onset day, handing it the new masked per-period price (and pass
+semantics), and the agent re-optimizes its card against the new generalized
+cost through the structural-only gate. The ordinary time-surprise trigger
+continues to govern the post-onset TAIL (equilibrium-shift surprises from
+real diversion). This reproduces an instant step with no learning curve;
+modeling the toll as a discovered time-surprise instead would make agents lag
+reality by construction and is rejected. The mechanism is fixed from the
+adoption fact, NOT from the blind trajectory (A4.0 wall note); whether the
+instant step matches the observed two-week/three-month equality is part of
+what E4 scores.
+**(iii) Placebo negative-control arm, coherent with (ii).** Drift control
+moves from the removed fidelity gate to a placebo arm run alongside the toll
+arm on the two-arm CRN-paired loop-mode harness built for E5(i) (with its
+quarantined-vocabulary halt rule). The placebo **yokes the TRIGGER and nulls
+the REASON**: it fires the announced-onset trigger for the SAME corridor
+agents on the SAME onset day (yoked 1:1; the onset set is deterministic, so
+the match is exact), but the placebo world holds the baseline UNTOLLED
+generalized cost and the onset cue is a content-free reconsideration notice
+with the price/toll fields nulled (mask-lint clean by construction). It
+carries ZERO actionable content — no price, no cost change, no time change.
+Because the placebo agent's generalized cost is unchanged, a rational
+re-optimization is a NO-OP; any change to its free channel (mode, route, trip
+counts) is machinery-induced DRIFT. This is NOT a sham surprise ("told
+surprised, shown nothing"): it is a content-free reconsideration under an
+unchanged world, which is coherent — the agent is cued to review and, having
+no reason to change, a faithful machine does not. The post-onset tail is
+arm-native (the untolled placebo world produces the M3 baseline's ≈zero
+surprises; tail surprises are NOT injected into the placebo — injecting a
+sham time-surprise would carry an actionable signal and is forbidden).
+
+Estimand: for every E4/E6 scored quantity Q, the REPORTED response is the
+difference ΔQ = Q_toll − Q_placebo, PAIRED across CRN-matched ensemble members
+(paired differencing removes shared route-noise and machinery variance and
+tightens the 80% interval — the pairing-for-power doctrine of E1's ε (A2.1),
+E5's paired protocol (A2.3), and E2(ii)). Because the placebo carries no
+actionable signal, it removes ONLY drift, so **ΔQ is the TOTAL drift-corrected
+toll response — the quantity the observed −28% measures — not a marginal price
+effect**; a placebo that carried any actionable signal would make ΔQ marginal,
+which the cost-invariant design of (iii) forbids. E4's frozen bars (A1.1:
+observed −28% inside the ensemble's 80% interval; central prediction strictly
+closer than the −45% benchmark) apply to ΔQ; E6's arm-(a)/arm-(b) hysteresis
+contrast (A2.5) is likewise a toll−placebo difference, so the residual-rebound
+band [4%, 12%] is scored on the drift-corrected quantity. **Known bias pinned
+now:** the observed −28% (three-month window ending 2020-02 against the
+Sep–Oct baseline) carries an unquantified SEASONAL component that the placebo
+cannot correct — the placebo controls simulation drift, not real-world
+seasonality — so the ΔQ-vs-−28% comparison (in E4 and in E7's BT1 scoring)
+is stated with this uncontrolled real-world component; a seasonal adjustment
+from the pre-toll year's autumn→winter weekday pattern may be added if sourced
+pre-BT1, but is pinned here as a caveat, not a later excuse.
+**Identifying assumption (additivity), stated plainly.** Writing drift_toll and
+drift_placebo for the machinery drift each arm produces under the yoked
+trigger, ΔQ = Q_toll − Q_placebo = true_response + (drift_toll − drift_placebo);
+ΔQ equals the true response ONLY if the two drifts cancel
+(drift_toll = drift_placebo). That cancellation is the placebo's identifying
+assumption and is UNVERIFIABLE by design — for the same reason a gate cannot
+separate adaptation from drift, the control cannot observe true_response alone.
+It has a known failure direction: the model's trip-deflation bias (the tendency
+that made round-1 cards under-count trips, the reason the fidelity gate was
+built) may AMPLIFY in the toll arm, where the price gives the model a reason to
+cut trips, against the content-free placebo where it has none — so
+drift_toll ≥ drift_placebo, biasing ΔQ to OVERSTATE the response. The
+assumption grows more load-bearing as the measured drift floor grows: at a
+small floor the residual (drift_toll − drift_placebo) is small whatever its
+sign; at a large floor it can dominate ΔQ. Pinned now so it cannot become a
+post-hoc excuse in either direction, and it is why the drift rule below carries
+an absolute leg, not only an anomaly leg.
+**Tail residual — uncontrolled by design, bounded by a tail-off ablation.**
+The placebo controls the announced-onset drift (the dominant exposure: onset
+forces every corridor agent to reconsider). The post-onset TAIL rewrites (the
+ordinary time-surprise trigger firing on real diversion-induced congestion)
+have NO placebo counterpart — the untolled placebo world produces the M3
+baseline's ≈zero tail, and a sham tail-surprise is forbidden (it would carry
+an actionable signal, (iii)) — so tail-rewrite drift enters ΔQ uncorrected.
+This residual is uncontrolled by design and is BOUNDED, without any blind
+quantity, by a pre-declared TAIL-OFF ablation on the T5 headline arm, scored
+in the single BT1 firing: ΔQ at T5 is computed with the post-onset
+time-surprise trigger ON (the headline) and OFF (only the announced-onset
+trigger fires — the bound), against the same placebo. The gap between the two
+bounds the tail channel's total contribution to ΔQ, hence caps the
+uncontrolled tail-drift, and is reported alongside the headline.
+
+**Drift threshold — MEASURED, two legs.** The placebo is run on the SR 520
+calibration rehearsal (A3.3(b): an announced level shift, in-window, with real
+trigger load); the placebo/toll response-magnitude RATIO under that load is the
+measured DRIFT FLOOR, itself REPORTED as a standalone quantity in a dated note
+BEFORE BT1 fires. For each headline quantity at BT1 the same placebo/toll
+magnitude ratio is computed, and the run is reported DRIFT-DOMINATED at that
+quantity if EITHER leg trips: (anomaly leg) the ratio EXCEEDS 2× the floor —
+BT1 drifting more than calibration did; OR (absolute leg) the ratio is ≥ 0.5 —
+ΔQ has become a residual of two comparable numbers (at 0.5, ΔQ equals the drift
+it subtracts, signal-to-drift 1:1, and the difference's relative error
+amplifies as the arms converge). The two legs guard different failures: the
+anomaly leg ALONE would bless a consistently high floor (a uniformly drifty
+machinery never trips a multiple of its own high floor), and E1's 2×-floor
+doctrine does NOT transfer to sanction that — an E1 noise floor is IRREDUCIBLE,
+so a multiple of it is honest, whereas a drift floor is a DEFECT, so a high
+floor is itself the harm; the absolute leg catches it. The placebo arm's 80%
+interval zero-containment is REPORTED for every headline quantity but is NOT a
+failure trigger: under paired CRN a trivial systematic drift excludes zero, so
+detectability is not materiality — magnitude gates, significance informs. The
+placebo halts on quarantined vocabulary, as E5(i).
+
+This revises §3 E4's scored quantity (now the toll−placebo difference) and the
+M3 same-gate doctrine (shock-mode fidelity exemption); both are made BEFORE any
+toll-exposed or blind quantity is scored.
+
+**A4.3 Habit-persistence calibration (SR 520) and E6 sensitivity band.** The
+strong-habit threshold — the net days-followed at which a rule becomes
+immutable — is 14, a chosen build constant, not a calibrated one. With
+within-person day-to-day variance compressed to 0.457 of observed (M3
+diagnostic 1: simulated days are too regular), a rule is followed near-daily,
+its strength climbs ≈+1/day, it reaches immutability after ≈14 lived days, and
+`days_to_weaken = max(0, strength − threshold + 1)` then makes it strongly
+revert-resistant. Habits therefore harden too early, which (i) OVERSTATES E6
+hysteresis (over-resistance to reversion → too little predicted rebound) and
+(ii) CLAMPS E4 (prematurely-immutable rules over-constrain post-shock
+adaptation). Calibration (A3.3(a)): the habit-persistence parameter is
+calibrated on the SR 520 aggregate anchor — the ~36–40% AADT drop-and-plateau
+with drop persistence (no recovery to baseline through the wall) on the
+published monthly transaction series (WSDOT/Stantec 2019 T&R study Table 3.2,
+FY2012–FY2019, and the FY2013 monthly actuals), restricted to
+2011-12 → 2016-03 (before the 2016-04 six-lane capacity break, per the A3.3
+confound pins). Procedure: a permanent, masked corridor level-shift scenario
+(announced known price, per A4.2(ii), on at day T, never removed — via the
+`network_override`/config seam used for the M3 injected-jam rehearsal) is run
+through the two-brain loop, and the strong-habit threshold (in sim-days) is fit
+so the simulated aggregate corridor-volume trajectory reproduces SR 520's
+observed transition speed to plateau AND its drop-and-plateau persistence (no
+simulated drift-back). Because the plateau LEVEL (−36–40%) is a price-elasticity
+property (value of time / toll / logit), not a habit property, and the VoT
+ladder is still a DEV placeholder pending M4 toll-response calibration, the
+habit threshold is fit to the transition SHAPE and persistence jointly with the
+elasticity to the level, on the same series, and BOTH are frozen together in a
+dated fit manifest (`calibration/`), calibration-window only, never refit after
+any blind quantity (§2 wall; A3.4 fit-freeze discipline). Honest limit, pinned
+now: SR 520 is a permanent level shift with NO removal arm (A3.3: "cannot and
+does not power E6"); it disciplines habit FORMATION and persistence, not the
+removal-side hysteresis E6 measures. E6's rebound-on-removal remains a
+PREDICTION from the frozen-formation habit machinery, tested against the A2.5
+Stockholm band. **E6 sensitivity band (new; owner-accepted source):** E6 is
+scored across a BAND of the strong-habit threshold bracketing the fitted point
+value, the band being the range of thresholds whose simulated trajectory stays
+inside the CONFOUND-WIDENED envelope of the observed SR 520 drop (the envelope
+widened for the A3.3 confounds — concurrent transit boost, six rate steps,
+post-recession growth, parallel-crossing construction, FY2018 counting break),
+pinned in the fit manifest. E6's verdict (arm-(a) partial rebound in [4%, 12%],
+arm-(b) near-full rebound, non-overlapping 80% intervals per §3 / A2.5) is
+reported at the fitted value AND across the band; a verdict that flips inside
+the band is reported as habit-parameter-sensitive, not sealed as a clean
+pass/fail — stated now so a knife-edge threshold cannot be read as a robust
+result. The A2.5 band [4%, 12%] and the non-overlap rule are UNCHANGED; this
+adds a reporting-robustness band and pins the threshold as calibrated-and-
+frozen rather than chosen.
+
+**A4.4 Pre-M4 freeze inventory and frozen-text collision register.** BT1 fires
+once (A1.1); everything below is frozen before it fires, which is why M4 waits
+on this seal. Freeze inventory: (1) the two pre-M4 gate decisions sealed
+2026-07-15 (`docs/DECISION_M4_HAS_PASS_GATE.md`, household transponder
+inheritance; `docs/DECISION_M4_BORROWED_CAR_GATE.md`, calibrated borrowed-car
+availability), implemented into the executor and population builder, with the
+M3 baseline loop re-run to pick them up so ordinary and shock dynamics share
+one executor; (2) the habit-persistence threshold and E6 band, fit on SR 520
+and frozen (A4.3); (3) the E3 recall-channel fit and price prior
+(A3.1/A3.2/A3.4), frozen at M5-before-blind — cross-referenced, unaltered
+here; (4) M4's price channel (A4.2(ii)), the E7 five-tier populations and the
+two T4 decomposition arms (T4-noclaims, scored on BT1; T4-nofidelity,
+ordinary-day only) (A4.1), the E4 blind-shock scorer, the placebo two-arm
+harness with its measured two-leg drift rule and reported floor, and the T5
+tail-off ablation arm (A4.2), all built and exercised on the SR 520
+calibration rehearsal (A3.3(b))
+before BT1; (5) the VoT/elasticity calibration, co-frozen
+with the habit fit (A4.3). Collision register: (i) §3 E4 scored quantity —
+revised to the toll−placebo difference (A4.2), a §3 change made pre-BT1; the
+owner seals it knowingly. (ii) §3 E6 — a sensitivity band is ADDED (A4.3); the
+A2.5 [4%, 12%] bar and non-overlap rule are untouched. (iii) M3 same-gate
+rewrite doctrine — shock-mode fidelity exemption (A4.2(i)) extends the existing
+fallback exemption; the ordinary-day rule is unchanged. (iv) §3 new eval E7
+(A4.1) — sets no new pass bar (descriptive ablation; T5's verdicts are the
+sealed E1/E4 bars), so no post-M0 bar is created. (v) §2 wall — every
+calibration input predates 2019-11-08; M4's price-channel mechanism is fixed
+from the 2018-10-16 rate-adoption fact, not from any BT1-measured quantity
+(A4.0 wall note); BT1-frozen-before-firing is the reason M4 waits on this seal.
+(vi) §5 model/compute pins — unaffected; E7 multiplies runs 5× × ensemble ×
+arms and adds the placebo, T5 tail-off, and T4 decomposition arms (T4-noclaims
+on BT1; T4-nofidelity ordinary-day only), a compute note under the full-node
+discipline, not a pin change.
