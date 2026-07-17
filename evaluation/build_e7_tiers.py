@@ -8,12 +8,20 @@ inputs and (after cluster generation) the gated tier card population:
             a ``tier_context.json`` sidecar (per-persona skeleton, the
             tier-visible fidelity reference, visible day sequences, and the
             CRN-selected T4 day) and the E7 manifest with every A4.1 pin.
-  assemble  join a tier's cluster ``cards_raw.jsonl`` with the sidecar, run
-            the gates (fidelity anchored to the tier-visible diary; T1-T3 and
-            T4-nofidelity validate with an empty observed reference), retry
-            NOT handled here (the cluster round-trip owns attempts), and
-            assemble accepted cards; terminal failures take the deterministic
-            tier fallback (`grounding.e7_tiers.tier_fallback_card`).
+  retry     after a generation round, re-run the SAME gates on the raw
+            output and render attempt-N+1 prompts (tier evidence + numeric
+            gate feedback, via `grounding.seeding.build_retry_prompts`) for
+            the failures — the M2 deployed population's attempt-round
+            structure (up to 3 attempts), mirrored per A4.1's "SAME
+            generation pipeline" pin. Symmetric across tiers by
+            construction: every tier gets the same attempt budget.
+  assemble  join a tier's cluster ``cards_raw.jsonl`` round outputs (later
+            rounds overwrite earlier for the same persona) with the sidecar,
+            run the gates (fidelity anchored to the tier-visible diary;
+            T1-T3 and T4-nofidelity validate with an empty observed
+            reference), and assemble accepted cards; terminal failures take
+            the deterministic tier fallback
+            (`grounding.e7_tiers.tier_fallback_card`).
 
 CRN pairing across tiers (A4.1): identical persona set and generation seeds;
 prompts differ only by the evidence bundle. The T4 day-selection rule and the
@@ -29,7 +37,7 @@ import argparse
 import json
 from datetime import date
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Mapping
 
 import pandas as pd
 
@@ -186,6 +194,82 @@ def cmd_prompts(args) -> int:
     return 0
 
 
+def _read_rounds(paths) -> Dict[str, dict]:
+    """Read one or more generation-round outputs in order; a later round's
+    record overwrites an earlier one for the same persona (retry rounds only
+    contain previously-failed personas, so acceptance is monotone)."""
+    raw_by_pid: Dict[str, dict] = {}
+    for path in paths:
+        with open(path) as f:
+            for line in f:
+                rec = json.loads(line)
+                raw_by_pid[str(rec["persona_id"])] = rec
+    return raw_by_pid
+
+
+def _gate_generated(tier: str, ctx: Mapping, obj) -> List[str]:
+    """The tier gate, ONE code path for retry and assemble: fidelity-gated
+    tiers run the full five-gate compose against the tier-visible diary;
+    T1-T3 / T4-nofidelity are fidelity-exempt at generation (A4.1)."""
+    if obj is None:
+        return ["no generation record"]
+    if tier in e7_tiers.FIDELITY_TIERS:
+        return validate_card(
+            obj, ctx["skeleton"], ctx["observed"], ctx["observed_day_sequences"]
+        )
+    return validate_card_structural(
+        obj, ctx["skeleton"], ctx["observed"] or None,
+        ctx["observed_day_sequences"],
+    )
+
+
+def cmd_retry(args) -> int:
+    """Emit attempt-N+1 prompts for a tier's gate failures (M2 round-trip)."""
+    from grounding.seeding import build_retry_prompts
+
+    dataset = psrc.load_or_build()
+    rows = _person_rows(dataset)
+    row_of = {str(r["persona_id"]): r for r in rows.to_dict("records")}
+    pdays, enriched = _diary_frames(dataset)
+    days_by = {pid: g for pid, g in pdays.groupby("person_id")}
+    trips_by = {pid: g for pid, g in enriched.groupby("person_id")}
+    empty_days, empty_trips = pdays.iloc[0:0], enriched.iloc[0:0]
+
+    tier = args.tier
+    tier_dir = Path(args.out) / tier
+    context = json.loads((tier_dir / "tier_context.json").read_text())
+    raw_by_pid = _read_rounds(args.generated)
+
+    failures: List[dict] = []
+    for pid, ctx in context.items():
+        rec = raw_by_pid.get(pid)
+        obj = rec.get("raw_json") if rec else None
+        errs = _gate_generated(tier, ctx, obj)
+        if not errs:
+            continue
+        row = row_of[pid]
+        person_id = str(row["person_id"])
+        selected = ctx.get("selected_daynum")
+        lines, _vd, _vt, n_obs = e7_tiers.tier_evidence(
+            tier, ctx["skeleton"], days_by.get(person_id, empty_days),
+            trips_by.get(person_id, empty_trips), row,
+            int(selected) if selected is not None else None,
+        )
+        failures.append({
+            "persona_id": pid,
+            "skeleton": ctx["skeleton"],
+            "evidence_lines": lines,
+            "n_observed_days": n_obs,
+            "failure_reasons": errs,
+            "attempt": rec.get("attempt", 1) if rec else 1,
+        })
+
+    out_path = tier_dir / f"prompts_attempt{args.attempt}.jsonl"
+    info = build_retry_prompts(failures, out_path)
+    print(f"{tier}: {info['n_prompts']} retry prompts -> {out_path}")
+    return 0
+
+
 def cmd_assemble(args) -> int:
     dataset = psrc.load_or_build()
     rows = _person_rows(dataset)
@@ -198,11 +282,7 @@ def cmd_assemble(args) -> int:
     tier = args.tier
     tier_dir = Path(args.out) / tier
     context = json.loads((tier_dir / "tier_context.json").read_text())
-    raw_by_pid: Dict[str, dict] = {}
-    with open(args.generated) as f:
-        for line in f:
-            rec = json.loads(line)
-            raw_by_pid[str(rec["persona_id"])] = rec
+    raw_by_pid = _read_rounds(args.generated)
 
     cards: List[dict] = []
     stats = {"accepted": 0, "fallback": 0, "gate_failures": {}}
@@ -212,18 +292,7 @@ def cmd_assemble(args) -> int:
         skeleton = ctx["skeleton"]
         rec = raw_by_pid.get(pid)
         obj = rec.get("raw_json") if rec else None
-        errs: List[str] = ["no generation record"] if obj is None else []
-        if obj is not None:
-            if tier in e7_tiers.FIDELITY_TIERS:
-                errs = validate_card(
-                    obj, skeleton, ctx["observed"], ctx["observed_day_sequences"]
-                )
-            else:
-                # T1-T3 / T4-nofidelity: fidelity-exempt at generation (A4.1)
-                errs = validate_card_structural(
-                    obj, skeleton, ctx["observed"] or None,
-                    ctx["observed_day_sequences"],
-                )
+        errs = _gate_generated(tier, ctx, obj)
         if not errs:
             card = assemble_card(pid, skeleton, obj, {
                 "card_source": "llm", "e7_tier": tier,
@@ -264,10 +333,20 @@ def main(argv=None) -> int:
     p.add_argument("--out", default="runs/e7_tiers")
     p.add_argument("--tiers", nargs="*", default=None)
     p.set_defaults(func=cmd_prompts)
+    r = sub.add_parser("retry")
+    r.add_argument("--out", default="runs/e7_tiers")
+    r.add_argument("--tier", required=True)
+    r.add_argument("--generated", required=True, nargs="+",
+                   help="generation-round outputs so far, in round order")
+    r.add_argument("--attempt", type=int, required=True,
+                   help="the attempt number the emitted prompts carry (2 or 3)")
+    r.set_defaults(func=cmd_retry)
     a = sub.add_parser("assemble")
     a.add_argument("--out", default="runs/e7_tiers")
     a.add_argument("--tier", required=True)
-    a.add_argument("--generated", required=True)
+    a.add_argument("--generated", required=True, nargs="+",
+                   help="generation-round outputs, in round order (later "
+                        "rounds overwrite earlier for the same persona)")
     a.set_defaults(func=cmd_assemble)
     args = ap.parse_args(argv)
     return args.func(args)
