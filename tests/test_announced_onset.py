@@ -11,7 +11,6 @@ from __future__ import annotations
 import copy
 import json
 
-import pytest
 
 from agents.baseline_loop import AnnouncedOnset, run_baseline_loop
 from agents.habit_memory import SubstrateConfig
@@ -20,7 +19,7 @@ from agents.slow_brain import (
     OnsetStubGenerator,
     StandardSurprisePolicy,
 )
-from agents.two_brain import REASON_ANNOUNCED_ONSET, RewriteRequest
+from agents.two_brain import REASON_ANNOUNCED_ONSET
 from grounding.card_validation import validate_card, validate_card_structural
 from grounding.masking.mask_lint import default_token_path, lint_text, load_forbidden_tokens
 from grounding.render import render_onset_rewrite_prompt

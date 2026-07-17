@@ -657,6 +657,10 @@ _PERSON_ATTR_COLS = [
     "tnc_freq",
     "carshare_freq",
     "commute_freq",
+    # A4.1 T3 stated-claims module (the A3.1 recall-channel items): the tier
+    # builder renders these; the M2 evidence path ignores them.
+    "work_mode",
+    "telecommute_freq",
 ]
 _HH_ATTR_COLS = ["household_id", "hhsize", "home_tract_2020"]
 
