@@ -1,0 +1,41 @@
+{
+  "amendment_draft": "A5 (docs/internal/AMENDMENT_A5_DRAFT.md)",
+  "date": "2026-07-17",
+  "model": "diary replay + frozen corridor route-choice logit; NO LLM",
+  "calibration": {
+    "anchor": "SR 520 plateau midpoint (calibration.sr520_target)",
+    "vot_scale": 1.3542968749999997,
+    "note": "rehearsal schedule = the config schedule; the owner's rehearsal-schedule decision (flagged in the pre-M4 record) applies to this arm identically"
+  },
+  "prediction": {
+    "drops": [
+      0.39542483660130723,
+      0.40206354405502787,
+      0.39663421877577965,
+      0.3885874033876008,
+      0.396749046276331,
+      0.39540083040562124,
+      0.3866492573853436,
+      0.3817116823950537,
+      0.38629283489096566,
+      0.39898410617728974,
+      0.4029850746268657,
+      0.37399836467702374,
+      0.37754771918472985,
+      0.39483700148932643,
+      0.40986809965803617,
+      0.39080267558528425,
+      0.3791144527986633,
+      0.3954945799457995,
+      0.40487723400701525,
+      0.41058423693154233
+    ],
+    "central": 0.39343035996273035,
+    "interval_80": [
+      0.37895777943726994,
+      0.40537632057211737
+    ],
+    "n_runs": 20
+  },
+  "drift_note": "deterministic replay: no machinery drift, no placebo differencing needed"
+}
