@@ -3,6 +3,15 @@
   "crn_site_key": "{namespace}:{persona_id}:{day_index}:caraccess",
   "date": "2026-07-17",
   "decision": "docs/DECISION_M4_BORROWED_CAR_GATE.md (Option B, sealed 2026-07-15)",
+  "owner_ruling_2026_07_17": {
+    "ruling": "ACCEPT AS-IS at rate 1.0",
+    "sealed": "owner's explicit ruling, 2026-07-17 (post T5 tier build); this block is the dated record, pushed public before BT1",
+    "realized_vs_pin": "realized car0 car-trip weight share 0.0353 vs observed pin 0.0730",
+    "constraint": "card CONTENT, not the draw: with access always granted the qualifying class's T5 cards under-carry car trips ~2x; the executor draw is no longer binding",
+    "known_under_carry": "~2x, recorded and carried into BT1 as-is",
+    "class_size": "100 qualifying personas of 11,940",
+    "why_not_widened_or_regenerated": "pushing realized content toward the pin would tune agent behavior against a calibration target (the imposed-magnitude trap); the class definition and the cards stand as generated"
+  },
   "degenerate": false,
   "degenerate_note": null,
   "fit_window": "pooled 2017+2019 weekday build (calibration window; pre-wall)",
