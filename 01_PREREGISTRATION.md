@@ -755,3 +755,69 @@ from the 2018-10-16 rate-adoption fact, not from any BT1-measured quantity
 arms and adds the placebo, T5 tail-off, and T4 decomposition arms (T4-noclaims
 on BT1; T4-nofidelity ordinary-day only), a compute note under the full-node
 discipline, not a pin change.
+
+### Amendment A5 — 2026-07-17, project owner
+
+**A5.0 Scope and rationale.** BT1's sealed aggregate benchmark (A1.1) is the
+official pre-tolling forecast, −45% — deliberately conservative for revenue
+purposes, and therefore a weak opponent. This amendment adds ONE sealed
+comparator arm to the BT1 firing set: a plain calibrated statistical model
+with no LLM anywhere, so the blind result can also be read against the
+sharpest cheap alternative. No §3 metric, bar, or pass condition changes:
+the −45% benchmark remains E4's sealed closeness benchmark, and the method's
+PASS/FAIL verdicts are untouched. Adopted BEFORE any blind quantity is
+scored; the comparator's prediction is produced and frozen before any blind
+number is read.
+
+**A5.1 The comparator, pinned.** Implementation
+`evaluation/comparator_arm.py`, frozen at seal time:
+- **Seeding:** the identical 1:1 PSRC seeding records; each persona's
+  OBSERVED weekday diary is replayed verbatim (no cards, no generation, no
+  habit machinery, no rewrites).
+- **Behavioral response channel:** corridor route choice ONLY, through the
+  frozen world equilibrium (`world.network.solve_corridor_equilibrium`,
+  frozen logit theta, VoT lognormal × income ladder), under the same masked
+  M4 toll schedule and the same sealed pre-M4 charge gates (household pass
+  inheritance, car-trips-only discount).
+- **Calibration:** the comparator's own VoT scale is fitted once, by
+  bisection, to the SAME SR 520 aggregate anchor and level criterion the
+  method's A4.3 fit uses (plateau drop = the pinned band midpoint), on the
+  same rehearsal scenario, and frozen in `runs/comparator_arm/manifest.json`.
+  Whatever rehearsal-schedule decision the owner takes for A4.3 (see the
+  pre-M4 record's flagged design edge) applies to this arm identically.
+- **Prediction:** the weekday tunnel-volume change over the BT1 window as a
+  CRN ensemble (N ≥ 20 route-draw namespaces), central = mean, 80% interval
+  by the E4 percentile convention. Deterministic behavior + CRN draws means
+  no machinery drift: the raw ensemble is the prediction (no placebo
+  differencing; recorded as a structural property, not an omission).
+
+**A5.2 Scoring and discipline, pinned now.**
+- Scored ONCE, inside the single BT1 firing, with the same E4 kernels
+  (interval coverage of the observed value; central-prediction distance),
+  and reported alongside the method's T5 headline with equal prominence
+  whatever it says.
+- The comparator is REPORTED, not a pass bar: E4's sealed pass conditions
+  (coverage + closer-than-−45%) are unchanged. The comparative reading —
+  whether the method's central prediction is strictly closer to the observed
+  value than the comparator's, and both arms' coverage — is declared HERE as
+  a headline-adjacent reported quantity, so it can neither be promoted to a
+  pass bar nor quietly dropped after the result is seen.
+- Interpretation pinned in advance: if the comparator matches or beats the
+  method on BT1, the honest reading is that individual agent detail carried
+  no signal beyond the calibrated aggregate dial in this arena — the E7
+  information-value curve is the diagnostic that localizes where detail
+  stopped paying. This is stated now so neither side of the comparison can
+  be reframed post hoc.
+- The comparator code path, its frozen VoT scale, and its prediction file
+  are sealed before firing; any later change is post-hoc and cannot touch
+  the sealed reading.
+
+**A5.3 Collision register.** (i) §3 E4: unchanged (the −45% benchmark and
+both pass conditions stand; the comparator adds a reported reading only).
+(ii) A2.1's MNL falsification arm: distinct and unchanged — that arm scores
+ordinary-day grounding fidelity out-of-fold and carries no price channel;
+this arm exists precisely because the MNL cannot respond to a toll. (iii)
+A3.2: not touched — the comparator carries no stated-response channel, so
+the price-prior discipline does not apply to it; its price response is
+anchored on the same revealed SR 520 aggregate as the method's (A3.3(a)
+authorizes the anchor). (iv) §5 compute pins: unaffected (CPU-only arm).
