@@ -26,9 +26,16 @@ data/**
 !data/synthetic/
 !data/synthetic/*.jsonl
 
-# Private working material — never committed (brainstorms, reviews, drafts,
-# amendment proposals, applications). Public docs/ holds sealed gate records only.
-docs/internal/
+# Internal records — public repo, so gate records, sealed decisions, the defects
+# register, design drafts, and the project brief are NOT published; they live only
+# on the owner's machine. (git rm --cached keeps them on disk; they ARE the record
+# of decisions — see CLAUDE.md "Local-only records".)
+docs/
+/00_PROJECT_BRIEF.md
+
+# Personal Claude Code overrides (the shared BT1 guard in .claude/settings.json
+# stays tracked so it protects fresh clones and CI)
+.claude/settings.local.json
 
 # Raw survey downloads (public data, but bulky and license-respectful to not mirror)
 data/psrc/
