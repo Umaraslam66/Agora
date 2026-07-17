@@ -1,0 +1,17 @@
+{
+  "cards": "data/cards/cards_m2_masked_r2b.jsonl",
+  "crn_site_key": "{namespace}:{persona_id}:{day_index}:caraccess",
+  "date": "2026-07-17",
+  "decision": "docs/DECISION_M4_BORROWED_CAR_GATE.md (Option B, sealed 2026-07-15)",
+  "degenerate": true,
+  "degenerate_note": "N1=0: this card set's car0 cards carry no car trips (generation-time feasibility gate predates the sealed relaxation); the executor draw is inert on it and NO rate is frozen from it. The rate must be fitted on a card set built AFTER grounding.card_validation.feasibility learned the qualifying-class relaxation (the A4.1 tier rebuild).",
+  "fit_window": "pooled 2017+2019 weekday build (calibration window; pre-wall)",
+  "fitted_rate": 0.0,
+  "n_qualifying_personas": 100,
+  "observed_car0_car_share": 0.07300549279504633,
+  "observed_car0_car_weight": 88814.25230196705,
+  "observed_car0_total_weight": 1216542.0559697037,
+  "realized_check": null,
+  "sim_always_allow_car_weight": 0.0,
+  "sim_total_trip_weight": 457390.04059817543
+}

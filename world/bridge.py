@@ -198,16 +198,26 @@ _MODE_INDEX = {m: i for i, m in enumerate(_MODES)}
 
 
 def population_from_cards(
-    cards: Sequence[Mapping], config: WorldConfig, namespace: str
+    cards: Sequence[Mapping],
+    config: WorldConfig,
+    namespace: str,
+    persona_pass: Optional[Mapping[str, bool]] = None,
 ) -> AgentPopulation:
     """Map a card population onto an :class:`AgentPopulation` (D1).
 
-    One row per card, in card order. ``home_zone`` / ``work_zone`` / ``has_pass``
-    come straight from the skeleton; ``vot`` is the CRN-keyed lognormal-times-
-    income-ladder draw (:func:`_draw_vot_array`); ``period`` and ``mode`` are
-    documented per-persona representatives (the loop overrides them with the
-    realized per-day trip); corridor / water membership is the config's OD
-    geometry over (home_ring, work_ring).
+    One row per card, in card order. ``home_zone`` / ``work_zone`` come straight
+    from the skeleton; ``vot`` is the CRN-keyed lognormal-times-income-ladder
+    draw (:func:`_draw_vot_array`); ``period`` and ``mode`` are documented
+    per-persona representatives (the loop overrides them with the realized
+    per-day trip); corridor / water membership is the config's OD geometry over
+    (home_ring, work_ring).
+
+    ``has_pass``: under the sealed pre-M4 household-inheritance re-model
+    (`docs/DECISION_M4_HAS_PASS_GATE.md`), pass ``persona_pass`` — the
+    persona-level inheritance map from ``world.household_pass`` — and it
+    OVERRIDES the skeleton field (a persona absent from the map holds no
+    pass). When ``persona_pass`` is None the legacy skeleton draw is used
+    unchanged (byte-identical pre-decision behavior for existing callers).
 
     Zones outside the world's Z01..Z30 codes (e.g. the ``Z00`` work-zone
     placeholder some non-commuter skeletons carry) map to an invalid ring and
@@ -235,7 +245,10 @@ def population_from_cards(
         work_zone_idx[i] = ZONE_INDEX.get(wz, -1)
         home_ring[i] = RING_INDEX.get(ZONE_RING.get(hz), -1)
         work_ring[i] = RING_INDEX.get(ZONE_RING.get(wz), -1)
-        has_pass[i] = bool(skeleton.get("has_pass") or False)
+        if persona_pass is not None:
+            has_pass[i] = bool(persona_pass.get(str(card["persona_id"]), False))
+        else:
+            has_pass[i] = bool(skeleton.get("has_pass") or False)
         mode[i] = _MODE_INDEX.get(_representative_mode(card), _MODE_INDEX["car"])
         period[i] = _representative_period_code(card)
 
@@ -367,13 +380,19 @@ def corridor_travelers_of_day(
             vot=np.zeros(0), has_pass=np.zeros(0, dtype=bool), access=np.zeros(0),
             row_index=rows_arr,
         )
+    # Sealed pre-M4 charge semantics (`docs/DECISION_M4_HAS_PASS_GATE.md` item
+    # 2): the household pass discounts CAR trips in the household vehicle only;
+    # ride/hired trips NEVER receive the persona's pass discount (the fee
+    # belongs to the vehicle operator, whose pass status is unknowable). At the
+    # untolled baseline this is charge-inert; it is load-bearing under M4.
+    is_car_trip = np.array([m == "car" for m in modes], dtype=bool)
     return TravelerTable(
         persona_ids=persona_ids,
         day_index=day_index,
         mode=modes,
         period_codes=np.array(period_list, dtype=np.int64),
         vot=population.vot[rows_arr],
-        has_pass=population.has_pass[rows_arr],
+        has_pass=population.has_pass[rows_arr] & is_car_trip,
         access=population.access[rows_arr],
         row_index=rows_arr,
     )

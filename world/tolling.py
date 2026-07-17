@@ -109,3 +109,40 @@ def default_schedule() -> TollSchedule:
     """The frozen M1 corridor schedule (pre-perturbed credits)."""
     return TollSchedule(rates=dict(DEFAULT_RATES),
                         nonpass_surcharge=DEFAULT_NONPASS_SURCHARGE)
+
+
+# ---------------------------------------------------------------------------
+# M4 announced-onset notices (A4.2(ii)/(iii))
+# ---------------------------------------------------------------------------
+
+def announcement_of(schedule: TollSchedule) -> Dict[str, object]:
+    """The masked announced-onset notice content (A4.2(ii)): the new per-period
+    per-trip charge in credits, with the pass semantics. Everything here is
+    already masked by construction (generic period names, pre-perturbed
+    credits) — the renderer (grounding.render) turns it into prompt lines and
+    the mask-lint gate re-checks the result."""
+    return {
+        "kind": "toll_onset",
+        "per_trip_credits": {p: schedule.per_trip_toll(p, True) for p in PERIODS},
+        "nonpass_surcharge_credits": (
+            schedule.price_multiplier * schedule.nonpass_surcharge
+        ),
+        "pass_semantics": (
+            "a household pass covers car trips in the household vehicle only; "
+            "trips as a passenger in someone else's vehicle pay the full charge"
+        ),
+    }
+
+
+def placebo_announcement() -> Dict[str, object]:
+    """The A4.2(iii) placebo notice: a content-free reconsideration cue with
+    every price/toll field NULLED. It yokes the TRIGGER and nulls the REASON —
+    it carries ZERO actionable content (no price, no cost change, no time
+    change), so a rational re-optimization under it is a no-op and any change
+    it induces is machinery drift, which is what the placebo arm measures."""
+    return {
+        "kind": "reconsideration",
+        "per_trip_credits": None,
+        "nonpass_surcharge_credits": None,
+        "pass_semantics": None,
+    }

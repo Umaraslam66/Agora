@@ -25,9 +25,53 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
 from agents.habit_memory import HabitCounter
+from world.crn import draw as crn_draw
 from world.crn import pick_weighted
 
 _COERCED_TO = "ride"  # the fallback mode when a car trip is physically infeasible
+
+
+@dataclass(frozen=True)
+class BorrowedCarAccess:
+    """The sealed pre-M4 borrowed-car availability draw
+    (`docs/DECISION_M4_BORROWED_CAR_GATE.md`, Option B, sealed 2026-07-15).
+
+    Licensed adults in zero-vehicle households receive a per-day availability
+    draw through the CRN layer under the sealed fresh site key
+    ``"{namespace}:{persona_id}:{day_index}:caraccess"``. When the day's draw
+    grants access, the card's car trips execute as car; otherwise they coerce
+    to ride exactly as before. The habit substrate sees a borrowed-car day as
+    an ordinary lived day — no special casing.
+
+    ``rate`` is the availability rate fitted ONCE on the calibration window
+    and FROZEN in `runs/m4_prep/borrowed_car/manifest.json`
+    (`calibration.m4_gates_fit`); ``qualifying`` is the frozen persona-id set
+    whose OWN seeding record shows car-driver trips in a zero-vehicle
+    household — no invented availability for persons who never showed it.
+    Because the site key is fresh, every pre-existing CRN stream stays
+    bit-identical, and twin-world pairing is preserved by construction.
+    """
+
+    rate: float
+    qualifying: frozenset
+
+    def grants(self, persona_id: str, day_index: int, namespace: str) -> bool:
+        """Does this persona's day draw grant borrowed-car access?"""
+        if persona_id not in self.qualifying:
+            return False
+        key = f"{namespace}:{persona_id}:{day_index}:caraccess"
+        return crn_draw(key) < self.rate
+
+
+def _borrowed_car_eligible(skeleton: Mapping) -> bool:
+    """Mechanical belt on the sealed class: the draw applies ONLY to licensed
+    adults in zero-vehicle households (the qualifying set is the fitted
+    restriction on top of this)."""
+    return (
+        skeleton.get("household_cars") == 0
+        and bool(skeleton.get("can_drive", False))
+        and (skeleton.get("age") or 0) >= 18
+    )
 
 
 @dataclass
@@ -71,6 +115,7 @@ def _execute_day_detail(
     day_index: int,
     namespace: str,
     coercion_log: Optional[List[dict]] = None,
+    car_access: Optional[BorrowedCarAccess] = None,
 ) -> Tuple[Optional[str], set, List[RealizedTrip]]:
     """Return (drawn_pattern_id, applied_rule_ids, realized_trips) for one day."""
     persona_id = card["persona_id"]
@@ -87,6 +132,31 @@ def _execute_day_detail(
     pattern_id = pattern.get("id")
 
     car_ok = _car_allowed(skeleton)
+    if (
+        not car_ok
+        and car_access is not None
+        and _borrowed_car_eligible(skeleton)
+        and car_access.grants(persona_id, day_index, namespace)
+    ):
+        car_ok = True
+    applied_rule_ids, realized = _realize_pattern_trips(
+        persona_id, pattern, rules, car_ok, day_index, coercion_log
+    )
+    return pattern_id, applied_rule_ids, realized
+
+
+def _realize_pattern_trips(
+    persona_id: str,
+    pattern: Mapping,
+    rules: Sequence[Mapping],
+    car_ok: bool,
+    day_index: Optional[int] = None,
+    coercion_log: Optional[List[dict]] = None,
+) -> Tuple[set, List[RealizedTrip]]:
+    """Realize one pattern's trips: first-matching rule override, then the
+    availability coercion. The single source of the per-trip execution
+    semantics — used by the day executor and by the calibration-side
+    expectation (:func:`expected_mode_counts`)."""
     applied_rule_ids: set = set()
     realized: List[RealizedTrip] = []
 
@@ -116,7 +186,31 @@ def _execute_day_detail(
 
         realized.append(RealizedTrip(purpose, mode, band, rule_applied))
 
-    return pattern_id, applied_rule_ids, realized
+    return applied_rule_ids, realized
+
+
+def expected_mode_counts(card: Mapping, car_ok: bool) -> Dict[str, float]:
+    """Pattern-weight expected per-day realized mode counts for one card under
+    a FIXED availability state (no CRN): sum over patterns of
+    (weight / total_weight) x that pattern's realized trip modes, rules applied
+    exactly as the executor applies them. Harness-side helper for the sealed
+    borrowed-car availability fit (`calibration.m4_gates_fit`), where the
+    per-day ``caraccess`` draw makes the realized day a mixture of the
+    ``car_ok=True`` and ``car_ok=False`` expectations."""
+    patterns = card.get("patterns", [])
+    rules = card.get("rules", [])
+    total = float(sum(p["weight"] for p in patterns)) if patterns else 0.0
+    counts: Dict[str, float] = {}
+    if total <= 0.0:
+        return counts
+    for pattern in patterns:
+        share = float(pattern["weight"]) / total
+        _ids, realized = _realize_pattern_trips(
+            str(card.get("persona_id")), pattern, rules, car_ok
+        )
+        for t in realized:
+            counts[t.mode] = counts.get(t.mode, 0.0) + share
+    return counts
 
 
 def execute_day(
@@ -124,11 +218,14 @@ def execute_day(
     day_index: int,
     namespace: str,
     coercion_log: Optional[List[dict]] = None,
+    car_access: Optional[BorrowedCarAccess] = None,
 ) -> List[RealizedTrip]:
     """Execute one simulated weekday for one persona card. Pure and
     deterministic (no card mutation). Pass ``coercion_log`` to collect
     availability coercions."""
-    _pattern_id, _rules, trips = _execute_day_detail(card, day_index, namespace, coercion_log)
+    _pattern_id, _rules, trips = _execute_day_detail(
+        card, day_index, namespace, coercion_log, car_access
+    )
     return trips
 
 
@@ -160,6 +257,7 @@ def execute_days(
     namespace: str,
     update_habits: bool = True,
     coercion_log: Optional[List[dict]] = None,
+    car_access: Optional[BorrowedCarAccess] = None,
 ) -> Dict[str, List[RealizedDay]]:
     """Batch execution shaped for the E1 harness.
 
@@ -176,7 +274,7 @@ def execute_days(
         days: List[RealizedDay] = []
         for day_index, day_weight in slots:
             pattern_id, applied_rule_ids, trips = _execute_day_detail(
-                card, day_index, namespace, coercion_log
+                card, day_index, namespace, coercion_log, car_access
             )
             if update_habits:
                 _record_habits(card, pattern_id, applied_rule_ids)

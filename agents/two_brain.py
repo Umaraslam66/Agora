@@ -36,10 +36,31 @@ class SurpriseEvent:
     z: float
 
 
+#: RewriteRequest.reason values. ``surprise`` = the M3 time-surprise trigger
+#: (sustained or shock rule). ``announced_onset`` = the M4 A4.2(ii) trigger:
+#: fired ONCE per corridor agent on the onset day, carrying the new masked
+#: per-period price (or the A4.2(iii) placebo's content-free reconsideration
+#: notice) in ``announcement``.
+REASON_SURPRISE = "surprise"
+REASON_ANNOUNCED_ONSET = "announced_onset"
+
+
 @dataclass(frozen=True)
 class RewriteRequest:
-    """A persona whose surprise policy fired at the end of ``day_index``.
-    The rewrite is applied before day ``day_index + 1`` begins."""
+    """A persona whose trigger fired on ``day_index``.
+
+    ``surprise`` requests fire at the END of the day and the rewrite is
+    applied before day ``day_index + 1``; ``announced_onset`` requests fire at
+    the START of the onset day (the price was announced in advance — no
+    discovery lag, A4.2(ii)) and the rewrite is applied before that day
+    executes.
+
+    M4 extension (dated 2026-07-17; every default preserves the M3 shape):
+    ``reason`` distinguishes the trigger type; ``announcement`` carries the
+    masked onset notice (per-period prices + pass semantics, or the placebo's
+    nulled notice) for the renderer; ``shock_mode`` selects the A4.2(i)
+    structural-only rewrite gate (fidelity dropped) instead of the ordinary
+    five-gate rule."""
 
     persona_id: str
     day_index: int
@@ -47,6 +68,9 @@ class RewriteRequest:
     surprises: Tuple[SurpriseEvent, ...]  # entries backing the trigger, <= cap
     strong_rule_ids: Tuple[str, ...]  # immutable under this rewrite
     attempt: int = 1  # 1-based; retries increment
+    reason: str = REASON_SURPRISE
+    announcement: Mapping | None = None  # masked onset notice (announced_onset only)
+    shock_mode: bool = False  # A4.2(i): structural-only gate
 
 
 @dataclass(frozen=True)

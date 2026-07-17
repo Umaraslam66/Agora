@@ -31,9 +31,10 @@ from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 
-from agents.card_executor import RealizedDay, RealizedTrip, execute_days
+from agents.card_executor import BorrowedCarAccess, RealizedDay, RealizedTrip, execute_days
 from agents.habit_memory import DEFAULT_CONFIG, SURPRISE_LOG_CAP, HabitMemory, SubstrateConfig
 from agents.two_brain import (
+    REASON_ANNOUNCED_ONSET,
     RewriteOutcome,
     RewriteRequest,
     SlowBrainClient,
@@ -53,8 +54,33 @@ from world.tolling import PERIODS
 #: A rule is immutable under a rewrite once its habit strength reaches this bar
 #: (M3 design D4). Computed loop-side from the card's serialized counters and
 #: carried on each :class:`RewriteRequest`; the canonical constant is mirrored
-#: in agents/slow_brain.py, which owns the trigger policy.
+#: in agents/slow_brain.py, which owns the trigger policy. PROVISIONAL build
+#: constant (A4.3): the SR 520 calibration fits it and E6 is scored across a
+#: sensitivity band — which is why :func:`run_baseline_loop` takes it as a
+#: parameter rather than baking 14 in.
 STRONG_HABIT_THRESHOLD = 14
+
+
+@dataclass(frozen=True)
+class AnnouncedOnset:
+    """The A4.2(ii) M4 price channel: an announced, known-price onset (NOT a
+    discovered surprise). On global day ``day`` the slow brain fires ONCE for
+    every corridor agent at the START of the day (the price was announced in
+    advance, so adapted behavior begins on the onset day — no discovery lag),
+    handing it ``announcement`` (`world.tolling.announcement_of` for the toll
+    arm; `world.tolling.placebo_announcement` for the A4.2(iii) placebo arm,
+    which yokes this trigger and nulls the reason). Onset rewrites pass the
+    A4.2(i) structural-only gate.
+
+    ``tail_surprises=False`` is the T5 tail-off ablation arm (A4.2): the
+    ordinary time-surprise trigger is suppressed from ``day`` onward (only the
+    announced-onset trigger fires; surprises are still observed and counted),
+    bounding the uncontrolled tail-drift channel.
+    """
+
+    day: int
+    announcement: Mapping
+    tail_surprises: bool = True
 
 
 # ---------------------------------------------------------------------------
@@ -146,6 +172,10 @@ class LoopState:
     warmup_days: int
     namespace: str
     keep_full_window: bool = True
+    #: day -> {"codes": [...], "loads": [...], "tolled": code|None} — realized
+    #: corridor facility loads (A4.2: the scored volume quantities read the
+    #: tolled facility's realized load; recorded every day the corridor ran).
+    facility_loads: Dict[int, dict] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -163,6 +193,7 @@ class LoopState:
             "warmup_days": self.warmup_days,
             "namespace": self.namespace,
             "keep_full_window": self.keep_full_window,
+            "facility_loads": {str(k): v for k, v in self.facility_loads.items()},
         }
 
     @classmethod
@@ -182,6 +213,7 @@ class LoopState:
             warmup_days=int(d["warmup_days"]),
             namespace=str(d["namespace"]),
             keep_full_window=bool(d.get("keep_full_window", True)),
+            facility_loads={int(k): v for k, v in d.get("facility_loads", {}).items()},
         )
 
 
@@ -204,21 +236,25 @@ class LoopResult:
     warmup_days: int
     namespace: str
     state: LoopState
+    facility_loads: Dict[int, dict] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
 # small helpers
 # ---------------------------------------------------------------------------
 
-def _strong_rule_ids(card: Mapping) -> Tuple[str, ...]:
+def _strong_rule_ids(
+    card: Mapping, threshold: int = STRONG_HABIT_THRESHOLD
+) -> Tuple[str, ...]:
     """Rule ids whose habit strength has reached the immutability bar (D4),
-    read straight from the card's serialized counters (no reconstruction)."""
+    read straight from the card's serialized counters (no reconstruction).
+    ``threshold`` is the A4.3-calibratable strong-habit bar."""
     counters = card.get("habit_counters", {})
     out: List[str] = []
     for rule in card.get("rules", []):
         rid = rule.get("id")
         c = counters.get(rid)
-        if c is not None and int(c.get("strength", 0)) >= STRONG_HABIT_THRESHOLD:
+        if c is not None and int(c.get("strength", 0)) >= int(threshold):
             out.append(rid)
     return tuple(out)
 
@@ -232,6 +268,9 @@ def _request_to_dict(req: RewriteRequest) -> dict:
         "card": req.card,
         "strong_rule_ids": list(req.strong_rule_ids),
         "attempt": req.attempt,
+        "reason": req.reason,
+        "announcement": dict(req.announcement) if req.announcement is not None else None,
+        "shock_mode": req.shock_mode,
         "surprises": [
             {
                 "persona_id": s.persona_id,
@@ -277,6 +316,10 @@ def run_baseline_loop(
     run_through_day: Optional[int] = None,
     keep_full_window: bool = True,
     copy_cards: bool = True,
+    car_access: Optional[BorrowedCarAccess] = None,
+    persona_pass: Optional[Mapping[str, bool]] = None,
+    onset: Optional[AnnouncedOnset] = None,
+    strong_habit_threshold: int = STRONG_HABIT_THRESHOLD,
 ) -> LoopResult:
     """Run the ordinary-day loop over global days ``0 .. n_days-1`` (D5).
 
@@ -300,6 +343,22 @@ def run_baseline_loop(
     ``result.state``, optionally round-tripped through ``to_dict``/``from_dict``)
     to continue; ``run_through_day`` (inclusive) stops early to take a
     checkpoint. A resumed run reproduces the uninterrupted run bit-identically.
+
+    Sealed pre-M4 gates (both default None = pre-decision behavior, byte-
+    identical): ``car_access`` is the frozen borrowed-car availability draw
+    (`agents.card_executor.BorrowedCarAccess`); ``persona_pass`` is the
+    household-inherited pass map (`world.household_pass`). Both are
+    deterministic configuration, not state — a resumed run must be given the
+    SAME values it started with (like ``policy``/``client``).
+
+    M4 shock machinery (A4.2; ``onset=None`` = the M3 ordinary-day loop,
+    byte-identical): ``onset`` fires the announced-onset trigger at the START
+    of its day for every corridor agent (rewrites through the structural-only
+    gate; the placebo arm passes the nulled announcement); from the onset day
+    onward, ordinary time-surprise rewrites also run shock-mode (they adapt to
+    diversion-induced congestion and would otherwise be clamped by the
+    pre-toll fidelity gate), or are suppressed entirely on the tail-off arm.
+    ``strong_habit_threshold`` is the A4.3-calibratable immutability bar.
     """
     memory_config = memory_config or DEFAULT_CONFIG
     last_day = n_days - 1 if run_through_day is None else run_through_day
@@ -327,7 +386,9 @@ def run_baseline_loop(
     # Population + corridor membership are deterministic in (skeletons, namespace)
     # and invariant under rewrites (skeletons never change), so they are rebuilt
     # once here and reused every day (including after a resume).
-    population = bridge.population_from_cards(cards_list, config, namespace)
+    population = bridge.population_from_cards(
+        cards_list, config, namespace, persona_pass=persona_pass
+    )
     row_index = bridge.persona_row_index(cards_list)
     corridor_pids = [pid for i, pid in enumerate(persona_ids) if bool(population.is_corridor[i])]
 
@@ -365,13 +426,53 @@ def run_baseline_loop(
         coercion_log = st.coercion_log
         pending_rewrites = st.pending_rewrites
         ever_surprised = st.ever_surprised
+    facility_loads: Dict[int, dict] = st.facility_loads if st is not None else {}
+
+    def _apply_outcomes(outcomes: List[RewriteOutcome], d: int) -> None:
+        for outcome in outcomes:
+            rewrite_audit.append(RewriteAuditRecord(
+                persona_id=outcome.persona_id, day_index=d,
+                accepted=outcome.accepted,
+                attempts_used=outcome.attempts_used,
+                gate_failures=tuple(outcome.gate_failures),
+            ))
+            if outcome.accepted:
+                i = idx_of[outcome.persona_id]
+                cards_list[i] = outcome.card
+                card_of[outcome.persona_id] = outcome.card
 
     # -- day loop ---------------------------------------------------------
     for d in range(start_day, last_day + 1):
+        # A4.2(ii): the announced-onset trigger fires at the START of the
+        # onset day — the price was announced in advance, so the agent
+        # re-optimizes before living the day (no discovery lag). Once per
+        # corridor agent; yoked identically in the placebo arm.
+        if onset is not None and d == onset.day:
+            onset_requests: List[RewriteRequest] = []
+            for pid in corridor_pids:
+                card = card_of[pid]
+                row = idx_of[pid]
+                ann = dict(onset.announcement)
+                ann["household_has_pass"] = bool(population.has_pass[row])
+                onset_requests.append(RewriteRequest(
+                    persona_id=pid, day_index=d, card=card,
+                    surprises=(),
+                    strong_rule_ids=_strong_rule_ids(card, strong_habit_threshold),
+                    reason=REASON_ANNOUNCED_ONSET,
+                    announcement=ann,
+                    shock_mode=True,
+                ))
+            if onset_requests:
+                if client is None:
+                    pending_rewrites.extend(_request_to_dict(r) for r in onset_requests)
+                else:
+                    _apply_outcomes(client.rewrite_batch(onset_requests), d)
+
         per_day_slots = {pid: [(d, 1.0)] for pid in persona_ids}
         day_out = execute_days(
             cards_list, per_day_slots, namespace,
             update_habits=True, coercion_log=coercion_log,
+            car_access=car_access,
         )
 
         for pid in corridor_pids:
@@ -405,6 +506,12 @@ def run_baseline_loop(
             uniforms = crn.draws(keys)
             choice = realized_facilities(uniforms, eq.choice_probs)
             loads = np.bincount(choice, minlength=len(facilities)).astype(float)
+            facility_loads[d] = {
+                "codes": list(state_net.facility_codes),
+                "loads": loads.tolist(),
+                "tolled": state_net.tolled_facility,
+                "n_travelers": int(len(table)),
+            }
             times = facility_times_from_loads(facilities, loads)
             realized_dtd = times[choice] + table.access
             freeflow = table.access + min_t0
@@ -445,8 +552,14 @@ def run_baseline_loop(
                 trips = day_out[pid][0].trips if day_out.get(pid) else []
                 realized_full[pid].append(RealizedDay(d, 1.0, list(trips)))
 
-        # rewrite trigger (post warm-up); only ever-surprised personas can fire
-        if d >= warmup_days and ever_surprised:
+        # rewrite trigger (post warm-up); only ever-surprised personas can fire.
+        # Under the shock (d >= onset day): requests run shock-mode (the tail
+        # adapts to diversion-induced congestion; the pre-toll fidelity gate
+        # would clamp it, A4.2(i)) — or, on the T5 tail-off ablation arm, the
+        # tail trigger is suppressed entirely (surprises still observed above).
+        in_shock = onset is not None and d >= onset.day
+        tail_suppressed = in_shock and not onset.tail_surprises
+        if d >= warmup_days and ever_surprised and not tail_suppressed:
             requests: List[RewriteRequest] = []
             for pid in sorted(ever_surprised):
                 card = card_of[pid]
@@ -454,24 +567,15 @@ def run_baseline_loop(
                     evts = tuple(day_events.get(pid, ())[-SURPRISE_LOG_CAP:])
                     requests.append(RewriteRequest(
                         persona_id=pid, day_index=d, card=card,
-                        surprises=evts, strong_rule_ids=_strong_rule_ids(card),
+                        surprises=evts,
+                        strong_rule_ids=_strong_rule_ids(card, strong_habit_threshold),
+                        shock_mode=in_shock,
                     ))
             if requests:
                 if client is None:
                     pending_rewrites.extend(_request_to_dict(r) for r in requests)
                 else:
-                    outcomes: List[RewriteOutcome] = client.rewrite_batch(requests)
-                    for outcome in outcomes:
-                        rewrite_audit.append(RewriteAuditRecord(
-                            persona_id=outcome.persona_id, day_index=d,
-                            accepted=outcome.accepted,
-                            attempts_used=outcome.attempts_used,
-                            gate_failures=tuple(outcome.gate_failures),
-                        ))
-                        if outcome.accepted:
-                            i = idx_of[outcome.persona_id]
-                            cards_list[i] = outcome.card
-                            card_of[outcome.persona_id] = outcome.card
+                    _apply_outcomes(client.rewrite_batch(requests), d)
 
     final_state = LoopState(
         day_index=last_day + 1,
@@ -488,6 +592,7 @@ def run_baseline_loop(
         warmup_days=warmup_days,
         namespace=namespace,
         keep_full_window=keep_full_window,
+        facility_loads=facility_loads,
     )
     return LoopResult(
         cards=cards_list,
@@ -501,4 +606,5 @@ def run_baseline_loop(
         warmup_days=warmup_days,
         namespace=namespace,
         state=final_state,
+        facility_loads=facility_loads,
     )

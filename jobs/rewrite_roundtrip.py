@@ -45,7 +45,7 @@ from agents.slow_brain import (
     restore_strong_rules,  # the ONE acceptance definition (D4 revision)
 )
 from agents.two_brain import RewriteRequest, SurpriseEvent
-from grounding.card_validation import validate_card
+from grounding.card_validation import validate_card, validate_card_structural
 from grounding.render import build_rewrite_prompt_records
 from serving.batch_gen import prompt_sha256
 from world.bridge import population_from_cards
@@ -73,6 +73,9 @@ def request_from_dict(d: dict, attempt: Optional[int] = None) -> RewriteRequest:
         ),
         strong_rule_ids=tuple(d["strong_rule_ids"]),
         attempt=int(attempt if attempt is not None else d.get("attempt", 1)),
+        reason=d.get("reason", "surprise"),
+        announcement=d.get("announcement"),
+        shock_mode=bool(d.get("shock_mode", False)),
     )
 
 
@@ -233,11 +236,18 @@ def cmd_gate(args) -> int:
         else:
             # D4 revision: strong-rule drift is mechanically REPAIRED
             # (restored verbatim, shadow-guarded), never a rejection; the
-            # five validate_card gates run on the repaired object.
+            # gates run on the repaired object. Shock-mode requests (A4.2(i))
+            # take the structural-only compose, mirroring GatedSlowBrain.
             obj, restored = restore_strong_rules(obj, req.card, req.strong_rule_ids)
-            errs = validate_card(
-                obj, ctx["skeleton"], ctx["observed"], ctx["observed_day_sequences"]
-            )
+            if req.shock_mode:
+                errs = validate_card_structural(
+                    obj, ctx["skeleton"], ctx.get("observed"),
+                    ctx["observed_day_sequences"],
+                )
+            else:
+                errs = validate_card(
+                    obj, ctx["skeleton"], ctx["observed"], ctx["observed_day_sequences"]
+                )
 
         if restored:
             n_with_restorations += 1

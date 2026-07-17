@@ -43,14 +43,20 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
 from agents.habit_memory import SURPRISE_LOG_CAP, HabitCounter
 from agents.two_brain import (
+    REASON_ANNOUNCED_ONSET,
     SURPRISE_LOG_KEY,
     RewriteOutcome,
     RewriteRequest,
     SurpriseEvent,
 )
-from grounding.card_validation import CARD_VERSION, validate_card
+from grounding.card_validation import (
+    CARD_VERSION,
+    validate_card,
+    validate_card_structural,
+)
 from grounding.render import (
     build_rewrite_prompt_records,
+    render_onset_rewrite_prompt,
     render_rewrite_prompt,
     rewrite_render_inputs,
 )
@@ -71,6 +77,7 @@ __all__ = [
     "StandardSurprisePolicy",
     "GatedSlowBrain",
     "StubGenerator",
+    "OnsetStubGenerator",
     "apply_rewrite",
     "restore_strong_rules",
     "strong_rule_ids_for",
@@ -500,11 +507,26 @@ class GatedSlowBrain:
         return self.generator(requests)
 
     def _attempt_text(self, request: RewriteRequest, failure_reasons: Sequence[str]) -> str:
-        """Render one attempt's rewrite prompt (grounding.render only)."""
+        """Render one attempt's rewrite prompt (grounding.render only).
+
+        ``announced_onset`` requests (A4.2(ii)) render the onset template —
+        the notice (or the placebo's nulled notice) instead of a surprise
+        block, and no FIT CHECK (the shock gate is structural-only, A4.2(i));
+        ordinary surprise requests render the M3 rewrite prompt unchanged."""
         ctx = self.validation_context.get(request.persona_id, {})
         inputs = rewrite_render_inputs(
             request, self.render_context, observed=ctx.get("observed")
         )
+        if request.reason == REASON_ANNOUNCED_ONSET:
+            return render_onset_rewrite_prompt(
+                skeleton=inputs["skeleton"],
+                evidence_lines=inputs["evidence_lines"],
+                current_obj=inputs["current_obj"],
+                announcement=dict(request.announcement or {}),
+                immutable_rule_ids=inputs["immutable_rule_ids"],
+                mode=self.mode,
+                failure_reasons=failure_reasons,
+            )
         return render_rewrite_prompt(mode=self.mode, failure_reasons=failure_reasons, **inputs)
 
     def _gate(self, request: RewriteRequest, raw) -> Tuple[Optional[dict], List[str], List[str]]:
@@ -525,9 +547,18 @@ class GatedSlowBrain:
             return obj, ["no validation context for this persona; cannot gate the rewrite"], []
 
         obj, restorations = restore_strong_rules(obj, request.card, request.strong_rule_ids)
-        errors = validate_card(
-            obj, ctx["skeleton"], ctx["observed"], ctx["observed_day_sequences"]
-        )
+        if request.shock_mode:
+            # A4.2(i): shock-mode rewrites pass the STRUCTURAL channel only —
+            # schema, mask-lint, replay-smell, feasibility. The fidelity gate
+            # (scored against the pre-toll diary) is dropped; drift control is
+            # the placebo arm's job. Strong-rule restoration above is unchanged.
+            errors = validate_card_structural(
+                obj, ctx["skeleton"], ctx.get("observed"), ctx["observed_day_sequences"]
+            )
+        else:
+            errors = validate_card(
+                obj, ctx["skeleton"], ctx["observed"], ctx["observed_day_sequences"]
+            )
         return obj, errors, restorations
 
 
@@ -604,3 +635,50 @@ class StubGenerator:
         while f"{base}{suffix}" in existing:
             suffix += 1
         return f"{base}{suffix}"
+
+
+class OnsetStubGenerator:
+    """Deterministic stub for the A4.2 announced-onset path (tests + the
+    SR 520 rehearsal's no-GPU shakeout).
+
+    * Toll onset (announcement carries per-trip credits): the persona's
+      PATTERNS are edited — every work-purpose car trip becomes transit — a
+      genuine adaptation that deviates from the pre-onset diary exactly the
+      way a real adapting rewrite does (it fails the fidelity gate's mode-mix
+      check against a car-heavy diary; the A4.2(i) structural gate must
+      accept it). Personas with no work car trips return the card unchanged.
+    * Placebo (nulled announcement): the card is returned UNCHANGED — the
+      faithful machine's rational no-op under a content-free notice. Any
+      drift the placebo arm measures with the REAL model is therefore model
+      drift, not stub artifact.
+    * Ordinary surprise requests defer to :class:`StubGenerator`.
+    """
+
+    def __init__(self) -> None:
+        self._surprise_stub = StubGenerator()
+
+    def __call__(
+        self, requests: Sequence[RewriteRequest], prompts: Optional[Sequence[str]] = None
+    ) -> List[str]:
+        out: List[str] = []
+        for req in requests:
+            if req.reason != REASON_ANNOUNCED_ONSET:
+                out.append(json.dumps(self._surprise_stub._rewrite_obj(req), sort_keys=True))
+                continue
+            out.append(json.dumps(self._onset_obj(req), sort_keys=True))
+        return out
+
+    def _onset_obj(self, request: RewriteRequest) -> dict:
+        card = request.card
+        patterns = copy.deepcopy(list(card.get("patterns", [])))
+        rules = copy.deepcopy(list(card.get("rules", [])))
+        voice = card.get("voice", "")
+        ann = dict(request.announcement or {})
+        priced = bool(ann.get("per_trip_credits"))
+
+        if priced:
+            for p in patterns:
+                for t in p.get("trips", []):
+                    if t.get("purpose") == "work" and t.get("mode") == "car":
+                        t["mode"] = "transit"
+        return {"patterns": patterns, "rules": rules, "voice": voice}

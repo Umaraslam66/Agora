@@ -31,6 +31,7 @@ __all__ = [
     "render_seed_prompt",
     "render_seed_retry_prompt",
     "render_rewrite_prompt",
+    "render_onset_rewrite_prompt",
     "rewrite_render_inputs",
     "build_rewrite_prompt_records",
     "VALID_MODES",
@@ -344,6 +345,81 @@ def render_rewrite_prompt(
     return base + "\n"
 
 
+def _render_announcement(announcement: dict) -> str:
+    """Render the A4.2 onset notice block from the world-side announcement
+    dict (``world.tolling.announcement_of`` / ``placebo_announcement``, plus
+    the loop-added ``household_has_pass``).
+
+    Toll onset: the new masked per-period per-trip charge in credits with the
+    pass semantics. Placebo (price/toll fields nulled): a content-free
+    reconsideration cue — it must carry ZERO actionable content, so it states
+    plainly that nothing about costs or travel times has changed."""
+    a = dict(announcement or {})
+    credits = a.get("per_trip_credits")
+    if not credits:
+        return (
+            "A periodic review notice was issued for your area. It contains no\n"
+            "changes: no charge, no cost change, and no travel-time change is\n"
+            "associated with it. You are simply asked to review the card."
+        )
+    lines = [
+        "A per-trip charge now applies to the fast crossing route on the",
+        "commute corridor. Charge per trip, by time of day (in credits):",
+    ]
+    for period in sorted(credits, key=str):
+        lines.append(f"  {period}: {float(credits[period]):.2f}")
+    surcharge = a.get("nonpass_surcharge_credits")
+    if surcharge is not None:
+        lines.append(
+            f"Trips without a household pass pay {float(surcharge):.2f} credits more per trip."
+        )
+    pass_sem = a.get("pass_semantics")
+    if pass_sem:
+        lines.append(f"Pass rules: {pass_sem}.")
+    if "household_has_pass" in a:
+        holds = "holds" if a["household_has_pass"] else "does not hold"
+        lines.append(f"This person's household {holds} a pass.")
+    lines.append("The untolled alternatives (slower routes and other modes) stay free.")
+    return "\n".join(lines)
+
+
+def render_onset_rewrite_prompt(
+    skeleton: dict,
+    evidence_lines: list,
+    current_obj: dict,
+    announcement: dict,
+    immutable_rule_ids,
+    mode: str = "serve",
+    failure_reasons=(),
+) -> str:
+    """Render the A4.2(ii) announced-onset rewrite prompt (and, with a nulled
+    announcement, the A4.2(iii) placebo's reconsideration prompt — ONE
+    template, so the two arms' machinery is yoked and only the notice content
+    differs).
+
+    Deliberately carries NO FIT CHECK block: under the shock the fidelity gate
+    is dropped (A4.2(i), structural-only), and instructing the model to
+    reproduce the pre-onset mode mix would clamp in-prompt the very adaptation
+    the milestone measures. Schema, masking, feasibility and strong-rule
+    immutability demands are unchanged.
+    """
+    _check_mode(mode)
+    fields = {
+        "skeleton_block": _render_block(skeleton),
+        "evidence_block": _render_rules(list(evidence_lines)),
+        "current_card_json": _render_card_json(current_obj),
+        "announcement_block": _render_announcement(announcement),
+        "immutable_rules_block": _render_immutable_rules(immutable_rule_ids),
+    }
+    base = _load_template("persona_onset_rewrite.txt").format_map(fields).rstrip("\n")
+    if failure_reasons:
+        retry = _load_template("persona_seed_retry.txt").format_map(
+            {"failure_reasons": _render_rules(list(failure_reasons))}
+        ).rstrip("\n")
+        return base + "\n\n" + retry + "\n"
+    return base + "\n"
+
+
 def _implied_stats(obj: dict) -> dict:
     """Fallback FIT CHECK figures derived from a card's own patterns, for the
     record-builder's convenience path when no observed reference is supplied.
@@ -452,7 +528,21 @@ def build_rewrite_prompt_records(
         observed = (observed_context or {}).get(request.persona_id)
         inputs = rewrite_render_inputs(request, render_context, observed=observed)
         failure_reasons = tuple((failures or {}).get(request.persona_id, ()))
-        prompt = render_rewrite_prompt(mode=mode, failure_reasons=failure_reasons, **inputs)
+        if getattr(request, "reason", "surprise") == "announced_onset":
+            # A4.2(ii): the onset (or nulled placebo) notice prompt — same
+            # branch the in-process client takes, so the offline round trip
+            # renders byte-identical prompts.
+            prompt = render_onset_rewrite_prompt(
+                skeleton=inputs["skeleton"],
+                evidence_lines=inputs["evidence_lines"],
+                current_obj=inputs["current_obj"],
+                announcement=dict(getattr(request, "announcement", None) or {}),
+                immutable_rule_ids=inputs["immutable_rule_ids"],
+                mode=mode,
+                failure_reasons=failure_reasons,
+            )
+        else:
+            prompt = render_rewrite_prompt(mode=mode, failure_reasons=failure_reasons, **inputs)
         records.append(
             {"persona_id": request.persona_id, "prompt": prompt, "attempt": request.attempt}
         )

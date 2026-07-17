@@ -1,0 +1,166 @@
+{
+  "adult_licence_scope": "licensed-adult status determined over the diary-carded household members (the 1:1 seeded persons)",
+  "charge_semantics": "pass discounts CAR trips in the household vehicle only; ride/hired trips never receive the discount (world.bridge.corridor_travelers_of_day)",
+  "coverage_z_tolerance": 2.0,
+  "crn_site_key": "{namespace}:{household_id}:hh_pass",
+  "date": "2026-07-17",
+  "decision": "docs/DECISION_M4_HAS_PASS_GATE.md (Option B, sealed 2026-07-15)",
+  "draw_namespace": "seed",
+  "gating_counts": {
+    "eligible_households": 5203,
+    "households": 6319,
+    "ineligible_households": 1116,
+    "legacy_minor_passes_removed": 1215,
+    "legacy_nondriver_passes_removed": 1717,
+    "pass_households": 3889,
+    "personas": 11940,
+    "personas_with_pass": 7841
+  },
+  "segment_preservation": {
+    "__unsegmented__": {
+      "draw_noise_sigma": 0.08505830553504805,
+      "eligible_car_weight_share": 0.9999008825795827,
+      "expected_coverage": 0.75,
+      "household_draw_rate": 0.7500743454342407,
+      "n_households": 421,
+      "realized_coverage": 0.7267707540900138,
+      "structurally_zero": false,
+      "target": 0.75,
+      "within_tolerance": true
+    },
+    "high|car0|catchment": {
+      "draw_noise_sigma": 0.0,
+      "eligible_car_weight_share": 0.0,
+      "expected_coverage": 0.0,
+      "household_draw_rate": 0.0,
+      "n_households": 221,
+      "realized_coverage": 0.0,
+      "structurally_zero": true,
+      "target": 0.0,
+      "within_tolerance": true
+    },
+    "high|car0|remainder": {
+      "draw_noise_sigma": 0.0,
+      "eligible_car_weight_share": 0.0,
+      "expected_coverage": 0.0,
+      "household_draw_rate": 0.0,
+      "n_households": 21,
+      "realized_coverage": 0.0,
+      "structurally_zero": true,
+      "target": 0.0,
+      "within_tolerance": true
+    },
+    "high|car1p|catchment": {
+      "draw_noise_sigma": 0.05683382473153878,
+      "eligible_car_weight_share": 0.9999459792475673,
+      "expected_coverage": 0.75,
+      "household_draw_rate": 0.750040517753124,
+      "n_households": 1369,
+      "realized_coverage": 0.6395546850890902,
+      "structurally_zero": false,
+      "target": 0.75,
+      "within_tolerance": true
+    },
+    "high|car1p|remainder": {
+      "draw_noise_sigma": 0.039720564547925295,
+      "eligible_car_weight_share": 0.9999981963603931,
+      "expected_coverage": 0.75,
+      "household_draw_rate": 0.750001352732145,
+      "n_households": 934,
+      "realized_coverage": 0.7771893759243373,
+      "structurally_zero": false,
+      "target": 0.75,
+      "within_tolerance": true
+    },
+    "low|car0|catchment": {
+      "draw_noise_sigma": 0.0,
+      "eligible_car_weight_share": 0.0,
+      "expected_coverage": 0.0,
+      "household_draw_rate": 0.0,
+      "n_households": 481,
+      "realized_coverage": 0.0,
+      "structurally_zero": true,
+      "target": 0.0,
+      "within_tolerance": true
+    },
+    "low|car0|remainder": {
+      "draw_noise_sigma": 0.0,
+      "eligible_car_weight_share": 0.0,
+      "expected_coverage": 0.0,
+      "household_draw_rate": 0.0,
+      "n_households": 63,
+      "realized_coverage": 0.0,
+      "structurally_zero": true,
+      "target": 0.0,
+      "within_tolerance": true
+    },
+    "low|car1p|catchment": {
+      "draw_noise_sigma": 0.09161015476350573,
+      "eligible_car_weight_share": 1.0,
+      "expected_coverage": 0.75,
+      "household_draw_rate": 0.75,
+      "n_households": 602,
+      "realized_coverage": 0.7697519565166356,
+      "structurally_zero": false,
+      "target": 0.75,
+      "within_tolerance": true
+    },
+    "low|car1p|remainder": {
+      "draw_noise_sigma": 0.05575727984992102,
+      "eligible_car_weight_share": 1.0,
+      "expected_coverage": 0.75,
+      "household_draw_rate": 0.75,
+      "n_households": 424,
+      "realized_coverage": 0.7136012586313021,
+      "structurally_zero": false,
+      "target": 0.75,
+      "within_tolerance": true
+    },
+    "mid|car0|catchment": {
+      "draw_noise_sigma": 0.0,
+      "eligible_car_weight_share": 0.0,
+      "expected_coverage": 0.0,
+      "household_draw_rate": 0.0,
+      "n_households": 242,
+      "realized_coverage": 0.0,
+      "structurally_zero": true,
+      "target": 0.0,
+      "within_tolerance": true
+    },
+    "mid|car0|remainder": {
+      "draw_noise_sigma": 0.0,
+      "eligible_car_weight_share": 0.0,
+      "expected_coverage": 0.0,
+      "household_draw_rate": 0.0,
+      "n_households": 18,
+      "realized_coverage": 0.0,
+      "structurally_zero": true,
+      "target": 0.0,
+      "within_tolerance": true
+    },
+    "mid|car1p|catchment": {
+      "draw_noise_sigma": 0.07511408542433379,
+      "eligible_car_weight_share": 1.0,
+      "expected_coverage": 0.75,
+      "household_draw_rate": 0.75,
+      "n_households": 844,
+      "realized_coverage": 0.708386632121495,
+      "structurally_zero": false,
+      "target": 0.75,
+      "within_tolerance": true
+    },
+    "mid|car1p|remainder": {
+      "draw_noise_sigma": 0.04391053796107491,
+      "eligible_car_weight_share": 0.9999755974744364,
+      "expected_coverage": 0.75,
+      "household_draw_rate": 0.750018302340796,
+      "n_households": 679,
+      "realized_coverage": 0.8062860951410563,
+      "structurally_zero": false,
+      "target": 0.75,
+      "within_tolerance": true
+    }
+  },
+  "target_rate": 0.75,
+  "target_source": "frozen world pass_prior (cityk_corridor)"
+}

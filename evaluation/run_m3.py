@@ -193,13 +193,43 @@ def _resolve_stub_client(persona_index, dataset, enriched, card_personas):
     return GatedSlowBrain(StubGenerator(), vc)
 
 
+def _load_m4_gates(gates_dir: Optional[str]):
+    """Load the frozen pre-M4 gate artifacts (both sealed 2026-07-15):
+    ``{gates_dir}/has_pass_household/persona_pass.json`` (household-inherited
+    pass map) and ``{gates_dir}/borrowed_car/manifest.json`` +
+    ``qualifying_personas.json`` (the fitted availability draw). Returns
+    (persona_pass, car_access, manifest_note); (None, None, None) when no dir
+    is given — the pre-decision loop, byte-identical."""
+    if gates_dir is None:
+        return None, None, None
+    from agents.card_executor import BorrowedCarAccess
+
+    gd = Path(gates_dir)
+    pp_path = gd / "has_pass_household" / "persona_pass.json"
+    bc_manifest_path = gd / "borrowed_car" / "manifest.json"
+    bc_ids_path = gd / "borrowed_car" / "qualifying_personas.json"
+    persona_pass = json.loads(pp_path.read_text())
+    bc = json.loads(bc_manifest_path.read_text())
+    qualifying = frozenset(json.loads(bc_ids_path.read_text()))
+    car_access = BorrowedCarAccess(rate=float(bc["fitted_rate"]), qualifying=qualifying)
+    note = {
+        "gates_dir": str(gd),
+        "persona_pass_count": int(sum(bool(v) for v in persona_pass.values())),
+        "borrowed_car_rate": float(bc["fitted_rate"]),
+        "borrowed_car_degenerate": bool(bc.get("degenerate", False)),
+        "borrowed_car_qualifying": len(qualifying),
+    }
+    return persona_pass, car_access, note
+
+
 # ---------------------------------------------------------------------------
 # the harness
 # ---------------------------------------------------------------------------
 
 def run(cards_path: str, out_dir: str, n_runs: int, base_seed: int, warmup: int,
         scoring_days: int, slow_brain: str = "none", limit: Optional[int] = None,
-        mnl_iters: int = 250, label: str = "") -> dict:
+        mnl_iters: int = 250, label: str = "",
+        m4_gates_dir: Optional[str] = None) -> dict:
     t0 = time.time()
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -224,6 +254,7 @@ def run(cards_path: str, out_dir: str, n_runs: int, base_seed: int, warmup: int,
 
     config = cityk_corridor()
     n_days = warmup + scoring_days
+    persona_pass, car_access, gates_note = _load_m4_gates(m4_gates_dir)
     policy, policy_name = _resolve_policy()
     # none/batch collect (client=None); stub actually rewrites via the gated brain
     client = (_resolve_stub_client(persona_index, dataset, enriched, card_personas)
@@ -238,6 +269,7 @@ def run(cards_path: str, out_dir: str, n_runs: int, base_seed: int, warmup: int,
             res = run_baseline_loop(
                 cards, config, day_slots, namespace=namespace, n_days=n_days,
                 warmup_days=warmup, policy=policy, client=client, keep_full_window=False,
+                car_access=car_access, persona_pass=persona_pass,
             )
             loop_scoring[namespace] = res.scoring_days
             audit["rewrite_audit"].extend(r.to_dict() for r in res.rewrite_audit)
@@ -361,6 +393,7 @@ def run(cards_path: str, out_dir: str, n_runs: int, base_seed: int, warmup: int,
         },
         "pending_rewrites_path": pending_path,
         "namespaces": [f"m3_run{k}" for k in range(n_runs)],
+        "m4_gates": gates_note,
         "timestamp": _date_stamp(),
     }
 
@@ -419,11 +452,14 @@ def main(argv=None) -> int:
     ap.add_argument("--limit", type=int, default=None, help="use only the first N cards")
     ap.add_argument("--mnl-iters", type=int, default=250)
     ap.add_argument("--label", default="")
+    ap.add_argument("--m4-gates", default=None, metavar="DIR",
+                    help="frozen pre-M4 gate artifacts dir (e.g. runs/m4_prep)")
     args = ap.parse_args(argv)
 
     results = run(args.cards, args.out, args.runs, args.seed, args.warmup,
                   args.scoring_days, slow_brain=args.slow_brain, limit=args.limit,
-                  mnl_iters=args.mnl_iters, label=args.label)
+                  mnl_iters=args.mnl_iters, label=args.label,
+                  m4_gates_dir=args.m4_gates)
     print(json.dumps(_to_native(results["e1_pass"]), indent=2))
     print("E1 method pooled TVD %.5f  MNL pooled TVD %.5f  Delta CI [%.5f, %.5f] eps %.5f" % (
         results["method_arm"]["pooled_tvd"], results["mnl_arm"]["pooled_tvd"],

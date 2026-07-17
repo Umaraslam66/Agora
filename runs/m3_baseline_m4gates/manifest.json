@@ -1,0 +1,79 @@
+{
+  "eval": "m3",
+  "adapter_version": "psrc-m2-1.0",
+  "map_version": {
+    "map_version": "m2-1.0",
+    "built": "2026-07-14",
+    "source": "US Census Bureau 2020 Gazetteer, census tracts, state FIPS 53 (INTPTLAT/INTPTLONG interior-point centroids); household weighting from the survey households table, two pooled waves, hh_weight>0, x0.5 wave mass",
+    "county_fips": [
+      "53033",
+      "53035",
+      "53053",
+      "53061"
+    ]
+  },
+  "taxonomy": "m0-1.0",
+  "cards_path": "data/cards/cards_m2_masked_r2b.jsonl",
+  "cards_sha256": "f162c23ada0588d2165724319fcf4744ab78199c6b7391b65a801746f3caaf50",
+  "n_runs": 20,
+  "bootstrap_B": 500,
+  "base_seed": 20260717,
+  "seed_derivation": "base_seed(20260717) + SEED_OFFSET_PAIRED(44)",
+  "mnl_fit_iters": 250,
+  "mnl_diagnostics": {
+    "n_personas": 11940,
+    "fit_iters": 250,
+    "n_coef_per_fold": {
+      "0": 32,
+      "1": 32,
+      "2": 32,
+      "3": 32,
+      "4": 32
+    }
+  },
+  "loop_constants": {
+    "warmup_days": 10,
+    "scoring_days": 7,
+    "n_days": 17,
+    "strong_habit_threshold": 14,
+    "world_config": "cityk_corridor",
+    "slow_brain_mode": "batch",
+    "policy": "agents.slow_brain.StandardSurprisePolicy"
+  },
+  "rewrite_audit_summary": {
+    "n_requests_collected": 0,
+    "n_accepted": 0,
+    "n_attempted": 0
+  },
+  "pending_rewrites_path": null,
+  "namespaces": [
+    "m3_run0",
+    "m3_run1",
+    "m3_run2",
+    "m3_run3",
+    "m3_run4",
+    "m3_run5",
+    "m3_run6",
+    "m3_run7",
+    "m3_run8",
+    "m3_run9",
+    "m3_run10",
+    "m3_run11",
+    "m3_run12",
+    "m3_run13",
+    "m3_run14",
+    "m3_run15",
+    "m3_run16",
+    "m3_run17",
+    "m3_run18",
+    "m3_run19"
+  ],
+  "m4_gates": {
+    "gates_dir": "runs/m4_prep",
+    "persona_pass_count": 7841,
+    "borrowed_car_rate": 0.0,
+    "borrowed_car_degenerate": true,
+    "borrowed_car_qualifying": 100
+  },
+  "timestamp": "Fri Jul 17 17:22:14 CEST 2026"
+}

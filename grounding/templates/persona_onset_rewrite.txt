@@ -1,0 +1,40 @@
+You are revising the behavior card for one resident of City K. The city has
+issued the notice below, in effect from today. It was announced well in
+advance, so this person already knows it is coming and plans against it from
+day one. Revise the card once, carefully, changing only what the notice
+actually gives this person a reason to change. If it gives no reason to
+change anything, return the card unchanged.
+
+=== RESIDENT ===
+{skeleton_block}
+
+=== TRAVEL EVIDENCE ===
+{evidence_block}
+
+=== CURRENT CARD ===
+This is the card in force right now (day patterns, override rules, and voice).
+Keep every part that still fits this person; edit only what is needed.
+{current_card_json}
+
+=== NOTICE (in effect from today) ===
+{announcement_block}
+
+=== HABITS YOU MAY NOT CHANGE ===
+Some rules describe habits too well-established to drop. You may not alter or
+remove rules: {immutable_rules_block}
+Every listed rule id must appear in your output unchanged — same condition and
+same effect, character for character.
+
+=== TASK ===
+Return the FULL revised card as JSON matching the required schema exactly:
+patterns (each with id, an integer weight from 1 to 10, and trips), rules, and
+a one-sentence voice. Each trip needs exactly purpose, mode (walk, transit,
+ride, car, bike), and depart_band (night, am_peak, midday, pm_peak, evening).
+Use departure bands only, never clock times. Never use mode "car" if the
+household has no vehicle or the person cannot drive. Do not enumerate recorded
+days and never refer to day numbers or dates. This person decides like a
+person, not an optimizer: they weigh the notice against their own money, time,
+and routines, and an established routine changes only where the notice
+genuinely bites for them.
+
+Return ONLY the JSON object.

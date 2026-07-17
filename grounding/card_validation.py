@@ -256,11 +256,35 @@ def _car_allowed(skeleton: Mapping) -> bool:
     return (cars is None or cars >= 1) and bool(can_drive)
 
 
-def feasibility(obj, skeleton: Mapping) -> list[str]:
+def _borrowed_car_qualifying(skeleton: Mapping, observed: Optional[Mapping]) -> bool:
+    """The sealed pre-M4 borrowed-car class (`docs/DECISION_M4_BORROWED_CAR_GATE.md`,
+    Option B): a licensed adult in a zero-vehicle household whose OWN shown
+    diary contains car-driver trips. For this class car trips are FEASIBLE at
+    validation time — availability is enforced per day by the executor's
+    calibrated CRN ``caraccess`` draw, not by a hard reject here. No observed
+    car driving (or no diary in evidence) -> no relaxation: availability is
+    never invented for persons who never showed it."""
+    if observed is None:
+        return False
+    return (
+        skeleton.get("household_cars") == 0
+        and bool(skeleton.get("can_drive", False))
+        and (skeleton.get("age") or 0) >= 18
+        and int((observed.get("mode_counts") or {}).get("car", 0)) > 0
+    )
+
+
+def feasibility(obj, skeleton: Mapping, observed: Optional[Mapping] = None) -> list[str]:
     """Reject car trips the person cannot physically make: no household vehicle,
     or not licensed. This is the validation-time REJECT reason for the retry
-    loop; the executor additionally coerces car->ride at run time as a belt."""
+    loop; the executor additionally coerces car->ride at run time as a belt.
+
+    Exception (sealed pre-M4 decision): the borrowed-car qualifying class
+    (:func:`_borrowed_car_qualifying`) may carry car trips — the executor's
+    per-day availability draw gates them at run time."""
     if _car_allowed(skeleton):
+        return []
+    if _borrowed_car_qualifying(skeleton, observed):
         return []
     errors: List[str] = []
     for pi, p in enumerate(obj.get("patterns", [])):
@@ -473,11 +497,41 @@ def validate_card(
         errors
         + lint_card_text(obj)
         + replay_smell(obj, observed_day_sequences)
-        + feasibility(obj, skeleton)
+        + feasibility(obj, skeleton, observed)
     )
     if not _is_fallback(obj):
         errors = errors + fidelity(obj, observed)
     return errors
+
+
+def validate_card_structural(
+    obj,
+    skeleton: Mapping,
+    observed: Optional[Mapping],
+    observed_day_sequences: Sequence[Sequence],
+) -> list[str]:
+    """The A4.2(i) STRUCTURAL channel — the shock-mode rewrite gate: schema,
+    mask-lint, replay-smell, feasibility. The FIDELITY gate alone is dropped —
+    it is the only gate scored against the pre-toll observed diary, and under
+    the shock it would mechanically clamp the very adaptation the milestone
+    measures (a genuinely adapting rewrite deviates from the pre-toll diary by
+    design). Replay-smell and feasibility stay: they constrain contamination
+    and physical possibility, not adaptation direction. Drift control moves to
+    the A4.2(iii) placebo arm. Ordinary-day rewrites keep the full five-gate
+    :func:`validate_card`; mechanical strong-rule restoration applies to both
+    (it lives with the slow brain, before this gate runs).
+
+    ``observed`` is still consulted by feasibility's borrowed-car relaxation
+    (which reads observed car use, not diary fidelity)."""
+    errors = validate_card_json(obj, max_pattern_trips=None)
+    if not isinstance(obj, Mapping):
+        return errors
+    return (
+        errors
+        + lint_card_text(obj)
+        + replay_smell(obj, observed_day_sequences)
+        + feasibility(obj, skeleton, observed)
+    )
 
 
 # ---------------------------------------------------------------------------
