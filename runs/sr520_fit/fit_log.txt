@@ -1,0 +1,82 @@
+corridor subpopulation: 655 of 11940 cards
+  vot bisect th=6: drop(0.05)=0.997 drop(8.0)=0.112 target=0.380
+  th=6: vot_scale=1.603 plateau=0.378 settle=26 recovery=-0.061 all_ok=False
+  vot bisect th=10: drop(0.05)=0.999 drop(8.0)=0.078 target=0.380
+  th=10: vot_scale=1.479 plateau=0.384 settle=32 recovery=0.025 all_ok=False
+  vot bisect th=14: drop(0.05)=0.998 drop(8.0)=0.091 target=0.380
+  th=14: vot_scale=1.541 plateau=0.380 settle=27 recovery=-0.042 all_ok=False
+  vot bisect th=18: drop(0.05)=0.999 drop(8.0)=0.108 target=0.380
+  th=18: vot_scale=1.510 plateau=0.379 settle=14 recovery=0.019 all_ok=True
+  vot bisect th=22: drop(0.05)=0.998 drop(8.0)=0.082 target=0.380
+  th=22: vot_scale=1.541 plateau=0.377 settle=26 recovery=0.001 all_ok=False
+  vot bisect th=26: drop(0.05)=0.999 drop(8.0)=0.056 target=0.380
+  th=26: vot_scale=1.416 plateau=0.380 settle=29 recovery=0.031 all_ok=False
+  band th=6 @scale=1.510: plateau=0.349 in_band=True
+  band th=10 @scale=1.510: plateau=0.360 in_band=True
+  band th=14 @scale=1.510: plateau=0.379 in_band=True
+  band th=18 @scale=1.510: plateau=0.379 in_band=True
+  band th=22 @scale=1.510: plateau=0.347 in_band=True
+  band th=26 @scale=1.510: plateau=0.338 in_band=True
+fitted: threshold=18 vot_scale=1.5096 passing=[18] e6_band=[6, 10, 14, 18, 22, 26] (693s)
+  reh run 0 toll: plateau=0.3584 (8s)
+  reh run 0 placebo: plateau=-0.0086 (44s)
+  reh run 0 toll_tail_off: plateau=0.3584 (5s)
+  reh run 1 toll: plateau=0.3804 (9s)
+  reh run 1 placebo: plateau=0.0023 (12s)
+  reh run 1 toll_tail_off: plateau=0.3804 (5s)
+  reh run 2 toll: plateau=0.3685 (9s)
+  reh run 2 placebo: plateau=0.0336 (17s)
+  reh run 2 toll_tail_off: plateau=0.3685 (5s)
+  reh run 3 toll: plateau=0.3942 (5s)
+  reh run 3 placebo: plateau=0.0246 (11s)
+  reh run 3 toll_tail_off: plateau=0.3942 (5s)
+  reh run 4 toll: plateau=0.3475 (5s)
+  reh run 4 placebo: plateau=-0.0097 (17s)
+  reh run 4 toll_tail_off: plateau=0.3475 (5s)
+  reh run 5 toll: plateau=0.3590 (8s)
+  reh run 5 placebo: plateau=0.0032 (10s)
+  reh run 5 toll_tail_off: plateau=0.3590 (5s)
+  reh run 6 toll: plateau=0.3761 (5s)
+  reh run 6 placebo: plateau=0.0260 (9s)
+  reh run 6 toll_tail_off: plateau=0.3761 (5s)
+  reh run 7 toll: plateau=0.3967 (5s)
+  reh run 7 placebo: plateau=0.0271 (10s)
+  reh run 7 toll_tail_off: plateau=0.3967 (5s)
+  reh run 8 toll: plateau=0.3886 (7s)
+  reh run 8 placebo: plateau=0.0009 (16s)
+  reh run 8 toll_tail_off: plateau=0.3886 (5s)
+  reh run 9 toll: plateau=0.3832 (5s)
+  reh run 9 placebo: plateau=0.0250 (9s)
+  reh run 9 toll_tail_off: plateau=0.3832 (5s)
+  reh run 10 toll: plateau=0.3712 (9s)
+  reh run 10 placebo: plateau=0.0167 (10s)
+  reh run 10 toll_tail_off: plateau=0.3712 (5s)
+  reh run 11 toll: plateau=0.3568 (5s)
+  reh run 11 placebo: plateau=-0.0007 (10s)
+  reh run 11 toll_tail_off: plateau=0.3568 (5s)
+  reh run 12 toll: plateau=0.3749 (5s)
+  reh run 12 placebo: plateau=0.0143 (8s)
+  reh run 12 toll_tail_off: plateau=0.3749 (5s)
+  reh run 13 toll: plateau=0.3775 (5s)
+  reh run 13 placebo: plateau=-0.0057 (8s)
+  reh run 13 toll_tail_off: plateau=0.3775 (5s)
+  reh run 14 toll: plateau=0.3740 (5s)
+  reh run 14 placebo: plateau=0.0085 (9s)
+  reh run 14 toll_tail_off: plateau=0.3740 (5s)
+  reh run 15 toll: plateau=0.3938 (7s)
+  reh run 15 placebo: plateau=0.0320 (7s)
+  reh run 15 toll_tail_off: plateau=0.3938 (5s)
+  reh run 16 toll: plateau=0.3632 (5s)
+  reh run 16 placebo: plateau=0.0036 (5s)
+  reh run 16 toll_tail_off: plateau=0.3632 (5s)
+  reh run 17 toll: plateau=0.3338 (5s)
+  reh run 17 placebo: plateau=-0.0288 (5s)
+  reh run 17 toll_tail_off: plateau=0.3338 (5s)
+  reh run 18 toll: plateau=0.3463 (5s)
+  reh run 18 placebo: plateau=-0.0036 (9s)
+  reh run 18 toll_tail_off: plateau=0.3463 (5s)
+  reh run 19 toll: plateau=0.3626 (5s)
+  reh run 19 placebo: plateau=0.0238 (5s)
+  reh run 19 toll_tail_off: plateau=0.3626 (5s)
+rehearsal: dQ central=0.3611 [0.3487,0.3786] drift_floor=0.0249 tail_gap=0.0000
+froze calibration/sr520_fit_manifest.json

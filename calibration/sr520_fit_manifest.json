@@ -1,0 +1,43 @@
+{
+  "amendment": "01_PREREGISTRATION.md section 7 A4.3",
+  "date": "2026-07-17",
+  "generator": "vllm",
+  "stub_warning": null,
+  "strong_habit_threshold": 18,
+  "vot_scale": 1.5095703125,
+  "vot_median_effective": 0.3019140625,
+  "e6_band_thresholds": [
+    6,
+    10,
+    14,
+    18,
+    22,
+    26
+  ],
+  "passing_thresholds": [
+    18
+  ],
+  "criteria": {
+    "drop_band": [
+      0.36,
+      0.4
+    ],
+    "transition_days": 20,
+    "recovery_tol": 0.03,
+    "plateau_tail_days": 10,
+    "envelope_widen_pp": 0.05,
+    "one_sided_note": "the pinned anchor (aggregate drop band + drop-and-plateau on a monthly series) supports only one-sided transition/persistence criteria; a passing RANGE of thresholds is the expected honest outcome and feeds the A4.3 E6 sensitivity band"
+  },
+  "scenario": {
+    "warmup_days": 10,
+    "pre_onset_days": 25,
+    "post_onset_days": 40,
+    "onset_day": 35,
+    "era_free_day": 200,
+    "era_toll_day": 300,
+    "corridor_subpopulation_note": "only corridor personas enter the corridor equilibrium; the scored tolled-facility volume is identical to a full-population run \u2014 cost decision only, BT1 fires on full tier populations",
+    "pre_onset_rationale": "long enough that near-daily rules exceed every grid threshold at onset (real-event habits were years old)"
+  },
+  "drift_floor": 0.02493095734664248,
+  "results": "runs/sr520_fit/results.json"
+}
