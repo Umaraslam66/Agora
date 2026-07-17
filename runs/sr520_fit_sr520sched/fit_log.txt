@@ -1,0 +1,83 @@
+corridor subpopulation: 655 of 11940 cards
+rehearsal schedule: sr520 rates={'overnight': 0.44, 'offpeak': 2.632, 'am_peak': 3.7022, 'pm_peak': 3.7333} surcharge=1.4250 say_do_correction=2.5
+  vot bisect th=6: drop(0.05)=0.987 drop(8.0)=0.140 target=0.380
+  th=6: vot_scale=2.286 plateau=0.375 settle=26 recovery=-0.043 all_ok=False
+  vot bisect th=10: drop(0.05)=0.989 drop(8.0)=0.117 target=0.380
+  th=10: vot_scale=2.224 plateau=0.382 settle=32 recovery=0.006 all_ok=False
+  vot bisect th=14: drop(0.05)=0.993 drop(8.0)=0.134 target=0.380
+  th=14: vot_scale=2.348 plateau=0.381 settle=32 recovery=-0.065 all_ok=False
+  vot bisect th=18: drop(0.05)=0.989 drop(8.0)=0.144 target=0.380
+  th=18: vot_scale=2.224 plateau=0.378 settle=12 recovery=0.033 all_ok=False
+  vot bisect th=22: drop(0.05)=0.988 drop(8.0)=0.119 target=0.380
+  th=22: vot_scale=2.224 plateau=0.382 settle=18 recovery=0.004 all_ok=True
+  vot bisect th=26: drop(0.05)=0.989 drop(8.0)=0.099 target=0.380
+  th=26: vot_scale=2.038 plateau=0.381 settle=29 recovery=0.048 all_ok=False
+  band th=6 @scale=2.224: plateau=0.350 in_band=True
+  band th=10 @scale=2.224: plateau=0.356 in_band=True
+  band th=14 @scale=2.224: plateau=0.369 in_band=True
+  band th=18 @scale=2.224: plateau=0.363 in_band=True
+  band th=22 @scale=2.224: plateau=0.382 in_band=True
+  band th=26 @scale=2.224: plateau=0.336 in_band=True
+fitted: threshold=22 vot_scale=2.2238 passing=[22] e6_band=[6, 10, 14, 18, 22, 26] (674s)
+  reh run 0 toll: plateau=0.3584 (9s)
+  reh run 0 placebo: plateau=-0.0086 (9s)
+  reh run 0 toll_tail_off: plateau=0.3584 (5s)
+  reh run 1 toll: plateau=0.3760 (9s)
+  reh run 1 placebo: plateau=0.0023 (5s)
+  reh run 1 toll_tail_off: plateau=0.3760 (5s)
+  reh run 2 toll: plateau=0.3674 (7s)
+  reh run 2 placebo: plateau=0.0336 (5s)
+  reh run 2 toll_tail_off: plateau=0.3674 (5s)
+  reh run 3 toll: plateau=0.3942 (5s)
+  reh run 3 placebo: plateau=0.0246 (7s)
+  reh run 3 toll_tail_off: plateau=0.3942 (5s)
+  reh run 4 toll: plateau=0.3475 (5s)
+  reh run 4 placebo: plateau=-0.0097 (7s)
+  reh run 4 toll_tail_off: plateau=0.3475 (5s)
+  reh run 5 toll: plateau=0.3659 (8s)
+  reh run 5 placebo: plateau=0.0032 (8s)
+  reh run 5 toll_tail_off: plateau=0.3659 (5s)
+  reh run 6 toll: plateau=0.3733 (7s)
+  reh run 6 placebo: plateau=0.0260 (5s)
+  reh run 6 toll_tail_off: plateau=0.3733 (5s)
+  reh run 7 toll: plateau=0.3921 (5s)
+  reh run 7 placebo: plateau=0.0283 (5s)
+  reh run 7 toll_tail_off: plateau=0.3921 (5s)
+  reh run 8 toll: plateau=0.3764 (7s)
+  reh run 8 placebo: plateau=0.0009 (8s)
+  reh run 8 toll_tail_off: plateau=0.3764 (5s)
+  reh run 9 toll: plateau=0.3826 (9s)
+  reh run 9 placebo: plateau=0.0250 (9s)
+  reh run 9 toll_tail_off: plateau=0.3826 (5s)
+  reh run 10 toll: plateau=0.3729 (9s)
+  reh run 10 placebo: plateau=0.0167 (5s)
+  reh run 10 toll_tail_off: plateau=0.3729 (5s)
+  reh run 11 toll: plateau=0.3613 (5s)
+  reh run 11 placebo: plateau=-0.0007 (16s)
+  reh run 11 toll_tail_off: plateau=0.3613 (5s)
+  reh run 12 toll: plateau=0.3680 (5s)
+  reh run 12 placebo: plateau=0.0143 (5s)
+  reh run 12 toll_tail_off: plateau=0.3680 (5s)
+  reh run 13 toll: plateau=0.3751 (5s)
+  reh run 13 placebo: plateau=-0.0057 (8s)
+  reh run 13 toll_tail_off: plateau=0.3751 (5s)
+  reh run 14 toll: plateau=0.3785 (5s)
+  reh run 14 placebo: plateau=0.0085 (5s)
+  reh run 14 toll_tail_off: plateau=0.3785 (5s)
+  reh run 15 toll: plateau=0.3893 (5s)
+  reh run 15 placebo: plateau=0.0320 (5s)
+  reh run 15 toll_tail_off: plateau=0.3893 (5s)
+  reh run 16 toll: plateau=0.3667 (5s)
+  reh run 16 placebo: plateau=0.0036 (5s)
+  reh run 16 toll_tail_off: plateau=0.3667 (5s)
+  reh run 17 toll: plateau=0.3390 (5s)
+  reh run 17 placebo: plateau=-0.0265 (5s)
+  reh run 17 toll_tail_off: plateau=0.3390 (5s)
+  reh run 18 toll: plateau=0.3446 (5s)
+  reh run 18 placebo: plateau=-0.0036 (5s)
+  reh run 18 toll_tail_off: plateau=0.3446 (5s)
+  reh run 19 toll: plateau=0.3654 (5s)
+  reh run 19 placebo: plateau=0.0238 (8s)
+  reh run 19 toll_tail_off: plateau=0.3654 (5s)
+rehearsal: dQ central=0.3603 [0.3467,0.3738] drift_floor=0.0254 tail_gap=0.0000
+froze calibration/sr520_fit_manifest.json

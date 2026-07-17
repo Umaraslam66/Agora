@@ -118,11 +118,12 @@ SHOCK_TRIGGER_Z = 2.0
 #: A rule whose habit-strength counter has reached this many net days-followed
 #: is a strong habit: it is stated immutable in the prompt AND enforced
 #: mechanically (a rewrite that drops or alters it is rejected). CALIBRATED
-#: value (A4.3, owner-acknowledged 2026-07-17): the SR 520 joint fit froze 18;
-#: the provisional 14 failed its own calibration (settle too slow) — see
-#: calibration/sr520_fit_manifest.json. Callers may still pass a band value
-#: (A4.3 E6 sensitivity band).
-STRONG_HABIT_THRESHOLD = 18
+#: value (A4.3): the SR 520 joint fit under the owner-adopted rehearsal
+#: schedule froze 22 (sole passing threshold; the provisional 14 and the
+#: earlier config-schedule fit's 18 both fail the shape criteria under it) —
+#: see calibration/sr520_fit_manifest.json. Callers may still pass a band
+#: value (A4.3 E6 sensitivity band).
+STRONG_HABIT_THRESHOLD = 22
 
 #: Attempt budget per rewrite, mirroring generation: one first attempt plus one
 #: retry carrying the numeric gate feedback. On terminal failure the old card

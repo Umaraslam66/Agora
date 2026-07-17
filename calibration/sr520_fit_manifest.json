@@ -3,9 +3,9 @@
   "date": "2026-07-17",
   "generator": "vllm",
   "stub_warning": null,
-  "strong_habit_threshold": 18,
-  "vot_scale": 1.5095703125,
-  "vot_median_effective": 0.3019140625,
+  "strong_habit_threshold": 22,
+  "vot_scale": 2.2238281250000003,
+  "vot_median_effective": 0.44476562500000005,
   "e6_band_thresholds": [
     6,
     10,
@@ -15,8 +15,23 @@
     26
   ],
   "passing_thresholds": [
-    18
+    22
   ],
+  "rehearsal_schedule": {
+    "source": "sr520",
+    "rates_credits": {
+      "overnight": 0.44000000000000006,
+      "offpeak": 2.6319999999999997,
+      "am_peak": 3.7022222222222227,
+      "pm_peak": 3.7333333333333334
+    },
+    "nonpass_surcharge_credits": 1.4249999999999998,
+    "derivation": "calibration.sr520_target.sr520_rehearsal_schedule: SR 520 opening weekday ladder (WAC 468-270-071 / WSR 11-04-007, corroborated by WSR 12-08-059's strikethrough baseline) hour-weighted onto the four masked periods, mapped to credits with the M4 masking's per-period credits-per-dollar factors (owner ruling 2026-07-17; docs/REHEARSAL_SCHEDULE_NOTE.md)"
+  },
+  "say_do_price_correction": {
+    "factor_applied": 2.5,
+    "application_point": "stimulus-side, announced charge only, INSIDE the pipeline BEFORE this elasticity fit (sealed 2026-07-17 in calibration/e3_fit_manifest.json -> price_prior.application_point); world charges the un-scaled schedule; E3(iii) ablation runs factor 1.0 with elasticity unchanged"
+  },
   "criteria": {
     "drop_band": [
       0.36,
@@ -38,6 +53,6 @@
     "corridor_subpopulation_note": "only corridor personas enter the corridor equilibrium; the scored tolled-facility volume is identical to a full-population run \u2014 cost decision only, BT1 fires on full tier populations",
     "pre_onset_rationale": "long enough that near-daily rules exceed every grid threshold at onset (real-event habits were years old)"
   },
-  "drift_floor": 0.02493095734664248,
-  "results": "runs/sr520_fit/results.json"
+  "drift_floor": 0.02543831885632148,
+  "results": "runs/sr520_fit_sr520sched/results.json"
 }

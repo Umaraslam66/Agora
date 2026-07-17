@@ -55,12 +55,13 @@ from world.tolling import PERIODS
 #: (M3 design D4). Computed loop-side from the card's serialized counters and
 #: carried on each :class:`RewriteRequest`; the canonical constant is mirrored
 #: in agents/slow_brain.py, which owns the trigger policy. CALIBRATED value
-#: (A4.3, owner-acknowledged 2026-07-17): the SR 520 joint fit froze 18 — the
-#: provisional build constant 14 FAILED the transition criterion
-#: (calibration/sr520_fit_manifest.json). E6 is scored across a sensitivity
-#: band — which is why :func:`run_baseline_loop` takes it as a parameter
-#: rather than baking the fitted value in.
-STRONG_HABIT_THRESHOLD = 18
+#: (A4.3): the SR 520 joint fit under the owner-adopted rehearsal schedule
+#: froze 22 (sole passing threshold; the provisional 14 and the earlier
+#: config-schedule 18 both fail under it — calibration/sr520_fit_manifest
+#: .json). E6 is scored across a sensitivity band — which is why
+#: :func:`run_baseline_loop` takes it as a parameter rather than baking the
+#: fitted value in.
+STRONG_HABIT_THRESHOLD = 22
 
 
 @dataclass(frozen=True)
