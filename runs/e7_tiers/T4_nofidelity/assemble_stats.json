@@ -1,0 +1,16 @@
+{
+  "accepted": 11860,
+  "fallback": 80,
+  "gate_failures": {
+    "patterns[0].trips[1]": 15,
+    "patterns[0].trips[0]": 41,
+    "patterns[0].trips[2]": 11,
+    "patterns[0].trips[3]": 2,
+    "patterns[0].trips[6]": 1,
+    "patterns[1].trips[2]": 1,
+    "patterns[1].trips[0]": 3,
+    "patterns[0].trips[5]": 3,
+    "patterns[0].trips[4]": 2,
+    "patterns[1].trips[7]": 1
+  }
+}

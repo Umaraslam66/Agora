@@ -1,0 +1,22 @@
+{
+  "cards": "runs/e7_tiers/T5/cards_T5.jsonl",
+  "crn_site_key": "{namespace}:{persona_id}:{day_index}:caraccess",
+  "date": "2026-07-17",
+  "decision": "docs/DECISION_M4_BORROWED_CAR_GATE.md (Option B, sealed 2026-07-15)",
+  "degenerate": false,
+  "degenerate_note": null,
+  "fit_window": "pooled 2017+2019 weekday build (calibration window; pre-wall)",
+  "fitted_rate": 1.0,
+  "n_qualifying_personas": 100,
+  "observed_car0_car_share": 0.07300549279504631,
+  "observed_car0_car_weight": 88814.25230196712,
+  "observed_car0_total_weight": 1216542.0559697049,
+  "realized_check": {
+    "namespace": "m4gates_check",
+    "realized_car_weight": 15581.692663998445,
+    "realized_share": 0.03529825396448292,
+    "realized_total_weight": 441429.5585180144
+  },
+  "sim_always_allow_car_weight": 17431.925342675924,
+  "sim_total_trip_weight": 455056.33900581504
+}

@@ -1,0 +1,7 @@
+{
+  "accepted": 11936,
+  "fallback": 4,
+  "gate_failures": {
+    "patterns[0].trips[4]": 4
+  }
+}
