@@ -45,9 +45,17 @@ serving/                choice gateway, model serving configs
 training/               LoRA SFT + choice eval (transplants)
 jobs/                   cluster job files — full-node discipline, no usernames
 tests/                  day-one doctrine tests: render-parity, mask-lint, truth boundary
-docs/                   gate records and sealed verdicts, kept in the repo
+docs/                   gate + decision records — private, published with results
 data/synthetic/         schema-identical synthetic stand-in (DEV only, never cited)
 ```
+
+## Gate & decision records
+
+Gate records and decision records — the `docs/…` files the frozen
+`01_PREREGISTRATION.md` cites (e.g. `docs/M2_GATE_RECORD.md`,
+`docs/DECISION_M4_HAS_PASS_GATE.md`) — are **maintained privately and published
+with the results.** The blind test has not yet fired, so they are not in this
+public repo; the pre-registration's references to them resolve on release.
 
 ## Status
 

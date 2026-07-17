@@ -32,8 +32,9 @@ most of them.
   build (E5.iii). Changes to the token list require a dated version bump in
   the file header.
 - **Negative results are kept.** If a gate fails or an ablation shows a
-  mechanism is not load-bearing, that is written up in `docs/` with the same
-  prominence as a pass. Deleting a negative result is falsification.
+  mechanism is not load-bearing, that is written up in `docs/` — maintained
+  privately and published with the results (this is a public repo) — with the
+  same prominence as a pass. Deleting a negative result is falsification.
 - **No unbacked numbers.** Any quantitative claim in README or docs must be
   reproducible from a file in `runs/`.
 
