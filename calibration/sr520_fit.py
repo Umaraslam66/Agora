@@ -72,11 +72,11 @@ import numpy as np
 
 from agents.baseline_loop import AnnouncedOnset, run_baseline_loop
 from agents.slow_brain import GatedSlowBrain, OnsetStubGenerator, StandardSurprisePolicy
-from calibration.sr520_target import sr520_target
+from calibration.sr520_target import sr520_rehearsal_schedule, sr520_target
 from evaluation import blind_shock
 from world.bridge import population_from_cards
 from world.config import cityk_corridor
-from world.tolling import announcement_of, placebo_announcement
+from world.tolling import SAY_DO_PRICE_CORRECTION, announcement_of, placebo_announcement
 
 # ---------------------------------------------------------------------------
 # scenario + fit constants (implementation decisions, recorded in the manifest)
@@ -128,9 +128,9 @@ def corridor_subpopulation(cards: Sequence[dict], config, namespace: str = "sr52
     return [c for c, on in zip(cards, pop.is_corridor) if bool(on)]
 
 
-def _override(config, onset_day: int, tolled: bool):
+def _override(config, onset_day: int, tolled: bool, schedule=None):
     free = config.network_state_for_day(ERA_FREE_DAY)
-    toll = config.network_state_for_day(ERA_TOLL_DAY)
+    toll = config.network_state_for_day(ERA_TOLL_DAY, schedule=schedule)
     if not tolled:
         return lambda d: free
     return lambda d: (toll if d >= onset_day else free)
@@ -146,20 +146,32 @@ def run_arm(
     client,
     persona_pass: Optional[Dict[str, bool]] = None,
     car_access=None,
+    schedule=None,
+    say_do_correction: float = SAY_DO_PRICE_CORRECTION,
 ) -> dict:
     """One loop run of one arm; returns the per-day tolled-facility series and
-    drop statistics. CRN pairing across arms = same namespace."""
+    drop statistics. CRN pairing across arms = same namespace.
+
+    ``schedule`` is the REHEARSAL toll schedule (owner ruling 2026-07-17:
+    the SR 520-derived masked schedule, NOT the M4 config schedule) — it is
+    both announced and charged; None falls back to ``config.toll_schedule``
+    (the pre-ruling as-sealed reading, kept for the ablation/debug path).
+    ``say_do_correction`` scales the ANNOUNCED charge only (A3.2 prior
+    central, sealed application point) — the world always charges
+    ``schedule`` itself; the placebo's nulled notice is untouched by it."""
     tolled = arm != "placebo"
+    sched = schedule if schedule is not None else config.toll_schedule
     onset = AnnouncedOnset(
         day=ONSET_DAY,
-        announcement=announcement_of(config.toll_schedule) if tolled
-        else placebo_announcement(),
+        announcement=announcement_of(sched, say_do_price_correction=say_do_correction)
+        if tolled else placebo_announcement(),
         tail_surprises=(arm != "toll_tail_off"),
     )
     res = run_baseline_loop(
         cards, config, {}, namespace=namespace, n_days=N_DAYS,
         warmup_days=WARMUP_DAYS, policy=StandardSurprisePolicy(),
-        client=client, network_override=_override(config, ONSET_DAY, tolled),
+        client=client,
+        network_override=_override(config, ONSET_DAY, tolled, schedule=schedule),
         keep_full_window=False, onset=onset,
         strong_habit_threshold=threshold,
         persona_pass=persona_pass, car_access=car_access,
@@ -253,6 +265,8 @@ def fit_vot_scale(
     persona_pass=None,
     car_access=None,
     namespace: str = "sr520_fit",
+    schedule=None,
+    say_do_correction: float = SAY_DO_PRICE_CORRECTION,
     log=print,
 ) -> Tuple[float, dict]:
     """Bisect the VoT scale so the toll arm's plateau drop hits the pinned
@@ -265,6 +279,7 @@ def fit_vot_scale(
             cards, config=_config_at(scale), namespace=namespace, arm="toll",
             threshold=threshold, client=client,
             persona_pass=persona_pass, car_access=car_access,
+            schedule=schedule, say_do_correction=say_do_correction,
         )
         return stats["plateau_drop"], stats
 
@@ -298,6 +313,8 @@ def joint_fit(
     persona_pass=None,
     car_access=None,
     thresholds: Sequence[int] = THRESHOLD_GRID,
+    schedule=None,
+    say_do_correction: float = SAY_DO_PRICE_CORRECTION,
     log=print,
 ) -> dict:
     """Per-threshold elasticity refit + shape evaluation; fitted point +
@@ -306,7 +323,8 @@ def joint_fit(
     for th in thresholds:
         scale, stats = fit_vot_scale(
             cards, th, client, persona_pass=persona_pass, car_access=car_access,
-            namespace=f"sr520_fit_th{th}", log=log,
+            namespace=f"sr520_fit_th{th}", schedule=schedule,
+            say_do_correction=say_do_correction, log=log,
         )
         verdict = shape_verdict(stats)
         per_threshold[th] = {"vot_scale": scale, "stats": stats, "verdict": verdict}
@@ -339,6 +357,7 @@ def joint_fit(
                 cards, config=_config_at(fitted_scale),
                 namespace=f"sr520_band_th{th}", arm="toll", threshold=th,
                 client=client, persona_pass=persona_pass, car_access=car_access,
+                schedule=schedule, say_do_correction=say_do_correction,
             )
         v = shape_verdict(stats)
         band_runs[th] = {"stats": stats, "verdict": v}
@@ -370,6 +389,8 @@ def rehearsal(
     persona_pass=None,
     car_access=None,
     n_runs: int = REHEARSAL_ENSEMBLE,
+    schedule=None,
+    say_do_correction: float = SAY_DO_PRICE_CORRECTION,
     log=print,
 ) -> dict:
     config = _config_at(vot_scale)
@@ -382,6 +403,7 @@ def rehearsal(
             stats = run_arm(
                 cards, config=config, namespace=ns, arm=arm, threshold=threshold,
                 client=client, persona_pass=persona_pass, car_access=car_access,
+                schedule=schedule, say_do_correction=say_do_correction,
             )
             arms[arm].append(stats)
             log(f"  reh run {k} {arm}: plateau={stats['plateau_drop']:.4f} "
@@ -487,6 +509,17 @@ def main(argv=None) -> int:
     ap.add_argument("--rehearsal-runs", type=int, default=REHEARSAL_ENSEMBLE)
     ap.add_argument("--thresholds", type=int, nargs="*", default=list(THRESHOLD_GRID))
     ap.add_argument("--skip-rehearsal", action="store_true")
+    ap.add_argument("--rehearsal-schedule", choices=("sr520", "config"),
+                    default="sr520",
+                    help="sr520 = the SR 520-derived masked schedule (owner "
+                         "ruling 2026-07-17, the reportable fit); config = the "
+                         "M4 config schedule (the pre-ruling as-sealed reading; "
+                         "debug/comparison only)")
+    ap.add_argument("--say-do-correction", type=float,
+                    default=SAY_DO_PRICE_CORRECTION,
+                    help="A3.2 stated->revealed factor applied to the ANNOUNCED "
+                         "charge (sealed application point; 1.0 = the E3(iii) "
+                         "uncorrected ablation)")
     ap.add_argument("--freeze", action="store_true",
                     help="write calibration/sr520_fit_manifest.json (the frozen "
                          "dated fit manifest; only meaningful with --generator vllm)")
@@ -541,10 +574,19 @@ def main(argv=None) -> int:
         gen = OnsetStubGenerator()
     client = GatedSlowBrain(gen, vctx)
 
+    reh_schedule = (
+        sr520_rehearsal_schedule() if args.rehearsal_schedule == "sr520" else None
+    )
+    log(f"rehearsal schedule: {args.rehearsal_schedule} "
+        f"rates={ {p: round(r, 4) for p, r in (reh_schedule or config0.toll_schedule).rates.items()} } "
+        f"surcharge={(reh_schedule or config0.toll_schedule).nonpass_surcharge:.4f} "
+        f"say_do_correction={args.say_do_correction}")
+
     t0 = time.time()
     fit = joint_fit(
         sub, client, persona_pass=persona_pass, car_access=car_access,
-        thresholds=args.thresholds, log=log,
+        thresholds=args.thresholds, schedule=reh_schedule,
+        say_do_correction=args.say_do_correction, log=log,
     )
     log(f"fitted: threshold={fit['fitted_threshold']} "
         f"vot_scale={fit['fitted_vot_scale']:.4f} "
@@ -556,13 +598,15 @@ def main(argv=None) -> int:
         reh = rehearsal(
             sub, fit["fitted_threshold"], fit["fitted_vot_scale"], client,
             persona_pass=persona_pass, car_access=car_access,
-            n_runs=args.rehearsal_runs, log=log,
+            n_runs=args.rehearsal_runs, schedule=reh_schedule,
+            say_do_correction=args.say_do_correction, log=log,
         )
         log(f"rehearsal: dQ central={reh['delta_q']['central']:.4f} "
             f"[{reh['delta_q']['lo']:.4f},{reh['delta_q']['hi']:.4f}] "
             f"drift_floor={reh['drift_floor']:.4f} "
             f"tail_gap={reh['tail_off_gap']['central']:.4f}")
 
+    sched_used = reh_schedule or config0.toll_schedule
     payload = {
         "date": __import__("datetime").date.today().isoformat(),
         "generator": args.generator,
@@ -570,6 +614,31 @@ def main(argv=None) -> int:
         "cards": args.cards,
         "n_corridor_cards": len(sub),
         "m4_gates": args.m4_gates,
+        "rehearsal_schedule": {
+            "source": args.rehearsal_schedule,
+            "rates_credits": {p: sched_used.rates[p] for p in sched_used.rates},
+            "nonpass_surcharge_credits": sched_used.nonpass_surcharge,
+            "derivation": (
+                "calibration.sr520_target.sr520_rehearsal_schedule: SR 520 "
+                "opening weekday ladder (WAC 468-270-071 / WSR 11-04-007, "
+                "corroborated by WSR 12-08-059's strikethrough baseline) "
+                "hour-weighted onto the four masked periods, mapped to credits "
+                "with the M4 masking's per-period credits-per-dollar factors "
+                "(owner ruling 2026-07-17; docs/REHEARSAL_SCHEDULE_NOTE.md)"
+                if args.rehearsal_schedule == "sr520"
+                else "M4 config schedule (pre-ruling as-sealed reading)"
+            ),
+        },
+        "say_do_price_correction": {
+            "factor_applied": args.say_do_correction,
+            "application_point": (
+                "stimulus-side, announced charge only, INSIDE the pipeline "
+                "BEFORE this elasticity fit (sealed 2026-07-17 in "
+                "calibration/e3_fit_manifest.json -> price_prior."
+                "application_point); world charges the un-scaled schedule; "
+                "E3(iii) ablation runs factor 1.0 with elasticity unchanged"
+            ),
+        },
         "scenario": {
             "warmup_days": WARMUP_DAYS, "pre_onset_days": PRE_ONSET_DAYS,
             "post_onset_days": POST_ONSET_DAYS, "onset_day": ONSET_DAY,
@@ -616,6 +685,8 @@ def main(argv=None) -> int:
             "vot_median_effective": config0.vot_median * fit["fitted_vot_scale"],
             "e6_band_thresholds": fit["e6_band_thresholds"],
             "passing_thresholds": fit["passing_thresholds"],
+            "rehearsal_schedule": payload["rehearsal_schedule"],
+            "say_do_price_correction": payload["say_do_price_correction"],
             "criteria": payload["criteria"],
             "scenario": payload["scenario"],
             "drift_floor": (reh or {}).get("drift_floor"),

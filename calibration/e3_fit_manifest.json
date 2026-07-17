@@ -713,8 +713,12 @@
     "band_reason": "Devarasetty, Burris & Shaw 2012 (Katy Freeway) shows the gap can be small \u2014 hence a band, not a point",
     "only_test": "E3(iii): frozen correction must improve blind E4 vs the UNCORRECTED ABLATION arm at BT1 (ablation in the firing set)",
     "application_point": {
-      "status": "OWNER-DECIDES before M4 (not pinned by sealed text)",
-      "recommendation": "apply the correction INSIDE the pipeline BEFORE the A4.3 SR 520 elasticity fit, so the VoT dial fits the residual and BT1 runs the identical corrected pipeline; the BT1 ablation arm removes the correction with the elasticity UNCHANGED. Applying it post-SR520-fit on any channel the fit absorbed double-counts magnitude (the imposed-magnitude trap)."
+      "status": "SEALED 2026-07-17 (owner decision): the recommendation is ADOPTED",
+      "decision": "the correction is pinned at the prior CENTRAL (2.5, the midpoint of the [2.0, 3.0] central anchor) and applied INSIDE the pipeline BEFORE the A4.3 SR 520 elasticity fit; the VoT dial fits the residual; BT1 runs the identical corrected pipeline; the E3(iii) ablation arm removes the correction (factor 1.0) with the elasticity UNCHANGED",
+      "central_applied": 2.5,
+      "mechanism": "stimulus-side: world.tolling.announcement_of(schedule, say_do_price_correction=SAY_DO_PRICE_CORRECTION) scales the per-trip credits and non-pass surcharge the slow brain's onset notice displays; the world charges the un-scaled schedule and the route-choice/VoT channel never sees the factor. The placebo notice carries nulled prices, so the correction cannot touch it.",
+      "rationale": "the slow brain's card adaptation is the stated-like channel A3.2 corrects; scaling its enacted discrete card edits directly is ill-defined per persona, whereas evaluating the stated-response curve at the corrected price is deterministic, applies identically at calibration and BT1, and is removable in the ablation without touching the fitted elasticity — avoiding the imposed-magnitude double-count the pre-M4 record 's6 flags",
+      "recommendation_superseded": "apply the correction INSIDE the pipeline BEFORE the A4.3 SR 520 elasticity fit, so the VoT dial fits the residual and BT1 runs the identical corrected pipeline; the BT1 ablation arm removes the correction with the elasticity UNCHANGED. Applying it post-SR520-fit on any channel the fit absorbed double-counts magnitude (the imposed-magnitude trap)."
     }
   }
 }

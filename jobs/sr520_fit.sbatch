@@ -24,14 +24,23 @@ cd "$REPO_ROOT"
 source jobs/site_env.sh
 export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
+# Re-fit under the SR 520-derived masked rehearsal schedule + sealed say-do
+# price correction (owner rulings 2026-07-17). Fresh out dir so the superseded
+# 2026-07-17 config-schedule run stays intact; the gen cache is seeded from it
+# (prompt-keyed — unchanged prompts hit, changed onset prompts regenerate).
+OUT=runs/sr520_fit_sr520sched
+mkdir -p "$OUT"
+[ -f "$OUT/gen_cache.jsonl" ] || cp runs/sr520_fit/gen_cache.jsonl "$OUT/gen_cache.jsonl"
+
 python -m calibration.sr520_fit \
   --cards data/cards/cards_m2_masked_r2b.jsonl \
   --m4-gates runs/m4_prep \
   --context runs/sr520_fit/context_corridor.json \
   --generator vllm \
-  --cache runs/sr520_fit/gen_cache.jsonl \
+  --cache "$OUT/gen_cache.jsonl" \
   --tensor-parallel 4 \
-  --out runs/sr520_fit \
+  --rehearsal-schedule sr520 \
+  --out "$OUT" \
   --freeze
 
 echo "SR520_FIT_DONE"

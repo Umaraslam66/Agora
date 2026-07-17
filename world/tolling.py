@@ -115,17 +115,41 @@ def default_schedule() -> TollSchedule:
 # M4 announced-onset notices (A4.2(ii)/(iii))
 # ---------------------------------------------------------------------------
 
-def announcement_of(schedule: TollSchedule) -> Dict[str, object]:
+#: §7 A3.2 say-do price-prior CENTRAL, frozen (owner decision 2026-07-17,
+#: sealed in calibration/e3_fit_manifest.json -> price_prior). The revealed
+#: toll response runs ~2-3x the stated response; the slow brain's card
+#: adaptation is a stated-like channel, so the ANNOUNCED charge it reasons
+#: over is scaled by this factor while the WORLD charges the un-scaled
+#: schedule (stimulus-side application; the route-choice/VoT channel never
+#: sees it). Applied INSIDE the pipeline BEFORE the A4.3 SR 520 elasticity
+#: fit, so the fitted VoT absorbs only the residual; BT1 runs the identical
+#: corrected pipeline, and the E3(iii) uncorrected-ablation arm passes 1.0
+#: here with everything else (elasticity included) unchanged.
+SAY_DO_PRICE_CORRECTION = 2.5
+
+
+def announcement_of(
+    schedule: TollSchedule, say_do_price_correction: float = 1.0
+) -> Dict[str, object]:
     """The masked announced-onset notice content (A4.2(ii)): the new per-period
     per-trip charge in credits, with the pass semantics. Everything here is
     already masked by construction (generic period names, pre-perturbed
     credits) — the renderer (grounding.render) turns it into prompt lines and
-    the mask-lint gate re-checks the result."""
+    the mask-lint gate re-checks the result.
+
+    ``say_do_price_correction`` is the A3.2 seam: drivers on the corrected
+    pipeline pass :data:`SAY_DO_PRICE_CORRECTION` so the slow brain sees the
+    prior-corrected charge; the default 1.0 is the uncorrected stimulus (unit
+    tests, the E3(iii) ablation arm). It scales ONLY this notice — never the
+    schedule the world charges."""
+    factor = float(say_do_price_correction)
     return {
         "kind": "toll_onset",
-        "per_trip_credits": {p: schedule.per_trip_toll(p, True) for p in PERIODS},
+        "per_trip_credits": {
+            p: factor * schedule.per_trip_toll(p, True) for p in PERIODS
+        },
         "nonpass_surcharge_credits": (
-            schedule.price_multiplier * schedule.nonpass_surcharge
+            factor * schedule.price_multiplier * schedule.nonpass_surcharge
         ),
         "pass_semantics": (
             "a household pass covers car trips in the household vehicle only; "

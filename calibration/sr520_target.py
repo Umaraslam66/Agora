@@ -21,7 +21,9 @@ citation) if and when it is obtained.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Tuple
+from typing import Dict, Tuple
+
+from world.tolling import DEFAULT_NONPASS_SURCHARGE, DEFAULT_RATES, TollSchedule, period_for_hour
 
 #: Aggregate AADT drop band at tolling, drop-and-plateau with no recovery to
 #: baseline through the calibration window (A3.3(a): "~36–40% AADT drop ... with
@@ -84,3 +86,83 @@ class SR520Target:
 def sr520_target() -> SR520Target:
     """The frozen SR 520 calibration target pinned from §7 A3.3."""
     return SR520Target()
+
+
+# ---------------------------------------------------------------------------
+# A4.3 masked REHEARSAL schedule (owner ruling 2026-07-17; pre-M4 record §7.1)
+# ---------------------------------------------------------------------------
+# The A4.3 fit originally ran under the SAME masked M4 schedule BT1 uses, so
+# the calibration mechanically centered the BT1 toll arm at the SR 520 level —
+# E4 coverage would fail BY CONSTRUCTION (the real events differ: SR 520's
+# opening rates were materially higher than the tunnel's). The owner adopted
+# an SR 520-DERIVED masked rehearsal schedule: calibrate at an SR 520-like
+# rate LEVEL and let the fitted VoT transfer through the utility model to the
+# (lower) M4 schedule, turning the BT1 level into a genuine prediction.
+#
+# Real figures below are institutional facts inside the C0 wall and live in
+# THIS quarantined module only; agents ever see only the derived credits.
+
+#: SR 520 opening weekday toll ladder (Good To Go! pass, two-axle), dollars,
+#: as (hour_start, hour_end, rate) half-open bands covering 0..24. Pinned from
+#: WAC 468-270-071 (WSR 11-04-007, adopted 2011-01-05, effective 2011-12-03;
+#: collection began 2011-12-29 05:00), figures corroborated by WSR 12-08-059's
+#: strikethrough baseline and contemporaneous SDOT/press reporting.
+SR520_OPENING_WEEKDAY_USD: Tuple[Tuple[int, int, float], ...] = (
+    (0, 5, 0.00), (5, 6, 1.60), (6, 7, 2.80), (7, 9, 3.50), (9, 10, 2.80),
+    (10, 14, 2.25), (14, 15, 2.80), (15, 18, 3.50), (18, 19, 2.80),
+    (19, 21, 2.25), (21, 23, 1.60), (23, 24, 0.00),
+)
+
+#: SR 520 opening no-pass (Pay By Mail) surcharge, dollars: a constant +$1.50
+#: at every non-zero band (same WAC table; SDOT: "$1.50 more than the posted
+#: Good To Go! pass rate").
+SR520_OPENING_NONPASS_SURCHARGE_USD: float = 1.50
+
+#: The real SR 99 tunnel rates the masked M4 config schedule was derived from
+#: (WSTC adoption release 2018-10-16; see the world plan): pass holders
+#: $1.50 AM peak / $2.25 PM peak / $1.25 off-peak / $1.00 overnight, no-pass
+#: (Pay By Mail) +$2.00. Pinned here ONLY to recover the per-period
+#: credits-per-dollar factors of the existing masking, so both schedules
+#: speak the same masked unit.
+SR99_ADOPTED_RATES_USD: Dict[str, float] = {
+    "overnight": 1.00,
+    "am_peak": 1.50,
+    "pm_peak": 2.25,
+    "offpeak": 1.25,
+}
+SR99_NONPASS_SURCHARGE_USD: float = 2.00
+
+
+def sr520_rehearsal_schedule() -> TollSchedule:
+    """The masked A4.3 rehearsal schedule, in credits.
+
+    Derivation (deterministic, no traffic data, no tuning dial):
+    1. Collapse the SR 520 opening weekday ladder onto the four masked
+       periods by HOUR-WEIGHTED mean over each period's hours (the masked
+       world charges one rate per period; hour-weighting is the canonical
+       collapse that needs no volume data — it slightly understates the
+       traffic-weighted effective rate, stated in the adoption note).
+    2. Map dollars -> credits with the SAME per-period credits-per-dollar
+       factors the M4 config schedule's masking implies (DEFAULT_RATES /
+       SR99 adopted dollars), so a credit means the same thing in both
+       schedules and the rehearsal-to-M4 credit ratio per period equals the
+       real-world dollar ratio — which is what lets the fitted VoT transfer.
+    """
+    hours_by_period: Dict[str, int] = {}
+    usd_sum_by_period: Dict[str, float] = {}
+    for hour in range(24):
+        period = period_for_hour(hour)
+        rate = next(r for lo, hi, r in SR520_OPENING_WEEKDAY_USD if lo <= hour < hi)
+        hours_by_period[period] = hours_by_period.get(period, 0) + 1
+        usd_sum_by_period[period] = usd_sum_by_period.get(period, 0.0) + rate
+
+    rates = {}
+    for period, usd_sum in usd_sum_by_period.items():
+        usd_mean = usd_sum / hours_by_period[period]
+        credits_per_usd = DEFAULT_RATES[period] / SR99_ADOPTED_RATES_USD[period]
+        rates[period] = usd_mean * credits_per_usd
+
+    surcharge = SR520_OPENING_NONPASS_SURCHARGE_USD * (
+        DEFAULT_NONPASS_SURCHARGE / SR99_NONPASS_SURCHARGE_USD
+    )
+    return TollSchedule(rates=rates, nonpass_surcharge=surcharge)

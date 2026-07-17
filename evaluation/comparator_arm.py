@@ -203,6 +203,7 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     from calibration.sr520_fit import _load_gates
+    from calibration.sr520_target import sr520_rehearsal_schedule
     from grounding import seeding
     from grounding.adapters import psrc
 
@@ -212,7 +213,14 @@ def main(argv=None) -> int:
     cards = _pseudo_cards(persona_index)
     observed = _observed_days(dataset, persona_index)
 
-    scale = calibrate_vot_scale(cards, observed, persona_pass, schedule=None)
+    # A5.1: calibrated on the SAME rehearsal schedule as the method's A4.3 fit
+    # (owner ruling 2026-07-17: the SR 520-derived masked schedule); the
+    # PREDICTION runs under the masked M4 config schedule (schedule=None).
+    # No say-do correction here — the comparator carries no stated-response
+    # channel (A5.3(iii)).
+    reh_schedule = sr520_rehearsal_schedule()
+    scale = calibrate_vot_scale(cards, observed, persona_pass,
+                                schedule=reh_schedule)
     pred = predict(cards, observed, persona_pass, scale)
     payload = {
         "amendment_draft": "A5 (docs/internal/AMENDMENT_A5_DRAFT.md)",
@@ -221,9 +229,15 @@ def main(argv=None) -> int:
         "calibration": {
             "anchor": "SR 520 plateau midpoint (calibration.sr520_target)",
             "vot_scale": scale,
-            "note": "rehearsal schedule = the config schedule; the owner's "
-                    "rehearsal-schedule decision (flagged in the pre-M4 "
-                    "record) applies to this arm identically",
+            "rehearsal_schedule": {
+                "source": "sr520",
+                "rates_credits": dict(reh_schedule.rates),
+                "nonpass_surcharge_credits": reh_schedule.nonpass_surcharge,
+            },
+            "note": "calibrated under the SR 520-derived masked rehearsal "
+                    "schedule (owner ruling 2026-07-17, applied to this arm "
+                    "identically per the A5 draft); prediction under the "
+                    "masked M4 config schedule",
         },
         "prediction": pred,
         "drift_note": "deterministic replay: no machinery drift, no placebo "

@@ -11,6 +11,8 @@ from __future__ import annotations
 import copy
 import json
 
+import pytest
+
 
 from agents.baseline_loop import AnnouncedOnset, run_baseline_loop
 from agents.habit_memory import SubstrateConfig
@@ -197,6 +199,28 @@ def test_toll_onset_prompt_is_mask_lint_clean():
     tokens = load_forbidden_tokens(default_token_path())
     assert lint_text(prompt, tokens) == []
     assert "am_peak" in prompt and "does not hold a pass" in prompt
+
+
+def test_say_do_correction_scales_announced_charge_only():
+    """A3.2 sealed application point: the correction scales the ANNOUNCED
+    per-trip credits and non-pass surcharge (the slow brain's stimulus) and
+    nothing else — the schedule object the world charges is untouched, the
+    default is the uncorrected notice, and the placebo's nulled notice
+    cannot carry it."""
+    sched = default_schedule()
+    plain = announcement_of(sched)
+    corrected = announcement_of(sched, say_do_price_correction=2.5)
+    for period, credits in plain["per_trip_credits"].items():
+        assert corrected["per_trip_credits"][period] == pytest.approx(2.5 * credits)
+    assert corrected["nonpass_surcharge_credits"] == pytest.approx(
+        2.5 * plain["nonpass_surcharge_credits"]
+    )
+    # the charged schedule is untouched by building a corrected notice
+    assert sched.per_trip_toll("am_peak", True) == pytest.approx(1.7)
+    # factor 1.0 is the identity (the E3(iii) ablation arm)
+    assert announcement_of(sched, say_do_price_correction=1.0) == plain
+    # the placebo carries no price fields for the factor to touch
+    assert placebo_announcement()["per_trip_credits"] is None
 
 
 # ---------------------------------------------------------------------------
