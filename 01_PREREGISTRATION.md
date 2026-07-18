@@ -821,3 +821,57 @@ A3.2: not touched — the comparator carries no stated-response channel, so
 the price-prior discipline does not apply to it; its price response is
 anchored on the same revealed SR 520 aggregate as the method's (A3.3(a)
 authorizes the anchor). (iv) §5 compute pins: unaffected (CPU-only arm).
+
+### Amendment A6 — 2026-07-18, project owner
+
+**A6.0 Scope.** This amendment seals, amendment-grade, the
+rehearsal-schedule decision the owner ruled by dated note on 2026-07-17
+(the pre-M4 record's flagged design edge): the toll schedule charged and
+announced in the A4.3 calibration scenario (the SR 520 masked level-shift
+rehearsal of A3.3(b)/A4.2) is not the masked M4 config schedule but a
+**SR 520-derived masked rehearsal schedule**. Nothing else changes: no §3
+metric, bar, or pass condition is touched; BT1 itself fires under the
+masked M4 config schedule exactly as sealed.
+
+**A6.1 The schedule and its derivation rule, pinned.** Implementation
+`calibration/sr520_target.py::sr520_rehearsal_schedule` (public), recorded
+in the frozen fit manifest (`calibration/sr520_fit_manifest.json →
+rehearsal_schedule`):
+- **Source rates:** SR 520's opening weekday Good To Go! two-axle ladder
+  and its flat no-pass surcharge, WAC 468-270-071 (WSR 11-04-007, adopted
+  2011-01-05; collection began 2011-12-29) — pre-wall institutional facts,
+  held harness-side only.
+- **Collapse:** hour-weighted mean of the ladder over each masked toll
+  period's hours (the masked world charges one rate per period;
+  hour-weighting needs no traffic data and its known small understatement
+  of the traffic-weighted effective rate is recorded, not hidden).
+- **Masking:** dollars → credits with the SAME per-period
+  credits-per-dollar factors the masked M4 config schedule's own masking
+  implies, so a credit means the same thing in both schedules and the
+  rehearsal-to-M4 credit ratio equals the real dollar ratio per period —
+  the property that makes the fitted VoT transfer to the M4 schedule a
+  genuine prediction rather than a level pin.
+- **Scope of application:** the A4.3 joint fit (all thresholds and both
+  grid passes), the A3.3(b)/A4.2 rehearsal ensemble and measured drift
+  floor, and the A5 comparator's own VoT calibration (per A5.1, which
+  anticipated exactly this decision). It does NOT apply to BT1, ordinary-
+  day evals, or the E5 price sweep.
+
+**A6.2 Supersession, declared.** The 2026-07-17 config-schedule
+calibration (θ=18, VoT scale 1.5096, drift floor 0.0249; results under
+`runs/sr520_fit/`) and the comparator prediction produced under it
+(central 0.393) are SUPERSEDED by the same-date re-fits under this
+schedule: θ=22, VoT scale 2.2238, drift floor 0.0254
+(`runs/sr520_fit_sr520sched/`, manifest as above) and the comparator's
+frozen prediction central 0.3096 (`runs/comparator_arm/manifest.json`).
+The superseded artifacts remain in history unedited; the superseding
+drift-floor entry is dated in the standalone note per A4.2.
+
+**A6.3 Collision register.** (i) A4.3: its calibration PROCEDURE gains a
+pinned scenario schedule that the sealed text left unpinned; its criteria,
+anchor, E6 band construction, and freeze discipline are unchanged.
+(ii) A5.1: already anticipated this decision verbatim ("whatever
+rehearsal-schedule decision the owner takes for A4.3 … applies to this arm
+identically") — no change. (iii) §2 wall: every input is a pre-2019-11-08
+institutional fact; the decision was adopted and pushed before any blind
+quantity is scored. (iv) §3/§5: untouched.
