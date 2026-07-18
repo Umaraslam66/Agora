@@ -105,6 +105,11 @@ FORBIDDEN_TIERS = ("T4_nofidelity",)
 #: the E6 verdict proper is carried by the transfer arena).
 ABLATED_THRESHOLD = 10**9
 
+#: Owner ruling 2026-07-18 (driver review, item (b)): every E6 arm fired on
+#: BT1 machinery is diagnostic only — the label is written into results.json
+#: itself so the sealed output carries the discipline, not just a comment.
+E6_ARM_LABEL = "diagnostic, verdict carried by transfer arena"
+
 DEFAULT_RUNS = 20
 
 
@@ -420,20 +425,25 @@ def main(argv=None) -> int:
     for th in frozen["e6_band"]:
         if th == theta:
             results["e6_band"][str(th)] = {
-                "delta_q": results["tiers"]["T5"]["delta_q"], "reused": "T5"}
+                "delta_q": results["tiers"]["T5"]["delta_q"], "reused": "T5",
+                "discipline": E6_ARM_LABEL}
             continue
         ens_th = _ensemble(
             tiers["T5"]["cards"], tiers["T5"]["context"], config=config,
             arms=("toll", "placebo"), threshold=th, gen=gen, say_do=say_do,
             gates=gates, n_runs=args.e6_runs, label=f"e6_th{th}", log=log,
         )
-        results["e6_band"][str(th)] = {"delta_q": _delta(ens_th["toll"], ens_th["placebo"])}
+        results["e6_band"][str(th)] = {
+            "delta_q": _delta(ens_th["toll"], ens_th["placebo"]),
+            "discipline": E6_ARM_LABEL}
     ens_abl = _ensemble(
         tiers["T5"]["cards"], tiers["T5"]["context"], config=config,
         arms=("toll", "placebo"), threshold=ABLATED_THRESHOLD, gen=gen,
         say_do=say_do, gates=gates, n_runs=args.e6_runs, label="e6_ablated", log=log,
     )
-    results["e6_memory_ablated"] = {"delta_q": _delta(ens_abl["toll"], ens_abl["placebo"])}
+    results["e6_memory_ablated"] = {
+        "delta_q": _delta(ens_abl["toll"], ens_abl["placebo"]),
+        "discipline": E6_ARM_LABEL}
 
     # ---- phase 2: scoring against the sealed answer key -------------------
     os.environ["AGORA_EVAL_CONTEXT"] = "1"
