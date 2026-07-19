@@ -930,3 +930,86 @@ amendment pins only their interpretation. (iv) A1.2/A2.5: the frozen-
 method transfer discipline and the E6 band are unchanged; recorded intent
 only (not a bar): the transfer arena's E6 result ships with the same
 channel decomposition from day one.
+
+### Amendment A8 — 2026-07-19, project owner
+
+**A8.0 Scope.** Pins the transfer-arena (Stockholm; A1.2) scored protocol —
+phases, windows, placebo, estimand, drift rule, and output discipline —
+before any transfer quantity exists. The frozen method (A1.2) is untouched;
+E6's bands (A2.5) and the §3 E6 protocol are untouched; this amendment is
+the arena-2 analog of A4.2's BT1 pins.
+
+**A8.1 Phases and windows.** Four phases on the masked cordon world
+(`cityk_cordon`): P0 baseline (no charge), P1 introduction (charge on),
+P2 removal (charge off; E6's phase), P3 return (charge on, permanent).
+Transitions are ANNOUNCED onsets (the A4.2 trigger, carried): each fires
+the slow brain once per cordon-crossing agent at the start of its
+transition day. Windows are the truth series' period averages (the
+A1.6(v) reduction, carried): each phase scored as the mean over its masked
+weekday window; window day-counts are implementation constants derived
+from the quarantined truth series' period definitions, recorded in the
+driver and reviewed by the owner pre-firing (BT1 window-constants
+discipline).
+
+**A8.2 Placebo and estimand.** One yoked placebo arm per scored arm: same
+CRN namespaces, same transition days, nulled notice (ONE template, the
+A4.2 placebo discipline — content-free reconsideration cue, zero
+actionable signal), world uncharged throughout. The scored quantity per
+phase is **ΔQ_phase = Q_arm − Q_placebo**, paired across CRN members —
+P1 reduction, P2 residual reduction (E6's quantity), P3 level. E6 arms
+(a)/(b) per §3 and the A4.3 sensitivity band {6,10,14,18,22,26} are scored
+on these paired quantities; in THIS arena the E6 arms carry the verdict
+proper.
+
+**A8.3 Arena drift floor (owner ruling 2026-07-19, accepted option (a)).**
+Measured BEFORE the firing by a **P0 placebo-only rehearsal** in the cordon
+world: no charge ever; the nulled-notice trigger fired at the same day
+offsets the real transitions will use; N = 20 CRN members. This touches no
+P1–P3 quantity and is blind-safe. Floor = the mean absolute placebo phase
+response so measured. Two-leg drift rule per scored phase (A4.2 analog):
+(i) anomaly leg — the firing's placebo phase magnitude exceeds 2× the
+measured floor; (ii) absolute leg — it reaches 0.5. Either leg trips →
+that phase's verdict is flagged drift-dominated. Floor and rehearsal
+results are reported standalone before the firing.
+
+**A8.4 Output discipline: the channel decomposition ships with the
+verdict** (makes A7.4(iv)'s recorded intent binding on output content; not
+a bar). The transfer driver's results.json carries, per phase × arm ×
+member, the exact two-term split of the crossing-volume change (demand
+term = cordon-crossing car-travel leaves, the card channel; share term =
+paid-crossing share shift, the price/dial channel), with the identity
+residual zero by construction. Pre-declared REPORTED reading: at P2 the
+share term is expected arm-(a)-vs-(b) equal within CRN noise, with the E6
+separation carried by the demand term — whatever is found is reported.
+The driver self-checks by offline-cache replay (drop reproduction <1e-9;
+per-agent crossing reconstruction matching recorded aggregates exactly)
+before sealing output.
+
+**A8.5 Recorded rulings of 2026-07-19, restated.** (i) Charge masking and
+P0 level-matching follow the dated derivation note
+(`TRANSFER_MASKING_NOTE`): masked credits preserve per-period real charge
+ratios; P0 level-matching is restricted to demand/capacity constants; the
+frozen VoT scale 2.2238 is never re-fit. (ii) The borrowed-car gate
+(method-level population realism) CARRIES; the household transponder-pass
+gate (instrument-specific to the corridor toll) does NOT carry — the
+cordon analog is the exemption structure of the masked charge schedule,
+which is world structure, not method. (iii) The transfer driver's module
+name (`run_bt2`) entered the guard hook's matcher before any driver code
+existed.
+
+**A8.6 Clarification to A7.3 (one line, rides along per owner ruling).**
+A7.3's parenthetical "identical outcome-class splits" described the v1
+outcome classifier (commit 879c582); under the corrected v2 classes
+(commit c9b05b0) the toll/placebo identity holds exactly on the
+card-driven exit classes (mode-change and suppressed), while
+kept-vs-diverted differ by the route response itself — A7.3's mechanism
+claim is unchanged.
+
+**A8.7 Collision register.** (i) §3 E6 and A2.5: bands, arm definitions,
+and pass conditions untouched — A8 supplies only the arena's protocol
+plumbing. (ii) A1.2/A1.3: frozen method and METHOD-TRANSFER seeding
+unchanged; the marginal set is approved separately and recorded in the
+sealed verdict. (iii) A4.2: BT1-scoped pins unchanged; its trigger,
+placebo template discipline, and two-leg rule are REUSED here by
+reference. (iv) §5 compute: the P0 rehearsal is one pre-firing full-node
+run, within the sealed discipline.
