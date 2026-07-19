@@ -875,3 +875,58 @@ rehearsal-schedule decision the owner takes for A4.3 … applies to this arm
 identically") — no change. (iii) §2 wall: every input is a pre-2019-11-08
 institutional fact; the decision was adopted and pushed before any blind
 quantity is scored. (iv) §3/§5: untouched.
+
+### Amendment A7 — 2026-07-19, project owner
+
+**A7.0 Scope.** Dated mechanism addendum to the SEALED BT1 verdict (scored
+2026-07-19; sealed by commit 456a873). It changes NO scored quantity, bar,
+or pass condition, and touches nothing under `runs/bt1/`. It seals,
+amendment-grade, the project's own same-day post-firing audit of HOW the
+sealed comparative quantities arose, so the corrected mechanism reading is
+public and timestamped by the project itself.
+
+**A7.1 The audit finding, pinned.** Audit code
+`evaluation/diagnostics_e7_flatness.py`, outputs `runs/e7_flatness_audit/`
+(public, commit 879c582). Replay discipline: deterministic offline-cache
+replays of already-fired arms, read-only over the sealed outputs, with two
+gates — every replayed arm reproduced its sealed drop to <1e-9, and the
+reconstructed per-agent facility assignments reproduced the loop's recorded
+aggregate loads exactly (8/8 arms). Finding, by exact two-term
+decomposition of the sealed tunnel-volume drop: in every covering tier
+(T1, T2, T4, T4-noclaims, T5) **at least 98.6% of ΔQ flows through the
+fast-brain route-share channel under the shared frozen VoT dial; the
+slow-brain card-rewrite channel carries ≈1%.** Tier information can enter
+only through the ≈1% channel. The flat BT1 tier curve (T1 ≈ T5) is
+therefore **DIAL-DOMINATED** — a property of the channel split in this
+corridor arena, not evidence that persona depth carries no information
+generally, and not "architecture beat persona depth at runtime."
+
+**A7.2 The comparative reading, corrected — carried verbatim henceforth.**
+The sealed A5.2 comparative quantities stand unchanged (the method covers
+the observed value, the comparator does not; the method's central is
+strictly closer, 0.0048 vs 0.0296). Every future summary of that reading
+carries this sentence verbatim: **"the two-brain method beat the aggregate
+comparator through calibration transfer — the adaptation channel's
+presence at fit time moved the dial to the right place — not through
+runtime persona intelligence."** BT1 may not be presented as evidence that
+persona-level simulation adds predictive value over a well-calibrated
+aggregate model in this arena. The arenas where the adaptation channel
+must do work the dial cannot are the transfer arena's E6 — the dial has no
+memory; only cards do — and the non-blind E7 ordinary-day ESS scoring.
+
+**A7.3 T3 mechanism, recorded.** T3's non-coverage and its drift flag are
+one phenomenon: rewriting a stated-claims-only card regresses it toward
+the claims regardless of notice content (toll and placebo arms show
+identical outcome-class splits); CRN pairing cancels the churn in ΔQ, but
+the ≈25% shrinkage of the corridor driver base deflates the paired route
+response proportionally (0.275 × 0.75 ≈ 0.208 ≈ the sealed 0.2078). The
+sealed two-leg drift rule flagged this tier unaided.
+
+**A7.4 Collision register.** (i) §3, §5: untouched. (ii) A4.1:
+T5-sole-headline and the E7 non-promotion rule unchanged; E7's
+ordinary-day ESS scoring unaffected. (iii) A5.2: its "reported, never a
+pass bar" status and both sealed comparative quantities unchanged — this
+amendment pins only their interpretation. (iv) A1.2/A2.5: the frozen-
+method transfer discipline and the E6 band are unchanged; recorded intent
+only (not a bar): the transfer arena's E6 result ships with the same
+channel decomposition from day one.
