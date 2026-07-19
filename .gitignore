@@ -51,3 +51,6 @@ data/cards/
 runs/**/accepted_cards*.jsonl
 runs/**/requests_round*.json
 runs/**/prompts_round*.jsonl
+
+# record-derived content pulled for local diagnostics (cards/generations) — NEVER commit
+ignore/

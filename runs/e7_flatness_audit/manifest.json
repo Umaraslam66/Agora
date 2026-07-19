@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "sealed_results": {
+      "path": "runs/bt1/results.json",
+      "sha256": "ecf4e79764c59c75ffeebeccb9f563d7ed4d1b269899c4804ae39c5027e50a9a"
+    },
+    "cache": {
+      "path": "ignore/bt1_cache/gen_cache.jsonl",
+      "sha256": "dd0ad5745e10d7cb6624600931258abdba693d2c6473fa03be35cfdd70389446"
+    },
+    "tier_cards_sha256": {
+      "T1": "32adabbb5eebbdbe2cdd2b44c6c269c43b9085c3eafea0eda9e12b34a0fdbea2",
+      "T2": "70e3a2135ce0c01a6dfa380cac9c55c57db03a5fb43820149a5ad37bca4e2071",
+      "T3": "3445285ce2127e300f5a9b661c43adf628addf5a3ad5bea93e85f83b451ebcf7",
+      "T4": "24ee7cf362bf8c881640d5a2f64bc9900866d85437c39f836835c6b96d886082",
+      "T4_noclaims": "436f4646179e2c8cb207beab86265a888de80118eaa7c224b7a59d2ba5666339",
+      "T5": "9f43d91be0bf33eb3c58dbef405fc9f527149f74be599a80ed6dcc1318338fa6"
+    }
+  },
+  "audit_sha256": "af9495c7566f2a5ee13c2958a15ab46611918296672353d6fef368edd6c0fae1",
+  "note": "read-only over runs/bt1; deterministic offline-cache replay; fidelity + reconstruction gates enforced (abort on mismatch)"
+}
