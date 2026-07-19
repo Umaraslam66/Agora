@@ -1,0 +1,19 @@
+{
+  "eval": "METHOD-TRANSFER population build (A1.3, A8)",
+  "date": "2026-07-19",
+  "arena": "cityk_cordon",
+  "evidence_tier": "T5",
+  "pipeline": "evaluation.build_e7_tiers evidence path, applied unchanged",
+  "has_pass_rule": "forced False for every persona \u2014 the transponder-pass concept is corridor-instrument-specific and does not carry (A8.5(ii)); the cordon exemption structure is world structure, not method",
+  "scoring_weights": {
+    "variant": "adults-only M1 (owner ruling 2026-07-19; runs/transfer_reweight_adultsM1/ADOPTION_RULING.md)",
+    "weights_csv_sha256": "1a70305158fb2e3e7ae18c387e044d074c4c6c03df7f4271bf652346c6228f01",
+    "reweight_manifest_sha256": "f86261bca78dcf344e316c04db66ec07ea27d9e91103d8fe6e55daa3da6caee4",
+    "applied_at": "scoring time only (aggregation weights); generation is unweighted and per-persona"
+  },
+  "counts": {
+    "prompts": 11940,
+    "lint_failures": 0
+  },
+  "label": "METHOD-TRANSFER"
+}

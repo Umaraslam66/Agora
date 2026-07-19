@@ -43,6 +43,26 @@ DEFAULT_RATES: Dict[str, float] = {
 # (the pass/casual-payer split; pre-perturbed "credits").
 DEFAULT_NONPASS_SURCHARGE = 1.9
 
+# Transfer-arena (cityk_cordon) per-crossing charge, in "credits" — the
+# masked A8.5(i) schedule (TRANSFER_MASKING_NOTE derivation: real ladder ->
+# hour-weighted period collapse -> per-period credits factors -> ±10% CRN
+# perturbation; recorded in runs/transfer_schedule/manifest.json). The SAME
+# schedule governs P1 and P3 (the real ladders are identical, so per-period
+# P1:P3 credit ratios equal the real ratios exactly). No pass instrument
+# exists in this arena (A8.5(ii)) — the surcharge is structurally zero.
+CORDON_RATES: Dict[str, float] = {
+    "overnight": 0.0,
+    "am_peak": 2.2003,
+    "pm_peak": 2.2423,
+    "offpeak": 0.9928,
+}
+
+# Masked daily-cap constant (credits). RECORDED, not enforced by the
+# per-trip charging machinery: the cap binds only at >= 4 peak-rate
+# cordon crossings in one day, and adding a cap mechanism would be new
+# method (A1.2). The understatement is stated in the schedule manifest.
+CORDON_DAILY_CAP: float = 8.0723
+
 
 def period_for_hour(hour: int) -> str:
     """Map an hour-of-day (0..23) to its toll period.
@@ -109,6 +129,16 @@ def default_schedule() -> TollSchedule:
     """The frozen M1 corridor schedule (pre-perturbed credits)."""
     return TollSchedule(rates=dict(DEFAULT_RATES),
                         nonpass_surcharge=DEFAULT_NONPASS_SURCHARGE)
+
+
+def cordon_schedule() -> TollSchedule:
+    """The frozen transfer-arena cordon schedule (masked credits, A8.5(i)).
+
+    Surcharge zero: the arena has no pass instrument (A8.5(ii)); every
+    crossing pays the period rate. The charge-off phases (P0/P2) use
+    ``cordon_schedule().with_multiplier(0.0)`` so on/off is a price level,
+    never a machinery change."""
+    return TollSchedule(rates=dict(CORDON_RATES), nonpass_surcharge=0.0)
 
 
 # ---------------------------------------------------------------------------

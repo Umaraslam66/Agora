@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from typing import Dict, Mapping, Optional, Tuple
 
 from world.network import ERA_LABELS, Facility, NetworkState, era_index_for_day
-from world.tolling import TollSchedule, default_schedule
+from world.tolling import TollSchedule, cordon_schedule, default_schedule
 
 # ---------------------------------------------------------------------------
 # Shared facility set (BPR params). Capacity and (alpha, beta) encode the
@@ -224,6 +224,12 @@ def cityk_cordon() -> WorldConfig:
     instrument."""
     kwargs = _base_kwargs()
     kwargs["era_tolled"] = {0: None, 1: None, 2: None, 3: None}
+    # The cordon charges the masked A8.5(i) schedule (surcharge-free); the
+    # BT2 driver turns phases on/off via with_multiplier, never by editing
+    # rates. pass_prior is structurally zero — no pass instrument exists in
+    # this arena (A8.5(ii)).
+    kwargs["toll_schedule"] = cordon_schedule()
+    kwargs["pass_prior"] = 0.0
     return WorldConfig(
         name="cityk_cordon",
         policy_instrument="cordon",

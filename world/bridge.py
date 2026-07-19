@@ -37,7 +37,7 @@ from world.geometry import (
     is_water_crossing,
 )
 from world.population import AgentPopulation
-from world.tolling import PERIODS, PERIOD_INDEX
+from world.tolling import PERIOD_INDEX
 
 # ---------------------------------------------------------------------------
 # Vocabulary alignment: card departure band -> world toll period
@@ -285,6 +285,28 @@ def persona_row_index(cards: Sequence[Mapping]) -> Dict[str, int]:
     """persona_id -> row index into a :func:`population_from_cards` result (card
     order). The population arrays carry no ids; this is the join back to them."""
     return {str(card["persona_id"]): i for i, card in enumerate(cards)}
+
+
+def cordon_crossing_rows(cards: Sequence[Mapping], config: WorldConfig) -> np.ndarray:
+    """Boolean mask (card order): personas whose home->work OD crosses into the
+    config's cordon rings (exactly one end inside; `world.geometry.crosses_cordon`
+    semantics). Validity is checked on the RAW skeleton zones — the ``Z00``
+    placeholder and unknown zones are never crossers (the population builder's
+    ring-0 clamp would otherwise misread them as cordon residents, ring 0 being
+    a cordon ring)."""
+    n = len(cards)
+    out = np.zeros(n, dtype=bool)
+    if not config.cordon_rings:
+        return out
+    codes = frozenset(RING_INDEX[r] for r in config.cordon_rings)
+    for i, card in enumerate(cards):
+        skeleton = card.get("skeleton", {})
+        h_ring = ZONE_RING.get(skeleton.get("home_zone"))
+        w_ring = ZONE_RING.get(skeleton.get("work_zone"))
+        if h_ring is None or w_ring is None:
+            continue
+        out[i] = (RING_INDEX[h_ring] in codes) != (RING_INDEX[w_ring] in codes)
+    return out
 
 
 # ---------------------------------------------------------------------------

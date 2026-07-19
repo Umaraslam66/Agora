@@ -179,6 +179,15 @@ class LoopState:
     #: corridor facility loads (A4.2: the scored volume quantities read the
     #: tolled facility's realized load; recorded every day the corridor ran).
     facility_loads: Dict[int, dict] = field(default_factory=dict)
+    #: Cordon-instrument recording seam (cityk_cordon only; empty for the
+    #: corridor world — recording, never behavior). Per day: unweighted
+    #: counts {"n_car": car/ride travelers, "n_crossing": of which OD-crossing}
+    #: (A8.4 aggregate); per persona: the day lists that let the scoring
+    #: driver rebuild any weighted aggregate exactly (per-agent
+    #: reconstruction self-check).
+    cordon_daily: Dict[int, dict] = field(default_factory=dict)
+    cordon_car_days: Dict[str, List[int]] = field(default_factory=dict)
+    cordon_crossing_days: Dict[str, List[int]] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -197,6 +206,9 @@ class LoopState:
             "namespace": self.namespace,
             "keep_full_window": self.keep_full_window,
             "facility_loads": {str(k): v for k, v in self.facility_loads.items()},
+            "cordon_daily": {str(k): v for k, v in self.cordon_daily.items()},
+            "cordon_car_days": self.cordon_car_days,
+            "cordon_crossing_days": self.cordon_crossing_days,
         }
 
     @classmethod
@@ -217,6 +229,9 @@ class LoopState:
             namespace=str(d["namespace"]),
             keep_full_window=bool(d.get("keep_full_window", True)),
             facility_loads={int(k): v for k, v in d.get("facility_loads", {}).items()},
+            cordon_daily={int(k): v for k, v in d.get("cordon_daily", {}).items()},
+            cordon_car_days={k: list(v) for k, v in d.get("cordon_car_days", {}).items()},
+            cordon_crossing_days={k: list(v) for k, v in d.get("cordon_crossing_days", {}).items()},
         )
 
 
@@ -240,6 +255,9 @@ class LoopResult:
     namespace: str
     state: LoopState
     facility_loads: Dict[int, dict] = field(default_factory=dict)
+    cordon_daily: Dict[int, dict] = field(default_factory=dict)
+    cordon_car_days: Dict[str, List[int]] = field(default_factory=dict)
+    cordon_crossing_days: Dict[str, List[int]] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -322,6 +340,7 @@ def run_baseline_loop(
     car_access: Optional[BorrowedCarAccess] = None,
     persona_pass: Optional[Mapping[str, bool]] = None,
     onset: Optional[AnnouncedOnset] = None,
+    extra_onsets: Sequence[AnnouncedOnset] = (),
     strong_habit_threshold: int = STRONG_HABIT_THRESHOLD,
 ) -> LoopResult:
     """Run the ordinary-day loop over global days ``0 .. n_days-1`` (D5).
@@ -362,6 +381,16 @@ def run_baseline_loop(
     diversion-induced congestion and would otherwise be clamped by the
     pre-toll fidelity gate), or are suppressed entirely on the tail-off arm.
     ``strong_habit_threshold`` is the A4.3-calibratable immutability bar.
+
+    Transfer-arena phase machinery (A8.1; ``extra_onsets=()`` = BT1 behavior,
+    byte-identical): ``extra_onsets`` schedules FURTHER firings of the SAME
+    announced-onset trigger (same request shape, same structural-only gate) at
+    later transition days — the P1/P2/P3 timeline. Shock-mode starts at the
+    EARLIEST onset day and persists. In a cordon world
+    (``config.policy_instrument == "cordon"``) the trigger population is the
+    OD-crossing personas (the cordon analog of corridor membership) and the
+    loop additionally RECORDS the per-day cordon travel tally (counts +
+    per-persona day lists) — recording only, never behavior.
     """
     memory_config = memory_config or DEFAULT_CONFIG
     last_day = n_days - 1 if run_through_day is None else run_through_day
@@ -394,6 +423,18 @@ def run_baseline_loop(
     )
     row_index = bridge.persona_row_index(cards_list)
     corridor_pids = [pid for i, pid in enumerate(persona_ids) if bool(population.is_corridor[i])]
+
+    # Cordon world (A8.1): the announced-onset trigger population is the
+    # OD-crossing personas; the loop also records the daily cordon tally.
+    is_cordon_world = (config.policy_instrument == "cordon"
+                       and bool(config.cordon_rings))
+    crossing_mask = (bridge.cordon_crossing_rows(cards_list, config)
+                     if is_cordon_world else None)
+    onset_pids = ([pid for i, pid in enumerate(persona_ids) if bool(crossing_mask[i])]
+                  if is_cordon_world else corridor_pids)
+    all_onsets: List[AnnouncedOnset] = ([onset] if onset is not None else []) \
+        + list(extra_onsets)
+    first_onset_day = min((o.day for o in all_onsets), default=None)
 
     # Scoring-weight map: persona slot j -> global day warmup+j (D5).
     scoring_span = n_days - warmup_days
@@ -430,6 +471,10 @@ def run_baseline_loop(
         pending_rewrites = st.pending_rewrites
         ever_surprised = st.ever_surprised
     facility_loads: Dict[int, dict] = st.facility_loads if st is not None else {}
+    cordon_daily: Dict[int, dict] = st.cordon_daily if st is not None else {}
+    cordon_car_days: Dict[str, List[int]] = st.cordon_car_days if st is not None else {}
+    cordon_crossing_days: Dict[str, List[int]] = (
+        st.cordon_crossing_days if st is not None else {})
 
     def _apply_outcomes(outcomes: List[RewriteOutcome], d: int) -> None:
         for outcome in outcomes:
@@ -450,12 +495,14 @@ def run_baseline_loop(
         # onset day — the price was announced in advance, so the agent
         # re-optimizes before living the day (no discovery lag). Once per
         # corridor agent; yoked identically in the placebo arm.
-        if onset is not None and d == onset.day:
+        for o in all_onsets:
+            if d != o.day:
+                continue
             onset_requests: List[RewriteRequest] = []
-            for pid in corridor_pids:
+            for pid in onset_pids:
                 card = card_of[pid]
                 row = idx_of[pid]
-                ann = dict(onset.announcement)
+                ann = dict(o.announcement)
                 ann["household_has_pass"] = bool(population.has_pass[row])
                 onset_requests.append(RewriteRequest(
                     persona_id=pid, day_index=d, card=card,
@@ -477,6 +524,25 @@ def run_baseline_loop(
             update_habits=True, coercion_log=coercion_log,
             car_access=car_access,
         )
+
+        # Cordon tally (recording seam, A8.4): who traveled car/ride today,
+        # and of those, whose OD crosses the cordon. Counts + per-persona day
+        # lists so the scoring driver can rebuild any weighted aggregate and
+        # verify the reconstruction exactly.
+        if is_cordon_world:
+            n_car = 0
+            n_crossing = 0
+            for i, pid in enumerate(persona_ids):
+                recs = day_out.get(pid)
+                trips = recs[0].trips if recs else []
+                if bridge._first_car_or_ride(trips) is None:
+                    continue
+                n_car += 1
+                cordon_car_days.setdefault(pid, []).append(d)
+                if bool(crossing_mask[i]):
+                    n_crossing += 1
+                    cordon_crossing_days.setdefault(pid, []).append(d)
+            cordon_daily[d] = {"n_car": n_car, "n_crossing": n_crossing}
 
         for pid in corridor_pids:
             memories[pid].begin_day()
@@ -560,8 +626,10 @@ def run_baseline_loop(
         # adapts to diversion-induced congestion; the pre-toll fidelity gate
         # would clamp it, A4.2(i)) — or, on the T5 tail-off ablation arm, the
         # tail trigger is suppressed entirely (surprises still observed above).
-        in_shock = onset is not None and d >= onset.day
-        tail_suppressed = in_shock and not onset.tail_surprises
+        in_shock = first_onset_day is not None and d >= first_onset_day
+        tail_suppressed = in_shock and any(
+            not o.tail_surprises for o in all_onsets if d >= o.day
+        )
         if d >= warmup_days and ever_surprised and not tail_suppressed:
             requests: List[RewriteRequest] = []
             for pid in sorted(ever_surprised):
@@ -596,6 +664,9 @@ def run_baseline_loop(
         namespace=namespace,
         keep_full_window=keep_full_window,
         facility_loads=facility_loads,
+        cordon_daily=cordon_daily,
+        cordon_car_days=cordon_car_days,
+        cordon_crossing_days=cordon_crossing_days,
     )
     return LoopResult(
         cards=cards_list,
@@ -610,4 +681,7 @@ def run_baseline_loop(
         namespace=namespace,
         state=final_state,
         facility_loads=facility_loads,
+        cordon_daily=cordon_daily,
+        cordon_car_days=cordon_car_days,
+        cordon_crossing_days=cordon_crossing_days,
     )

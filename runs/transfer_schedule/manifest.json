@@ -1,0 +1,92 @@
+{
+  "eval": "Transfer-arena masked charge schedule + phase timeline (A8.1, A8.5(i))",
+  "date": "2026-07-19",
+  "arena": "cityk_cordon",
+  "masked_cordon_rates_credits": {
+    "overnight": 0.0,
+    "am_peak": 2.2003,
+    "pm_peak": 2.2423,
+    "offpeak": 0.9928
+  },
+  "nonpass_surcharge": 0.0,
+  "masked_daily_cap_credits": 8.0723,
+  "daily_cap_note": "recorded, not enforced by the per-trip machinery: the cap binds only at >= 4 peak-rate crossings/day; adding a cap mechanism would be new method (A1.2). Known small understatement, stated.",
+  "p1_p3_identity": "P1 and P3 charge the SAME masked schedule; the real ladders are identical at introduction and permanent return, so per-period P1:P3 credit ratios equal the real ratios exactly (TRANSFER_MASKING_NOTE property).",
+  "derivation_rule": [
+    "1. SOURCE: real pre-trial charge ladder for the cordon (time-of-day steps + daily cap), institutional record, held harness-side only (never in this repo).",
+    "2. COLLAPSE: hour-weighted mean of the ladder over each masked period's hours (world.tolling.period_for_hour) - canonical A6 collapse, no volume data, small understatement stated.",
+    "3. MASK: real currency -> credits via per-period factors = (arena-1 M4 credits-per-dollar factors, A6 rehearsal derivation) / (pre-trial-year annual-mean exchange rate, central-bank official series); a credit carries the same real value as in arena 1 up to the mask perturbation - the property that makes the frozen VoT scale (2.2238, never re-fit) a genuine cross-arena prediction.",
+    "4. PERTURB: +/-10% per period, deterministic CRN draws under keys 'bt2:charge_mask:{period}' (A1.4). Cap masked by the pm_peak factor (the period of the ladder maximum)."
+  ],
+  "harness_side_commitments_sha256": {
+    "docs/internal/transfer_schedule_derivation_out.json": "7364d232c7515b1feba4abe88302bd7ea4babd090e68712f06e6e6105bd1eb1e",
+    "docs/internal/derive_transfer_schedule.py": "ec4fdfa9015ed500ae0a0c520a7df04ab316f7badb301b5fa8c86c15dc7186df",
+    "data/transfer_schedule/raw/sekusd_2005_raw.json": "b04aa79987c6e3ef814c96fcc45be904071d792a02eb09dc222f1f19efad1885"
+  },
+  "phase_timeline": {
+    "compression": "10 sim days per real calendar month (uniform across phases)",
+    "phase_bounds": {
+      "P0": [
+        0,
+        39
+      ],
+      "P1": [
+        40,
+        109
+      ],
+      "P2": [
+        110,
+        229
+      ],
+      "P3": [
+        230,
+        289
+      ]
+    },
+    "scored_windows": {
+      "P0": [
+        10,
+        39
+      ],
+      "P1": [
+        60,
+        99
+      ],
+      "P2": [
+        110,
+        229
+      ],
+      "P3": [
+        230,
+        289
+      ]
+    },
+    "transition_days": {
+      "P1": 40,
+      "P2": 110,
+      "P3": 230
+    },
+    "warmup_days": 10,
+    "total_days": 290,
+    "phase_multiplier": {
+      "P0": 0.0,
+      "P1": 1.0,
+      "P2": 0.0,
+      "P3": 1.0
+    },
+    "diagnostic_windows": {
+      "P1_overreaction": [
+        40,
+        59
+      ],
+      "P3_first_month": [
+        230,
+        239
+      ]
+    },
+    "window_derivation": "scored windows follow the truth series' period definitions (calendar spans only): P1 stabilized reading excludes the first two trial months; P2 residual is a whole-off-year reading; P3 is the first post-return calendar-year reading. Implementation constants in evaluation/transfer_protocol.py, owner-reviewed pre-firing (A8.1).",
+    "day_convention": "0-indexed loop global days (day 0 = first simulated day), bounds inclusive"
+  },
+  "level_matching_scope": "P0 matching restricted to demand/capacity constants; VoT 2.2238, logit theta, say-do 2.5, habit threshold/band, gate parameters NEVER touched (TRANSFER_MASKING_NOTE, A8.5(i)).",
+  "label": "METHOD-TRANSFER"
+}
