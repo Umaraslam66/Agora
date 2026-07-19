@@ -1,0 +1,156 @@
+{
+  "eval": "METHOD-TRANSFER reweighting (A1.3)",
+  "variant": "CANDIDATE adults-only M1 (children follow households) \u2014 awaiting owner ruling",
+  "sources": {
+    "income_bands_raw.json": "8eed79cde86d8607c760840bd0e2d3dbe267e7c121e19f577cf790385e0e8354",
+    "population_age_sex_raw.json": "70193341b5dd1615df6be0f834c570c51bab512a33be350453081adcd2e1e7a6",
+    "population_parish_raw.json": "ff09c05d29c5c996067c00c591bcf56c665a17e126a7bd2b7eca654da613fb6c",
+    "rams_commuting_raw.json": "01451b8811e8af90349deeaee445d7c6e6250bcb3200725052372365fb8095fa",
+    "vehicles_raw.json": "171420fe14048f2a4e9edfc291d3043faad7230cf53622daf4328c3e479117b9"
+  },
+  "targets": {
+    "county_pop_2005": 1889945.0,
+    "county_pop16_2005": 1520222.0,
+    "m1_age_sex": {
+      "0-17|F": 0.10737508234366609,
+      "0-17|M": 0.11280645733076888,
+      "18-29|F": 0.07408046265896627,
+      "18-29|M": 0.07263862175883425,
+      "30-44|F": 0.11909552923497774,
+      "30-44|M": 0.12152470045424603,
+      "45-64|F": 0.12604652516343068,
+      "45-64|M": 0.1256094754080145,
+      "65-up|F": 0.08219180981457132,
+      "65-up|M": 0.05863133583252423
+    },
+    "m2_central_home_share": 0.4079684858554085,
+    "m3_employed_share_of_16plus": 0.5991434145802389,
+    "m3_work_central_share_of_employed": 0.5220748964407228,
+    "m4_cars_per_capita": 0.401649783459307,
+    "central_muni_pop": 771038.0,
+    "rams_employed_residents": 910831.0,
+    "county_cars": 759096.0
+  },
+  "m4_transform": {
+    "lambda": -0.8218022147517876,
+    "target_cars_per_hh": 0.7589331246248023,
+    "shares": {
+      "0": 0.387808972318351,
+      "1": 0.46544893073849575,
+      "2": 0.14674209694315327
+    }
+  },
+  "m5_income": "EXCLUDED from raking (quartile targets are rank-preserving no-ops without an absolute currency mapping; owner pin required)",
+  "m2_flag": "PROXY: central cell = central-municipality share (parish-grade 2005 interior not in the open API); mapped to City K rings ('core','inner'); owner rules",
+  "realized_child_share_weighted": 0.13713228760140536,
+  "arena_child_share_2005": 0.220181539674435,
+  "raking": {
+    "iterations": 14,
+    "converged": "True",
+    "final_worst_gap_pre_trim": 0.0004102167535109391,
+    "trim": {
+      "pct": 99.0,
+      "cap": 5.576229069217602,
+      "n_hh_trimmed": 63
+    },
+    "ess_person": 5354.4495168568765,
+    "ess_household": 2744.466077479559,
+    "n_person": 11940,
+    "n_household": 6319,
+    "achieved_after_trim": {
+      "m1:18-29|F": {
+        "target": 0.09499706204446423,
+        "achieved": 0.09791390636535627,
+        "gap": 0.002916844320892037
+      },
+      "m1:18-29|M": {
+        "target": 0.09314811774077325,
+        "achieved": 0.09604351780949827,
+        "gap": 0.002895400068725018
+      },
+      "m1:30-44|F": {
+        "target": 0.15272212097320287,
+        "achieved": 0.1529292997516896,
+        "gap": 0.00020717877848672184
+      },
+      "m1:30-44|M": {
+        "target": 0.15583716805512773,
+        "achieved": 0.15308565342487795,
+        "gap": -0.0027515146302497795
+      },
+      "m1:45-64|F": {
+        "target": 0.16163572879617102,
+        "achieved": 0.15805184804246075,
+        "gap": -0.0035838807537102724
+      },
+      "m1:45-64|M": {
+        "target": 0.16107527815585956,
+        "achieved": 0.1620845841438996,
+        "gap": 0.0010093059880400268
+      },
+      "m1:65-up|F": {
+        "target": 0.10539864596210918,
+        "achieved": 0.10423808986725233,
+        "gap": -0.0011605560948568516
+      },
+      "m1:65-up|M": {
+        "target": 0.07518587827229217,
+        "achieved": 0.07565310059496534,
+        "gap": 0.0004672223226731692
+      },
+      "m2:central": {
+        "target": 0.4079684858554085,
+        "achieved": 0.4188832976107076,
+        "gap": 0.01091481175529907
+      },
+      "m2:noncentral": {
+        "target": 0.5920315141445915,
+        "achieved": 0.5811167023892925,
+        "gap": -0.01091481175529907
+      },
+      "m3:employed": {
+        "target": 0.5991434145802389,
+        "achieved": 0.6094813412056106,
+        "gap": 0.010337926625371696
+      },
+      "m3:notemployed": {
+        "target": 0.4008565854197611,
+        "achieved": 0.3905186587943894,
+        "gap": -0.010337926625371696
+      },
+      "m3:workcentral": {
+        "target": 0.5220748964407228,
+        "achieved": 0.519043175528855,
+        "gap": -0.0030317209118677635
+      },
+      "m3:worknoncentral": {
+        "target": 0.4779251035592772,
+        "achieved": 0.4809568244711449,
+        "gap": 0.003031720911867708
+      },
+      "m4:cars0": {
+        "target": 0.387808972318351,
+        "achieved": 0.3657864260652043,
+        "gap": -0.022022546253146702
+      },
+      "m4:cars1": {
+        "target": 0.46544893073849575,
+        "achieved": 0.48123767344438484,
+        "gap": 0.01578874270588909
+      },
+      "m4:cars2": {
+        "target": 0.14674209694315327,
+        "achieved": 0.15297590049041082,
+        "gap": 0.006233803547257555
+      }
+    },
+    "weight_stats": {
+      "min": 0.01027223948116538,
+      "p50": 0.6144736691128276,
+      "p90": 2.451973891538938,
+      "p99": 5.803103108929045,
+      "max": 5.803103108929045
+    }
+  },
+  "label": "METHOD-TRANSFER"
+}

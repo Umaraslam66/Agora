@@ -1,0 +1,166 @@
+{
+  "eval": "METHOD-TRANSFER reweighting (A1.3)",
+  "variant": "APPROVED-SET (full age x sex incl. 0-17) \u2014 DEGENERATE, headline caveat",
+  "sources": {
+    "income_bands_raw.json": "8eed79cde86d8607c760840bd0e2d3dbe267e7c121e19f577cf790385e0e8354",
+    "population_age_sex_raw.json": "70193341b5dd1615df6be0f834c570c51bab512a33be350453081adcd2e1e7a6",
+    "population_parish_raw.json": "ff09c05d29c5c996067c00c591bcf56c665a17e126a7bd2b7eca654da613fb6c",
+    "rams_commuting_raw.json": "01451b8811e8af90349deeaee445d7c6e6250bcb3200725052372365fb8095fa",
+    "vehicles_raw.json": "171420fe14048f2a4e9edfc291d3043faad7230cf53622daf4328c3e479117b9"
+  },
+  "targets": {
+    "county_pop_2005": 1889945.0,
+    "county_pop16_2005": 1520222.0,
+    "m1_age_sex": {
+      "0-17|F": 0.10737508234366609,
+      "0-17|M": 0.11280645733076888,
+      "18-29|F": 0.07408046265896627,
+      "18-29|M": 0.07263862175883425,
+      "30-44|F": 0.11909552923497774,
+      "30-44|M": 0.12152470045424603,
+      "45-64|F": 0.12604652516343068,
+      "45-64|M": 0.1256094754080145,
+      "65-up|F": 0.08219180981457132,
+      "65-up|M": 0.05863133583252423
+    },
+    "m2_central_home_share": 0.4079684858554085,
+    "m3_employed_share_of_16plus": 0.5991434145802389,
+    "m3_work_central_share_of_employed": 0.5220748964407228,
+    "m4_cars_per_capita": 0.401649783459307,
+    "central_muni_pop": 771038.0,
+    "rams_employed_residents": 910831.0,
+    "county_cars": 759096.0
+  },
+  "m4_transform": {
+    "lambda": -0.8218022147517876,
+    "target_cars_per_hh": 0.7589331246248023,
+    "shares": {
+      "0": 0.387808972318351,
+      "1": 0.46544893073849575,
+      "2": 0.14674209694315327
+    }
+  },
+  "m5_income": "EXCLUDED from raking (quartile targets are rank-preserving no-ops without an absolute currency mapping; owner pin required)",
+  "m2_flag": "PROXY: central cell = central-municipality share (parish-grade 2005 interior not in the open API); mapped to City K rings ('core','inner'); owner rules",
+  "realized_child_share_weighted": 0.12817992171839315,
+  "arena_child_share_2005": 0.220181539674435,
+  "raking": {
+    "iterations": 300,
+    "converged": "False",
+    "final_worst_gap_pre_trim": 0.009802497493708914,
+    "trim": {
+      "pct": 99.0,
+      "cap": 38.144236555106446,
+      "n_hh_trimmed": 64
+    },
+    "ess_person": 161.05130743521096,
+    "ess_household": 96.96204141813747,
+    "n_person": 11940,
+    "n_household": 6319,
+    "achieved_after_trim": {
+      "m1:0-17|F": {
+        "target": 0.10490203815233375,
+        "achieved": 0.10632844539540007,
+        "gap": 0.0014264072430663216
+      },
+      "m1:0-17|M": {
+        "target": 0.11020831865690277,
+        "achieved": 0.1109449724775584,
+        "gap": 0.0007366538206556306
+      },
+      "m1:18-29|F": {
+        "target": 0.07237425434814418,
+        "achieved": 0.07412425391266898,
+        "gap": 0.001749999564524804
+      },
+      "m1:18-29|M": {
+        "target": 0.07096562167644903,
+        "achieved": 0.07382970336808035,
+        "gap": 0.002864081691631326
+      },
+      "m1:30-44|F": {
+        "target": 0.1163525417525976,
+        "achieved": 0.11895687681071569,
+        "gap": 0.002604335058118093
+      },
+      "m1:30-44|M": {
+        "target": 0.11872576472351591,
+        "achieved": 0.1280090477744648,
+        "gap": 0.009283283050948901
+      },
+      "m1:45-64|F": {
+        "target": 0.12314344355372017,
+        "achieved": 0.12489110173877091,
+        "gap": 0.0017476581850507378
+      },
+      "m1:45-64|M": {
+        "target": 0.12271645985213478,
+        "achieved": 0.12453372716419915,
+        "gap": 0.0018172673120643718
+      },
+      "m1:65-up|F": {
+        "target": 0.08029878236909334,
+        "achieved": 0.08061085444648323,
+        "gap": 0.0003120720773898966
+      },
+      "m1:65-up|M": {
+        "target": 0.05728094911946358,
+        "achieved": 0.0577710169116584,
+        "gap": 0.0004900677921948204
+      },
+      "m2:central": {
+        "target": 0.4079684858554085,
+        "achieved": 0.5299214704174487,
+        "gap": 0.12195298456204023
+      },
+      "m2:noncentral": {
+        "target": 0.5920315141445915,
+        "achieved": 0.4700785295825513,
+        "gap": -0.12195298456204023
+      },
+      "m3:employed": {
+        "target": 0.5991434145802389,
+        "achieved": 0.6956178914938119,
+        "gap": 0.09647447691357303
+      },
+      "m3:notemployed": {
+        "target": 0.4008565854197611,
+        "achieved": 0.3043821085061881,
+        "gap": -0.09647447691357303
+      },
+      "m3:workcentral": {
+        "target": 0.5220748964407228,
+        "achieved": 0.5584895264219543,
+        "gap": 0.03641462998123146
+      },
+      "m3:worknoncentral": {
+        "target": 0.4779251035592772,
+        "achieved": 0.4415104735780457,
+        "gap": -0.03641462998123152
+      },
+      "m4:cars0": {
+        "target": 0.387808972318351,
+        "achieved": 0.3038625673130209,
+        "gap": -0.08394640500533007
+      },
+      "m4:cars1": {
+        "target": 0.46544893073849575,
+        "achieved": 0.504530705017636,
+        "gap": 0.039081774279140225
+      },
+      "m4:cars2": {
+        "target": 0.14674209694315327,
+        "achieved": 0.1916067276693432,
+        "gap": 0.04486463072618993
+      }
+    },
+    "weight_stats": {
+      "min": 9.321981826660698e-06,
+      "p50": 0.005504417393823443,
+      "p90": 0.04842331938891025,
+      "p99": 73.84713702490727,
+      "max": 74.0306243339248
+    }
+  },
+  "label": "METHOD-TRANSFER"
+}
