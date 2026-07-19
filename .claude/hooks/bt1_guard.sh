@@ -21,7 +21,10 @@ payload="$(cat)"
 
 # BT1/blind-shock scoring entrypoints (module form `-m evaluation.X` or path
 # `evaluation/X.py`). run_m4/run_bt1/run_e4 are the anticipated driver names.
-ENTRYPOINT_RE='(-m[[:space:]]+evaluation\.(run_m4|run_bt1|run_e4|blind_shock)|evaluation/(run_m4|run_bt1|run_e4|blind_shock)\.py)'
+# run_bt2 = the transfer-arena (Stockholm) driver, pre-registered here on the
+# owner's ruling 2026-07-19 BEFORE any driver code exists (same discipline as
+# BT1: the name enters the matcher first).
+ENTRYPOINT_RE='(-m[[:space:]]+evaluation\.(run_m4|run_bt1|run_bt2|run_e4|blind_shock)|evaluation/(run_m4|run_bt1|run_bt2|run_e4|blind_shock)\.py)'
 
 # Fast path: not a BT1 entrypoint -> allow instantly.
 printf '%s' "$payload" | grep -Eq "$ENTRYPOINT_RE" || exit 0
