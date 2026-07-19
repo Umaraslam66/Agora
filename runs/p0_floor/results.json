@@ -1,0 +1,252 @@
+{
+  "eval": "A8.3 P0 placebo-only arena drift floor (transfer arena)",
+  "label": "METHOD-TRANSFER",
+  "date": "2026-07-19",
+  "generator": "vllm",
+  "n_members": 20,
+  "threshold": 22,
+  "floor": 0.006330481090714696,
+  "per_phase_mean_abs": {
+    "P1": 0.0064565023433201755,
+    "P2": 0.006295615488667544,
+    "P3": 0.006239325440156368
+  },
+  "legs_armed": {
+    "anomaly": {
+      "rule": "firing placebo phase magnitude > 2x floor",
+      "trip_at": 0.012660962181429392
+    },
+    "absolute": {
+      "rule": "firing placebo phase magnitude >= 0.5",
+      "trip_at": 0.5
+    }
+  },
+  "namespace_family": "p0floor_r{k} (independent of the firing's bt2_r{k})",
+  "transition_days": {
+    "P1": 40,
+    "P2": 110,
+    "P3": 230
+  },
+  "members": [
+    {
+      "namespace": "p0floor_r0",
+      "q_p0": 594.1684067246669,
+      "drops": {
+        "P1": 0.006966274130483341,
+        "P2": 0.003643426178082221,
+        "P3": 0.00470510391082124
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8761
+    },
+    {
+      "namespace": "p0floor_r1",
+      "q_p0": 594.9942660890006,
+      "drops": {
+        "P1": 0.005957086479250195,
+        "P2": 0.008419408627405978,
+        "P3": 0.005848164063617767
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8845
+    },
+    {
+      "namespace": "p0floor_r2",
+      "q_p0": 594.495584146334,
+      "drops": {
+        "P1": 0.006060329390851549,
+        "P2": 0.006858865553260762,
+        "P3": 0.006226606331565687
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8833
+    },
+    {
+      "namespace": "p0floor_r3",
+      "q_p0": 595.0445131256674,
+      "drops": {
+        "P1": 0.006318653101961447,
+        "P2": 0.006108571214120784,
+        "P3": 0.005445548405243139
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8799
+    },
+    {
+      "namespace": "p0floor_r4",
+      "q_p0": 593.6874720763338,
+      "drops": {
+        "P1": 0.004217157827294593,
+        "P2": 0.0033189858169125896,
+        "P3": 0.004161263501754386
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8892
+    },
+    {
+      "namespace": "p0floor_r5",
+      "q_p0": 594.607513096001,
+      "drops": {
+        "P1": 0.005820522802478134,
+        "P2": 0.00532552919069651,
+        "P3": 0.004451003765020944
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8784
+    },
+    {
+      "namespace": "p0floor_r6",
+      "q_p0": 595.2481122423336,
+      "drops": {
+        "P1": 0.003977370311876616,
+        "P2": 0.005485898360291119,
+        "P3": 0.006057503863529545
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8811
+    },
+    {
+      "namespace": "p0floor_r7",
+      "q_p0": 594.9490912630007,
+      "drops": {
+        "P1": 0.00547689582243549,
+        "P2": 0.004515204561252095,
+        "P3": 0.005763563810791461
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8852
+    },
+    {
+      "namespace": "p0floor_r8",
+      "q_p0": 595.5703529806673,
+      "drops": {
+        "P1": 0.006406384496510875,
+        "P2": 0.007761990056586177,
+        "P3": 0.00606181534042427
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8839
+    },
+    {
+      "namespace": "p0floor_r9",
+      "q_p0": 596.3495393363339,
+      "drops": {
+        "P1": 0.009827100826815816,
+        "P2": 0.009537716963493814,
+        "P3": 0.009160699368102487
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8814
+    },
+    {
+      "namespace": "p0floor_r10",
+      "q_p0": 596.5829480150004,
+      "drops": {
+        "P1": 0.01008395675449103,
+        "P2": 0.00870810748145312,
+        "P3": 0.007796791848996065
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8914
+    },
+    {
+      "namespace": "p0floor_r11",
+      "q_p0": 595.672364987334,
+      "drops": {
+        "P1": 0.006821151912796419,
+        "P2": 0.004887250223779338,
+        "P3": 0.005015149174155131
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8883
+    },
+    {
+      "namespace": "p0floor_r12",
+      "q_p0": 595.2137646676675,
+      "drops": {
+        "P1": 0.011033799838842118,
+        "P2": 0.008718864190717879,
+        "P3": 0.008641749658133357
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8660
+    },
+    {
+      "namespace": "p0floor_r13",
+      "q_p0": 595.6595415573339,
+      "drops": {
+        "P1": 0.009559811520344907,
+        "P2": 0.007288623543631245,
+        "P3": 0.0069599100947739245
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8837
+    },
+    {
+      "namespace": "p0floor_r14",
+      "q_p0": 595.9562703476673,
+      "drops": {
+        "P1": 0.007302010461066266,
+        "P2": 0.008345950888334674,
+        "P3": 0.0069861163964342055
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8791
+    },
+    {
+      "namespace": "p0floor_r15",
+      "q_p0": 593.7695951333337,
+      "drops": {
+        "P1": 0.006530258920486864,
+        "P2": 0.005161002820145866,
+        "P3": 0.006636272366918883
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8876
+    },
+    {
+      "namespace": "p0floor_r16",
+      "q_p0": 593.5161843980009,
+      "drops": {
+        "P1": 0.0027992865505180875,
+        "P2": 0.00356524629677335,
+        "P3": 0.004520095848868033
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8740
+    },
+    {
+      "namespace": "p0floor_r17",
+      "q_p0": 595.9688242410004,
+      "drops": {
+        "P1": 0.0053139086285818316,
+        "P2": 0.0066890687672748195,
+        "P3": 0.007732909367705321
+      },
+      "n_rewrites_accepted": 3999,
+      "surprise_total": 8815
+    },
+    {
+      "namespace": "p0floor_r18",
+      "q_p0": 595.2736236780005,
+      "drops": {
+        "P1": 0.00603260792879079,
+        "P2": 0.005999955464064066,
+        "P3": 0.007488182827517953
+      },
+      "n_rewrites_accepted": 4000,
+      "surprise_total": 8882
+    },
+    {
+      "namespace": "p0floor_r19",
+      "q_p0": 595.5423736580004,
+      "drops": {
+        "P1": 0.0026254791605271333,
+        "P2": 0.005572643575074476,
+        "P3": 0.005128058858753559
+      },
+      "n_rewrites_accepted": 4000,
+      "surprise_total": 8698
+    }
+  ]
+}

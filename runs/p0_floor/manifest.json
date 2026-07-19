@@ -1,0 +1,9 @@
+{
+  "inputs": {
+    "transfer_cards_sha256": "e1de36c63d8803aa23d57f5e72d77fbb1f1f5ca43cea54a1e1622cd5c0809468",
+    "adopted_weights_sha256": "1a70305158fb2e3e7ae18c387e044d074c4c6c03df7f4271bf652346c6228f01",
+    "fit_manifest": "calibration/sr520_fit_manifest.json"
+  },
+  "results_sha256": "7682118c35289f14af4200957cd3ed6f4c6deb2fe64199b2b52039490b65526e",
+  "note": "reported standalone BEFORE the BT2 firing (A8.3)"
+}
