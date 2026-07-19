@@ -1,13 +1,18 @@
 #!/bin/bash
-# BT2 — THE SINGLE TRANSFER-ARENA BLIND FIRING (A8). HELD.
+# BT2 — THE SINGLE TRANSFER-ARENA BLIND FIRING (A8).
 #
-# WRITTEN, NEVER RUN (build order of 2026-07-19). This script deliberately
-# does NOT carry AGORA_BT1_AUTHORIZED: submitted as-is it stops at the
-# driver's refusal. At go time the OWNER edits the launch line to carry the
-# inline flag (the BT1 protocol: authorization is typed at go, never stored
-# ahead of it), fires ONCE, and the scored verdict seals permanently
-# against evaluation/truth/transfer_p123 (A8; A2.5 E6). The driver refuses
-# a non-empty runs/bt2 — there is no re-submission.
+# Written 2026-07-19 (held, no stored authorization). GO given 2026-07-20
+# on the project owner's explicit inline authorization: "GO.
+# AGORA_BT1_AUTHORIZED=1 — fire BT2." The flag below is the owner's,
+# carried inline per the sealed firing protocol. Fires ONCE; the scored
+# verdict seals permanently against evaluation/truth/transfer_p123 (A8;
+# A2.5 E6). The driver refuses a non-empty runs/bt2.
+#
+# Walltime pre-declaration (owner ruling 2026-07-20, pushed pre-firing in
+# runs/bt2_predeclaration.md): a walltime kill BEFORE the scoring phase
+# reads any truth quantity leaves no blind quantity in existence;
+# resubmission is then permitted and recorded openly. QOS boost_qos_lprod,
+# 48h, one full node — timeline NOT re-pinned.
 #
 # Prerequisites verified by the driver at load (fail before any run):
 # transfer population + adopted-weights sha pin, schedule manifest ==
@@ -25,7 +30,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=4
 #SBATCH --exclusive
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --output=bt2-firing-%j.out
 
 set -euo pipefail
@@ -39,8 +44,8 @@ export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 # Fresh, BT2-dedicated generation cache OUTSIDE the sealed output dir.
 mkdir -p runs/bt2_cache
 
-# OWNER: at go, prefix the next line with the inline authorization.
-python -m evaluation.run_bt2 \
+# The owner's inline authorization (go of 2026-07-20).
+AGORA_BT1_AUTHORIZED=1 python -m evaluation.run_bt2 \
   --generator vllm \
   --cache runs/bt2_cache/gen_cache.jsonl \
   --tensor-parallel 4 \
