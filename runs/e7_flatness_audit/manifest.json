@@ -17,6 +17,6 @@
       "T5": "9f43d91be0bf33eb3c58dbef405fc9f527149f74be599a80ed6dcc1318338fa6"
     }
   },
-  "audit_sha256": "af9495c7566f2a5ee13c2958a15ab46611918296672353d6fef368edd6c0fae1",
+  "audit_sha256": "3090c582249d1a070ffd4eed0762904ec84bb3962980eed15621e78398d8d50e",
   "note": "read-only over runs/bt1; deterministic offline-cache replay; fidelity + reconstruction gates enforced (abort on mismatch)"
 }

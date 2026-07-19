@@ -184,8 +184,20 @@ def volume_decomposition(res, assign: Dict[int, Dict[str, str]]) -> dict:
 
 
 def agent_outcomes(res, assign, corridor_pids) -> Dict[str, dict]:
-    """Per corridor agent: baseline/post traveler-day counts, majority
-    facility, and outcome class."""
+    """Per corridor agent: baseline/post traveler-day counts and outcome
+    class.
+
+    v2 (correction, 2026-07-19): v1 assumed a literal bypass code "R"; the
+    corridor world's facility codes are (T, S, F, D), so "diverted" could
+    never fire and car-days on S/F/D leaked into mode_change/suppressed.
+    v2 is code-agnostic and baseline-relative:
+      kept_tunnel — still driving post, tunnel-day share NOT down >50%
+                    relative to own baseline share;
+      diverted    — still driving post, tunnel-day share down >50%
+                    relative (incl. to zero), baseline share > 0;
+      mode_change — no car traveler-days post, work trips present;
+      suppressed  — no car traveler-days and no work trips post.
+    The volume decomposition never used these classes and is unaffected."""
     base_rng = range(bt1.WARMUP_DAYS, bt1.ONSET_DAY)
     post_rng = range(bt1.ONSET_DAY, bt1.N_DAYS)
     out: Dict[str, dict] = {}
@@ -205,20 +217,27 @@ def agent_outcomes(res, assign, corridor_pids) -> Dict[str, dict]:
             return c
         wb, wp = work_modes(base_rng), work_modes(post_rng)
         facs = trav_days.get(pid, {})
-        base_T = sum(1 for d in facs.get("T", []) if d in base_rng)
-        base_R = sum(1 for d in facs.get("R", []) if d in base_rng)
-        post_T = sum(1 for d in facs.get("T", []) if d in post_rng)
-        post_R = sum(1 for d in facs.get("R", []) if d in post_rng)
-        post_car_days = post_T + post_R
-        if post_car_days > 0:
-            outcome = "kept_tunnel" if post_T >= post_R else "diverted"
+        def count(fac_filter, rng):
+            return sum(1 for fac, dd in facs.items() if fac_filter(fac)
+                       for d in dd if d in rng)
+        base_T = count(lambda f: f == "T", base_rng)
+        base_car = count(lambda f: True, base_rng)
+        post_T = count(lambda f: f == "T", post_rng)
+        post_car = count(lambda f: True, post_rng)
+        if post_car > 0:
+            sb = base_T / base_car if base_car else 0.0
+            sp = post_T / post_car
+            if sb > 0 and sp < 0.5 * sb:
+                outcome = "diverted"
+            else:
+                outcome = "kept_tunnel"
         elif sum(wp.values()) > 0:
             outcome = "mode_change"
         else:
             outcome = "suppressed"
         out[pid] = {
-            "baseline": {"T": base_T, "R": base_R, "work_modes": dict(wb)},
-            "post": {"T": post_T, "R": post_R, "work_modes": dict(wp)},
+            "baseline": {"T": base_T, "car_days": base_car, "work_modes": dict(wb)},
+            "post": {"T": post_T, "car_days": post_car, "work_modes": dict(wp)},
             "outcome": outcome,
         }
     return out
@@ -298,7 +317,13 @@ def main(argv=None) -> int:
     ap.add_argument("--tiers", default="T1,T2,T3,T4,T4_noclaims,T5")
     ap.add_argument("--out", default="runs/e7_flatness_audit")
     ap.add_argument("--dump-inspector", default=None,
-                    help="dir for the WS2 per-agent dump (T5 both arms)")
+                    help="dir for the WS2 per-agent dump (slimmed per tier/arm)")
+    ap.add_argument("--dump-tiers", default="T5",
+                    help="comma list of tiers to dump when --dump-inspector")
+    ap.add_argument("--arms", default="auto",
+                    help="'auto' (placebo only for T3/T5), or 'both'")
+    ap.add_argument("--dump-sample", type=int, default=300,
+                    help="non-corridor personas per dump (deterministic)")
     args = ap.parse_args(argv)
 
     sealed = json.loads(SEALED.read_text())
@@ -317,10 +342,14 @@ def main(argv=None) -> int:
 
     fidelity, decomposition, outcomes_summary, channels = {}, {}, {}, {}
     added_rules_by_tier: Dict[str, Dict[str, set]] = {}
-    inspector_payload = {}
+
+    dump_tiers = {t.strip() for t in args.dump_tiers.split(",") if t.strip()}
 
     for tier in tier_list:
-        arms = ("toll", "placebo") if tier in ("T3", "T5") else ("toll",)
+        if args.arms == "both":
+            arms = ("toll", "placebo")
+        else:
+            arms = ("toll", "placebo") if tier in ("T3", "T5") else ("toll",)
         for arm in arms:
             label = f"{tier}/{arm}"
             print(f"[replay] {label} r{k} ...", flush=True)
@@ -352,14 +381,28 @@ def main(argv=None) -> int:
                 added_rules_by_tier[tier] = {
                     pid: set(v["added_rules"]) for pid, v in ch.items()}
 
-            if args.dump_inspector and tier == "T5":
-                inspector_payload[arm] = {
+            if args.dump_inspector and tier in dump_tiers:
+                # slimmed dump: every corridor persona + a deterministic
+                # sample of non-corridor personas (sorted-pid order)
+                population = bridge.population_from_cards(
+                    res.cards, config, ns, persona_pass=gates["persona_pass"])
+                pids_all = [str(c["persona_id"]) for c in res.cards]
+                ring = {pid: {"home_ring": str(population.home_ring[i]),
+                              "work_ring": str(population.work_ring[i]),
+                              "is_corridor": bool(population.is_corridor[i])}
+                        for i, pid in enumerate(pids_all)}
+                non_corr = [p for p in sorted(pids_all) if p not in set(corridor)]
+                keep = set(corridor) | set(non_corr[: args.dump_sample])
+                payload_arm = {
                     "namespace": ns,
+                    "tier": tier,
+                    "arm": arm,
+                    "statics": {p: ring[p] for p in keep},
                     "assignments": {str(d): m for d, m in assign.items()},
                     "outcomes": oc,
                     "channels": ch,
-                    "cards_before": orig,
-                    "cards_after": final,
+                    "cards_before": {p: orig[p] for p in keep},
+                    "cards_after": {p: final[p] for p in keep if p in final},
                     "realized": {
                         pid: [{"d": rd.day_index,
                                "trips": [{"purpose": t.purpose, "mode": t.mode,
@@ -367,10 +410,16 @@ def main(argv=None) -> int:
                                           "rule": t.rule_applied}
                                          for t in rd.trips]}
                               for rd in days]
-                        for pid, days in res.realized_days_full.items()},
+                        for pid, days in res.realized_days_full.items()
+                        if pid in keep},
                     "facility_loads": {str(d): r for d, r in res.facility_loads.items()},
                     "rewrite_audit": [a.to_dict() for a in res.rewrite_audit],
                 }
+                dump_dir = Path(args.dump_inspector)
+                dump_dir.mkdir(parents=True, exist_ok=True)
+                fp = dump_dir / f"raw_replay_{tier}_{arm}.json"
+                fp.write_text(json.dumps(payload_arm))
+                print(f"[dump] {fp}", flush=True)
 
     # cross-tier rewrite similarity vs T5 (same persona, added-rule Jaccard)
     similarity = {}
@@ -400,6 +449,11 @@ def main(argv=None) -> int:
 
     payload = {
         "eval": "E7 flatness audit (WS1) — replay diagnostics on sealed BT1",
+        "version": "v2 (2026-07-19): outcome-class correction — v1 assumed a "
+                   "literal bypass code 'R' (codes are T/S/F/D), so 'diverted' "
+                   "never fired; classes are now code-agnostic and baseline-"
+                   "relative. Decomposition, fidelity gates, similarity, and "
+                   "population diffs are unchanged from v1 (git history).",
         "replayed_member": k,
         "fidelity_gate": fidelity,
         "decomposition": decomposition,
@@ -421,12 +475,6 @@ def main(argv=None) -> int:
                 "fidelity + reconstruction gates enforced (abort on mismatch)",
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2))
-
-    if args.dump_inspector and inspector_payload:
-        dump_dir = Path(args.dump_inspector)
-        dump_dir.mkdir(parents=True, exist_ok=True)
-        (dump_dir / "raw_replay_T5.json").write_text(json.dumps(inspector_payload))
-        print(f"[dump] inspector raw dump -> {dump_dir}/raw_replay_T5.json")
 
     print(json.dumps({"fidelity": {k2: v["match"] for k2, v in fidelity.items()},
                       "decomposition": {k2: {"demand": round(v["demand_share_of_drop"], 4),

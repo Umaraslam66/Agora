@@ -1,5 +1,6 @@
 {
   "eval": "E7 flatness audit (WS1) \u2014 replay diagnostics on sealed BT1",
+  "version": "v2 (2026-07-19): outcome-class correction \u2014 v1 assumed a literal bypass code 'R' (codes are T/S/F/D), so 'diverted' never fired; classes are now code-agnostic and baseline-relative. Decomposition, fidelity gates, similarity, and population diffs are unchanged from v1 (git history).",
   "replayed_member": 0,
   "fidelity_gate": {
     "T1/toll": {
@@ -7,9 +8,19 @@
       "sealed": 0.2825422535890243,
       "match": true
     },
+    "T1/placebo": {
+      "replayed": 0.013285897472980035,
+      "sealed": 0.013285897472980035,
+      "match": true
+    },
     "T2/toll": {
       "replayed": 0.2705774406328936,
       "sealed": 0.2705774406328936,
+      "match": true
+    },
+    "T2/placebo": {
+      "replayed": -0.0051798683961346015,
+      "sealed": -0.0051798683961346015,
       "match": true
     },
     "T3/toll": {
@@ -27,9 +38,19 @@
       "sealed": 0.27142796466190955,
       "match": true
     },
+    "T4/placebo": {
+      "replayed": -0.010287728751031455,
+      "sealed": -0.010287728751031455,
+      "match": true
+    },
     "T4_noclaims/toll": {
       "replayed": 0.2835601123442315,
       "sealed": 0.2835601123442315,
+      "match": true
+    },
+    "T4_noclaims/placebo": {
+      "replayed": -0.00779562318023852,
+      "sealed": -0.00779562318023852,
       "match": true
     },
     "T5/toll": {
@@ -63,6 +84,25 @@
       "route_share_of_drop": 0.9880704534123043,
       "identity_residual": 7.105427357601002e-15
     },
+    "T1/placebo": {
+      "baseline": {
+        "travelers_per_day": 507.13793103448273,
+        "tunnel_per_day": 170.31034482758622,
+        "share": 0.3358264771877338
+      },
+      "post": {
+        "travelers_per_day": 505.42857142857144,
+        "tunnel_per_day": 168.04761904761904,
+        "share": 0.3324853966459393
+      },
+      "volume_drop_abs": 2.262725779967184,
+      "drop_relative": 0.013285897472980021,
+      "demand_term_abs": 0.5740482147002008,
+      "route_term_abs": 1.6886775652669888,
+      "demand_share_of_drop": 0.25369765076372897,
+      "route_share_of_drop": 0.7463023492362736,
+      "identity_residual": -5.773159728050814e-15
+    },
     "T2/toll": {
       "baseline": {
         "travelers_per_day": 615.2068965517242,
@@ -81,6 +121,25 @@
       "demand_share_of_drop": 0.0011475565595301075,
       "route_share_of_drop": 0.9988524434404702,
       "identity_residual": -2.1316282072803006e-14
+    },
+    "T2/placebo": {
+      "baseline": {
+        "travelers_per_day": 615.2068965517242,
+        "tunnel_per_day": 205.20689655172413,
+        "share": 0.33355753601255533
+      },
+      "post": {
+        "travelers_per_day": 615.015873015873,
+        "tunnel_per_day": 206.26984126984127,
+        "share": 0.3353894595571156
+      },
+      "volume_drop_abs": -1.0629447181171372,
+      "drop_relative": -0.005179868396134596,
+      "demand_term_abs": 0.0637173399389232,
+      "route_term_abs": -1.1266620580560507,
+      "demand_share_of_drop": -0.05994417099300314,
+      "route_share_of_drop": 1.059944170992994,
+      "identity_residual": -9.769962616701378e-15
     },
     "T3/toll": {
       "baseline": {
@@ -139,6 +198,25 @@
       "route_share_of_drop": 1.0017485367341472,
       "identity_residual": -1.4210854715202004e-14
     },
+    "T4/placebo": {
+      "baseline": {
+        "travelers_per_day": 544.3448275862069,
+        "tunnel_per_day": 180.41379310344828,
+        "share": 0.33143291524135315
+      },
+      "post": {
+        "travelers_per_day": 544.6031746031746,
+        "tunnel_per_day": 182.26984126984127,
+        "share": 0.3346837656659866
+      },
+      "volume_drop_abs": -1.8560481663929806,
+      "drop_relative": -0.01028772875103143,
+      "demand_term_abs": -0.08562470497751826,
+      "route_term_abs": -1.7704234614154641,
+      "demand_share_of_drop": 0.04613280330106959,
+      "route_share_of_drop": 0.9538671966989314,
+      "identity_residual": 1.7763568394002505e-15
+    },
     "T4_noclaims/toll": {
       "baseline": {
         "travelers_per_day": 544.448275862069,
@@ -157,6 +235,25 @@
       "demand_share_of_drop": -0.009434188743092601,
       "route_share_of_drop": 1.0094341887430929,
       "identity_residual": -1.4210854715202004e-14
+    },
+    "T4_noclaims/placebo": {
+      "baseline": {
+        "travelers_per_day": 544.448275862069,
+        "tunnel_per_day": 180.6551724137931,
+        "share": 0.33181328773196533
+      },
+      "post": {
+        "travelers_per_day": 544.9047619047619,
+        "tunnel_per_day": 182.06349206349208,
+        "share": 0.3341198403682018
+      },
+      "volume_drop_abs": -1.4083196496989672,
+      "drop_relative": -0.007795623180238604,
+      "demand_term_abs": -0.15146813462970954,
+      "route_term_abs": -1.2568515150692345,
+      "demand_share_of_drop": 0.1075523831980093,
+      "route_share_of_drop": 0.8924476168019743,
+      "identity_residual": -2.3092638912203256e-14
     },
     "T5/toll": {
       "baseline": {
@@ -199,40 +296,71 @@
   },
   "outcome_classes": {
     "T1/toll": {
-      "kept_tunnel": 618,
+      "kept_tunnel": 479,
+      "diverted": 139,
       "mode_change": 30,
       "suppressed": 7
     },
+    "T1/placebo": {
+      "kept_tunnel": 608,
+      "mode_change": 30,
+      "diverted": 10,
+      "suppressed": 7
+    },
     "T2/toll": {
-      "kept_tunnel": 616,
-      "mode_change": 39
+      "kept_tunnel": 490,
+      "mode_change": 39,
+      "diverted": 126
+    },
+    "T2/placebo": {
+      "kept_tunnel": 608,
+      "mode_change": 39,
+      "diverted": 8
     },
     "T3/toll": {
-      "kept_tunnel": 434,
-      "mode_change": 221
+      "kept_tunnel": 346,
+      "mode_change": 221,
+      "diverted": 88
     },
     "T3/placebo": {
-      "kept_tunnel": 434,
-      "mode_change": 221
+      "kept_tunnel": 428,
+      "mode_change": 221,
+      "diverted": 6
     },
     "T4/toll": {
-      "kept_tunnel": 554,
-      "mode_change": 93,
+      "kept_tunnel": 447,
+      "mode_change": 88,
+      "diverted": 112,
+      "suppressed": 8
+    },
+    "T4/placebo": {
+      "kept_tunnel": 548,
+      "mode_change": 88,
+      "diverted": 11,
       "suppressed": 8
     },
     "T4_noclaims/toll": {
-      "kept_tunnel": 559,
-      "mode_change": 89,
+      "kept_tunnel": 447,
+      "mode_change": 81,
+      "diverted": 120,
+      "suppressed": 7
+    },
+    "T4_noclaims/placebo": {
+      "kept_tunnel": 551,
+      "mode_change": 82,
+      "diverted": 15,
       "suppressed": 7
     },
     "T5/toll": {
-      "kept_tunnel": 563,
-      "mode_change": 86,
+      "kept_tunnel": 453,
+      "mode_change": 82,
+      "diverted": 114,
       "suppressed": 6
     },
     "T5/placebo": {
-      "kept_tunnel": 565,
-      "mode_change": 84,
+      "kept_tunnel": 556,
+      "mode_change": 82,
+      "diverted": 11,
       "suppressed": 6
     }
   },
@@ -241,7 +369,15 @@
       "none": 528,
       "advisory": 127
     },
+    "T1/placebo": {
+      "none": 535,
+      "advisory": 120
+    },
     "T2/toll": {
+      "none": 572,
+      "advisory": 83
+    },
+    "T2/placebo": {
       "none": 572,
       "advisory": 83
     },
@@ -260,10 +396,20 @@
       "behavioral": 84,
       "advisory": 93
     },
+    "T4/placebo": {
+      "none": 546,
+      "advisory": 95,
+      "behavioral": 14
+    },
     "T4_noclaims/toll": {
       "advisory": 110,
       "none": 467,
       "behavioral": 78
+    },
+    "T4_noclaims/placebo": {
+      "advisory": 117,
+      "none": 527,
+      "behavioral": 11
     },
     "T5/toll": {
       "none": 426,

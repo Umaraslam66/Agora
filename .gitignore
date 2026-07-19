@@ -54,3 +54,6 @@ runs/**/prompts_round*.jsonl
 
 # record-derived content pulled for local diagnostics (cards/generations) — NEVER commit
 ignore/
+apps/inspector/public/data/
+apps/inspector/node_modules/
+apps/inspector/dist/
