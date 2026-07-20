@@ -37,6 +37,24 @@ def test_blocks_reject_degenerate_partitions():
         ess.household_blocks(["H1"] * 10, 8, namespace="t")  # B < 2
 
 
+def test_blocks_partial_fill_keeps_only_full_blocks():
+    # 2-person households, block size 5: every block overshoots to 6, so the
+    # nominal floor(100/5) = 20 blocks cannot all fill from 50 households —
+    # only fully-filled blocks come back, each household-atomic and >= 5.
+    hh = [f"H{i // 2:03d}" for i in range(100)]
+    blocks = ess.household_blocks(hh, 5, namespace="t")
+    assert 2 <= len(blocks) <= 20
+    used = set()
+    for block in blocks:
+        assert len(block) >= 5
+        hh_in = {hh[i] for i in block}
+        for h in hh_in:
+            members = {i for i, x in enumerate(hh) if x == h}
+            assert members <= set(block.tolist())
+        assert not (set(block.tolist()) & used)  # disjoint
+        used |= set(block.tolist())
+
+
 # ---------------------------------------------------------------------------
 # block-out risk + variance (paper eqs. 3.2 / 4.5)
 # ---------------------------------------------------------------------------

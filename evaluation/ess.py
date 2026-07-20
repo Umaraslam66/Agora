@@ -66,12 +66,17 @@ def household_blocks(
     """Partition observation indices into household-atomic training blocks.
 
     Households are ordered by a CRN draw (deterministic given namespace and
-    household id), then packed greedily into B = floor(n / block_size)
-    blocks until each reaches ``block_size`` persons; per the paper's §3.2,
-    the O(1) leftover observations that fit no block are DISCARDED for that
-    candidate size (their footnote 2: discarding does not affect the
-    asymptotics). Household atomicity makes realized block sizes
-    household-granular; callers report them alongside the nominal N.
+    household id), then packed greedily into at most B = floor(n / block_size)
+    blocks until each reaches ``block_size`` persons. Per the paper's §3.2 the
+    leftover observations that fit no block are DISCARDED for that candidate
+    size (their footnote 2: discarding does not affect the asymptotics).
+    Under household atomicity each block overshoots ``block_size`` by a
+    partial household on average, so the leftover is O(B) persons rather than
+    the paper's O(1) and the LAST blocks may go unfilled; only FULLY-FILLED
+    blocks are returned (adaptation recorded in the E7 manifest's loss-adapter
+    pin: realized block count and sizes are reported alongside the nominal N).
+    Raises unless at least two blocks fill (the variance estimator needs
+    B >= 2).
     """
     hh = np.asarray([str(h) for h in household_ids])
     n = len(hh)
@@ -94,16 +99,17 @@ def household_blocks(
     b = 0
     for h in shuffled:
         if b >= n_blocks:
-            break  # remaining households are the discarded O(1) tail
+            break  # remaining households are the discarded tail
         blocks[b].extend(members[h])
         if len(blocks[b]) >= block_size:
             b += 1
-    if b < n_blocks:
+    filled = blocks[:b]  # only fully-filled blocks participate
+    if len(filled) < 2:
         raise ValueError(
-            f"could not fill {n_blocks} blocks of {block_size} from n={n} "
+            f"could not fill two blocks of {block_size} from n={n} "
             "household-atomically; use a smaller block size"
         )
-    return [np.asarray(sorted(ix), dtype=int) for ix in blocks]
+    return [np.asarray(sorted(ix), dtype=int) for ix in filled]
 
 
 # ---------------------------------------------------------------------------

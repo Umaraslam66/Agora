@@ -1,0 +1,117 @@
+{
+  "driver": "evaluation.run_e7_ess",
+  "adapter_version": "psrc-m2-1.0",
+  "taxonomy": "m0-1.0",
+  "arms": {
+    "T1": {
+      "cards_path": "runs/e7_tiers/T1/cards_T1.jsonl",
+      "cards_sha256": "32adabbb5eebbdbe2cdd2b44c6c269c43b9085c3eafea0eda9e12b34a0fdbea2",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 11940
+      },
+      "seconds": 3.7
+    },
+    "T2": {
+      "cards_path": "runs/e7_tiers/T2/cards_T2.jsonl",
+      "cards_sha256": "70e3a2135ce0c01a6dfa380cac9c55c57db03a5fb43820149a5ad37bca4e2071",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 11936,
+        "fallback": 4
+      },
+      "seconds": 4.0
+    },
+    "T3": {
+      "cards_path": "runs/e7_tiers/T3/cards_T3.jsonl",
+      "cards_sha256": "3445285ce2127e300f5a9b661c43adf628addf5a3ad5bea93e85f83b451ebcf7",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 11940
+      },
+      "seconds": 5.0
+    },
+    "T4": {
+      "cards_path": "runs/e7_tiers/T4/cards_T4.jsonl",
+      "cards_sha256": "24ee7cf362bf8c881640d5a2f64bc9900866d85437c39f836835c6b96d886082",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 10938,
+        "fallback": 1002
+      },
+      "seconds": 5.0
+    },
+    "T4_noclaims": {
+      "cards_path": "runs/e7_tiers/T4_noclaims/cards_T4_noclaims.jsonl",
+      "cards_sha256": "436f4646179e2c8cb207beab86265a888de80118eaa7c224b7a59d2ba5666339",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 10973,
+        "fallback": 967
+      },
+      "seconds": 4.9
+    },
+    "T4_nofidelity": {
+      "cards_path": "runs/e7_tiers/T4_nofidelity/cards_T4_nofidelity.jsonl",
+      "cards_sha256": "555a0f67a20e818ff78aa578e619e18b4b0a58e0225a3bc49d89d55cfccc79ab",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 11860,
+        "fallback": 80
+      },
+      "seconds": 4.8
+    },
+    "T5": {
+      "cards_path": "runs/e7_tiers/T5/cards_T5.jsonl",
+      "cards_sha256": "9f43d91be0bf33eb3c58dbef405fc9f527149f74be599a80ed6dcc1318338fa6",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 9930,
+        "fallback": 2010
+      },
+      "seconds": 5.3
+    },
+    "m2_deployed": {
+      "cards_path": "data/cards/cards_m2_masked_r2b.jsonl",
+      "cards_sha256": "f162c23ada0588d2165724319fcf4744ab78199c6b7391b65a801746f3caaf50",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "llm": 8496,
+        "fallback": 3444
+      },
+      "seconds": 5.1
+    },
+    "template": {
+      "cards_path": "runs/e1_dev_fallback/cards.jsonl",
+      "cards_sha256": "61b26554cbb6adc73287293a1d818ce57f9ec761b3c4b08a6ac72161c44537aa",
+      "n_cards": 11940,
+      "card_source_counts": {
+        "fallback": 11940
+      },
+      "seconds": 4.9
+    }
+  },
+  "t4_context_sha256": "f1688e7bf660a0a2ae886d15de114c9ce7ad7396f94a7c573e920413ea2191bf",
+  "e7_manifest_sha256": "ba932d20f0b92cdef2aa42fa23f3eb60da5c1a27a7d1a5a465abfb1a891d23b9",
+  "grid": [
+    10,
+    20,
+    50,
+    100,
+    250,
+    500,
+    1000,
+    2500,
+    5000
+  ],
+  "alpha": 0.05,
+  "ensemble_members": 20,
+  "block_namespace": "e7ess_v1",
+  "logit_iters": 250,
+  "bootstrap": {
+    "B": 2000,
+    "seed": 20260720
+  },
+  "smoke": null,
+  "timestamp": "Mon Jul 20 21:53:35 CEST 2026"
+}

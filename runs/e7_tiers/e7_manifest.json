@@ -28,6 +28,23 @@
     "cv_protocol": "A2.1 five household-atomic folds, pooled out-of-fold, ensemble N >= 20",
     "headline_discipline": "T5 is the SOLE headline; T1-T4 are the diagnostic information-value curve"
   },
+  "ess_loss_adapter": {
+    "pinned": "2026-07-20, before any ESS quantity is computed (A4.1 pin-before-scoring)",
+    "observation": "one persona (all 11,940 carry >=1 observed weighted weekday slot)",
+    "target_primary": "target-ALL: the persona's observed weekday family distributions over ALL their E1 day slots - trips/day bins (day-weighted, n_collapsed, zero-trip days in bin 0), five-mode shares (w_trip-weighted), depart bands (w_trip-weighted); identical across tiers by construction. CAVEAT stated now: T4/T4-noclaims/T5 (and the deployed/template arms) carry some or all of these days IN EVIDENCE, so their ESS on this target reads as evidence-compression value, exactly the A4.1 framing ('trained on ESS(k) real diary records')",
+    "target_heldout": "target-HELDOUT (secondary): multi-day personas only (2,975); the same family distributions over the persona's slots EXCLUDING the manifest-pinned T4 selected_daynum. For T1-T3 all target days are outside evidence; for T4/T4-noclaims this is a TRUE generalization read (evidence = the one shown day only); for T5/deployed/template the target remains in evidence and is flagged as such",
+    "loss": "unweighted mean over the persona's DEFINED families of TVD(predicted, observed); a family is undefined (excluded) when the persona's observed trip mass is zero (zero-trip-only personas: trips family only)",
+    "predicted_distribution": "normalize(mean over M ensemble members of the persona's unnormalized family masses) - ratio-of-means, simulated day trips carry day_weight (D5)",
+    "card_arms_protocol": "M = 20 CRN members, namespaces e7ess_{arm}_run{k}, agents.card_executor.execute_days(update_habits=False) on the E1 day slots",
+    "baseline_protocol": "block-out CV per evaluation/ess.py (Gao-Han-Liang, exactly as published): household-atomic training blocks via ess.household_blocks(namespace='e7ess_v1'); per block the E1 MNL arm's two components are REFIT on the block only (day-signature + depart-band distributions from block person-days/trips with within-block cell->pooled->global fallback, logit_chooser.fit iters=250 on block GOLDEN records; a component with zero block mass falls back to uniform-over-feasible / uniform-over-bands, reported); the test persona's OWN GOLDEN evidence supplies features exactly as in the E1 arm; prediction through the SAME RealizedDay Monte-Carlo path with matched M = 20 members (namespaces e7ess_base_N{size}_b{block}_run{k}) so the MC-TVD inflation is symmetric across arms and first-order cancels in the difference loss",
+    "ess_grid": [10, 20, 50, 100, 250, 500, 1000, 2500, 5000],
+    "block_fill_adaptation": "household atomicity makes each block overshoot the nominal N by a partial household, so the discarded tail is O(B) persons and the last blocks of the nominal floor(n/N) may go unfilled; only FULLY-FILLED blocks participate (>=2 required) and the realized block count and sizes are reported per size",
+    "alpha": 0.05,
+    "arms": ["T1", "T2", "T3", "T4", "T4_noclaims", "T4_nofidelity", "T5", "m2_deployed (data/cards/cards_m2_masked_r2b.jsonl: 8,496 llm + 3,444 fallback)", "template (runs/e1_dev_fallback/cards.jsonl: 11,940 deterministic fallback cards)"],
+    "template_vs_llm_headtohead": "paired per persona on the 8,496 personas whose deployed card is card_source=llm: delta_i = loss(llm card_i) - loss(template card_i), household-atomic bootstrap 95% CI on the mean, both targets; group means reported alongside",
+    "top_rung_discipline": "the T4->T5 increment is read on the multi-day subpopulation only (A4.1(c)); single-day personas have T4 = T5 by construction",
+    "aggregate_diagnostic": "per-arm pooled E1 TVD (sealed A2.1 protocol, ensemble 20) reported alongside as the ordinary-day aggregate curve"
+  },
   "counts": {
     "T1": {
       "prompts": 11940,
