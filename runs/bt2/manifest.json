@@ -1,0 +1,27 @@
+{
+  "inputs": {
+    "fit_manifest": {
+      "path": "calibration/sr520_fit_manifest.json",
+      "sha256": "2cd6436f99921a9345bab9045b879acc296b8becb26c4e020ff49ecda9be2c5e"
+    },
+    "schedule_manifest": {
+      "path": "runs/transfer_schedule/manifest.json",
+      "sha256": "14b08963c76ff5bbf93ea74ad4bd62b98ad9586ca18bc32f5e30aac21b494e7b"
+    },
+    "transfer_cards_sha256": "e1de36c63d8803aa23d57f5e72d77fbb1f1f5ca43cea54a1e1622cd5c0809468",
+    "adopted_weights": {
+      "path": "runs/transfer_reweight_adultsM1/weights.csv",
+      "sha256": "1a70305158fb2e3e7ae18c387e044d074c4c6c03df7f4271bf652346c6228f01"
+    },
+    "floor": {
+      "path": "runs/p0_floor/results.json",
+      "sha256": "7682118c35289f14af4200957cd3ed6f4c6deb2fe64199b2b52039490b65526e"
+    },
+    "borrowed_car": {
+      "path": "runs/m4_prep/borrowed_car_t5",
+      "ruling": "ACCEPT AS-IS at rate 1.0"
+    }
+  },
+  "results_sha256": "fb4e189c20dada485f8bb45f2923db0b887982262e4151d082406e57eedbbd85",
+  "seal": "scored once; the owner's commit of this directory is the seal"
+}
