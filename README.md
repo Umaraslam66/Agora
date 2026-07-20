@@ -40,7 +40,7 @@ world/                  zones, congestion feedback, toll cordon, GTFS ingest
 agents/                 persona cards, fast brain, slow-brain client
 grounding/              diary adapters, seeding, render path, masking + mask-lint
 calibration/            say-do measurement + frozen correction
-evaluation/             E1–E6 harness; truth/ is quarantined (import-boundary test)
+evaluation/             E1–E7 harness; truth/ is quarantined (import-boundary test)
 serving/                choice gateway, model serving configs
 training/               LoRA SFT + choice eval (transplants)
 jobs/                   cluster job files — full-node discipline, no usernames
@@ -54,16 +54,47 @@ data/synthetic/         schema-identical synthetic stand-in (DEV only, never cit
 Gate records and decision records — the `docs/…` files the frozen
 `01_PREREGISTRATION.md` cites (e.g. `docs/M2_GATE_RECORD.md`,
 `docs/DECISION_M4_HAS_PASS_GATE.md`) — are **maintained privately and published
-with the results.** The blind test has not yet fired, so they are not in this
-public repo; the pre-registration's references to them resolve on release.
+with the release.** Every sealed blind quantity is reproducible from this
+public repo's `runs/` manifests (`runs/bt1/`, `runs/bt2/`, `runs/e7_ess/`;
+results SHA-256 pinned at firing).
 
-## Status
+## Status & results (both blind arenas SPENT; verdicts sealed)
 
-Pre-M1. **M0 (data audit) is in progress**: acquiring/inspecting data sources,
-building the synthetic stand-in, and freezing the numeric bars in the
-pre-registration before any agent runs. No results exist yet; per project
-rules, no number appears in this README unless it is reproducible from a file
-in `runs/`.
+**BT1 — Seattle SR 99 tunnel tolling (fired once 2026-07-19, sealed): PASS.**
+The placebo-corrected blind prediction ΔQ = 0.2752, 80% [0.2673, 0.2864],
+covers the observed −28% and beats both the official −45% forecast and the
+frozen no-LLM comparator (0.3096 [0.2980, 0.3212], non-covering). Per the
+sealed mechanism amendment (A7), every summary carries this verbatim: *"the
+two-brain method beat the aggregate comparator through calibration transfer —
+the adaptation channel's presence at fit time moved the dial to the right
+place — not through runtime persona intelligence."* ≥98.6% of the response
+ran through the calibrated route dial; card rewrites carried ≈1%.
+
+**BT2 — Stockholm congestion charge, METHOD-TRANSFER (fired once 2026-07-20,
+sealed): NULL — the method does not transfer.** In the cordon arena (no route
+dial by construction; the card channel isolated) the blind response is three
+orders of magnitude below every bar (P1 −0.00054 vs target 0.21; E6 residual
+0.000176 vs band [0.04, 0.12] at every habit threshold; memory not
+load-bearing), and the null is clean — drift control green in all phases.
+**Negative results are product**; the falsification stands sealed beside the
+pass with equal prominence.
+
+**E7 information value (non-blind, protocol pinned pre-scoring,
+`runs/e7_ess/`):** persona cards without behavioral evidence are worth ≤10
+real diary records at individual-level prediction; an observed day's value is
+almost entirely replay, not generalization (held-out ESS ≲10); and a
+deterministic template card built from the same diary strictly outperforms the
+LLM-written card (paired +0.095 [0.092, 0.098]).
+
+## The paper
+
+The results are written up as an arXiv-style article: **"Blind,
+Pre-Registered Validation of LLM Population Simulation: A Pass, Its
+Mechanism, and a Falsification"** (`docs/paper/`, PDF in `outputs/`;
+published with the release records — currently in owner review). It covers
+the five-layer method, the pre-registration harness (amendments A1–A8, the
+wall, the placebo doctrine), both sealed verdicts, the mechanism audit, and
+the individual-level information-value analysis.
 
 ## Pre-registration
 
