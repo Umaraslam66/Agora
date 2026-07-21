@@ -30,7 +30,11 @@ data/**
 # register, design drafts, and the project brief are NOT published; they live only
 # on the owner's machine. (git rm --cached keeps them on disk; they ARE the record
 # of decisions — see CLAUDE.md "Local-only records".)
-docs/
+# Exception: docs/paper/ (the published paper source) is tracked; its build
+# artifact main.pdf is not (the released PDF lives in outputs/).
+docs/*
+!docs/paper/
+docs/paper/main.pdf
 /00_PROJECT_BRIEF.md
 
 # Personal Claude Code overrides (the shared BT1 guard in .claude/settings.json

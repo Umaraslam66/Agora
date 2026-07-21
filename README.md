@@ -90,8 +90,8 @@ LLM-written card (paired +0.095 [0.092, 0.098]).
 
 The results are written up as an arXiv-style article: **"Blind,
 Pre-Registered Validation of LLM Population Simulation: A Pass, Its
-Mechanism, and a Falsification"** (`docs/paper/`, PDF in `outputs/`;
-published with the release records — currently in owner review). It covers
+Mechanism, and a Falsification"** — v1.0, sealed by the owner 2026-07-21
+(source in `docs/paper/`, PDF at `outputs/agora_paper_v1.0.pdf`). It covers
 the five-layer method, the pre-registration harness (amendments A1–A8, the
 wall, the placebo doctrine), both sealed verdicts, the mechanism audit, and
 the individual-level information-value analysis.
