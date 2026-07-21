@@ -48,13 +48,16 @@ data/psrc/
 # jobs/site_env.example.sh (placeholder paths) is the tracked template.
 jobs/site_env.sh
 
-# record-derived card sets are never committed (privacy discipline)
-runs/**/cards*.jsonl
+# record-derived card sets are never committed (privacy discipline).
+# Widened 2026-07-21 after a sweep found addable card-content files:
+# any *cards*.jsonl (raw generation attempts included), any prompts*.jsonl
+# (generation prompts embed diary evidence), any requests*.json round-trip
+# payloads, and per-person *_context.json sidecars (carry observed diaries).
+runs/**/*cards*.jsonl
+runs/**/prompts*.jsonl
+runs/**/requests*.json
+runs/**/*_context.json
 data/cards/
-# rewrite round-trip artifacts embed full card content (same discipline)
-runs/**/accepted_cards*.jsonl
-runs/**/requests_round*.json
-runs/**/prompts_round*.jsonl
 
 # record-derived content pulled for local diagnostics (cards/generations) — NEVER commit
 ignore/
